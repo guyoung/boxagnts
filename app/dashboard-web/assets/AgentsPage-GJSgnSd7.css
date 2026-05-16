@@ -1,0 +1,10 @@
+
+.system-prompt-preview[data-v-7a761688] {
+  max-height: 64px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  line-height: 1.5;
+}

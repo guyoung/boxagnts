@@ -1,0 +1,15 @@
+[package]
+name = "boxagnts-wasm-tools"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+boxagnts-wasm-sandbox = { workspace = true }
+boxagnts-tools = { workspace = true }
+
+async-trait = { workspace = true }
+bytes = { workspace = true }
+serde_json = { workspace = true }
+
+chardetng = { version = "1.0" }

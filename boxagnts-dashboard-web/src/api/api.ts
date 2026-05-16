@@ -1,0 +1,762 @@
+import { apiCall } from './apiAdapter'
+
+export interface Project {
+  id: string
+  path: string
+  sessions: string[]
+  created_at: number
+  most_recent_session?: number
+}
+
+export interface Session {
+  id: string
+  title?: string,
+  todo_data?: any
+  created_at: number
+  first_message?: string
+  message_uuid?: string
+  message_timestamp?: string
+}
+
+export interface SessionMessage {
+  role: 'user' | 'assistant'
+  content: string | ContentBlock[]
+  uuid: string
+}
+
+export type ContentBlock =
+  | { type: 'text'; text: string }
+  | { type: 'tool_use'; id: string; name: string; input: Record<string, any> }
+  | { type: 'tool_result'; tool_use_id: string; content: string; is_error: boolean }
+
+export interface UsageStats {
+  total_cost: number
+  total_tokens: number
+  total_input_tokens: number
+  total_output_tokens: number
+  total_cache_creation_tokens: number
+  total_cache_read_tokens: number
+  total_sessions: number
+  by_model: ModelUsage[]
+  by_date: DailyUsage[]
+  by_project: ProjectUsage[]
+}
+
+export interface ModelUsage {
+  model: string
+  total_cost: number
+  total_tokens: number
+  input_tokens: number
+  output_tokens: number
+  cache_creation_tokens: number
+  cache_read_tokens: number
+  session_count: number
+}
+
+export interface DailyUsage {
+  date: string
+  total_cost: number
+  total_tokens: number
+  models_used: string[]
+}
+
+export interface ProjectUsage {
+  project_path: string
+  project_name: string
+  total_cost: number
+  total_tokens: number
+  session_count: number
+  last_used: string
+}
+
+export interface UsageEntry {
+  project: string
+  timestamp: string
+  model: string
+  input_tokens: number
+  output_tokens: number
+  cache_write_tokens: number
+  cache_read_tokens: number
+  cost: number
+}
+
+export interface MCPServer {
+  name: string
+  transport: string
+  command?: string
+  args: string[]
+  env: Record<string, string>
+  url?: string
+  scope: string
+  is_active: boolean
+  status: ServerStatus
+}
+
+export interface ServerStatus {
+  running: boolean
+  error?: string
+  last_checked?: number
+}
+
+export interface ImportResult {
+  imported_count: number
+  failed_count: number
+  servers: ImportServerResult[]
+}
+
+export interface ImportServerResult {
+  name: string
+  success: boolean
+  error?: string
+}
+
+export interface ClaudeVersionStatus {
+  is_installed: boolean
+  version?: string
+  output: string
+}
+
+export interface ClaudeInstallation {
+  path: string
+  version?: string
+  source: string
+  installation_type: string
+}
+
+export interface ModelProvider {
+  id: string
+  name: string
+  api_key?: string
+  base_url?: string
+  models: string[]
+}
+
+export interface Settings {
+  system_prompt?: string
+  model_providers?: ModelProvider[]
+  default_model?: string
+  default_provider?: string
+  allowed_outbound_hosts?: string[]
+}
+
+export interface Site {
+  id: string
+  name: string
+  title: string
+  description: string
+  path: string
+  entry_point: string | null
+  component: string
+  enabled: boolean
+  enable_auth: boolean | null
+  auth_user: string | null
+  auth_pass: string | null
+}
+
+export interface FolderItem {
+  name: string
+  path: string
+}
+
+export interface FolderListResponse {
+  code: number
+  data: {
+    folders: FolderItem[]
+    path: string
+  }
+  message: string
+}
+
+export interface CronJob {
+  id: string
+  name: string
+  description: string
+  cron: string
+  enabled: boolean
+  timeout: number | null
+  prompt: string | null
+  last_run_at: string | null
+  last_run_success: boolean | null
+}
+
+export interface CronLog {
+  id: string
+  job_id: string
+  job_name: string
+  executed_at: string
+  success: boolean
+  message: string
+}
+
+export interface Agent {
+  id: string
+  name: string
+  desc: string
+  model: string
+  system_prompt: string
+  tools: string
+  enabled: boolean
+}
+
+export interface Skill {
+  id: string
+  name: string
+  description: string
+  type: string
+  config: string
+  enabled: boolean
+}
+
+export interface Tool {
+  id: string
+  name: string
+  description: string
+  type: string
+  config: string
+  enabled: boolean
+}
+
+function safeCall<T>(fn: () => Promise<T>, fallback: T): () => Promise<T> {
+  return async () => {
+    try { return await fn() } catch { return fallback }
+  }
+}
+
+export const api = {
+
+  async chatExecute(projectPath: string, prompt: string, model: string, session_id: string | null): Promise<void> {
+    return apiCall('chat_execute', { projectPath, prompt, model, session_id })
+  },
+  async chatExecuteCancel(session_id: string): Promise<void> {
+    return apiCall('chat_execute_cancel', { session_id })
+  },
+
+
+  async getCurrentProject(): Promise<Project> {
+    return apiCall<Project>('get_current_project')
+  },
+
+  async getSessions(): Promise<Session[]> {
+    return apiCall<Session[]>('get_sessions')
+  },
+
+  async loadSessionHistory(sessionId: string): Promise<{ messages: SessionMessage[] }> {
+    return apiCall('load_session_history', { sessionId })
+  },
+
+  async deleteSession(sessionId: string): Promise<any> {
+    return apiCall<any>('delete_session', { sessionId })
+  },
+
+  async updateSessionTitle(sessionId: string, title: string): Promise<any> {
+    let url = `/dashboard/api/update_session_title/${sessionId}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'API call failed');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error(`REST API call failed for ${url}:`, error);
+      throw error;
+    }
+  },
+
+  async deleteSessionMessages(sessionId: string, message_uuids: string[]): Promise<any> {
+    let url = `/dashboard/api/delete_session_messages/${sessionId}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: message_uuids
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'API call failed');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error(`REST API call failed for ${url}:`, error);
+      throw error;
+    }
+  },
+
+  async clearSessionMessages(sessionId: string): Promise<any> {
+    return apiCall<any>('clear_session_messages', { sessionId })
+  },
+
+  // File
+  
+
+
+
+
+  // --- Usage APIs (mock) ---
+  getUsageStats: safeCall(() => apiCall<UsageStats>('get_usage_stats'), {
+    total_cost: 0, total_tokens: 0, total_input_tokens: 0, total_output_tokens: 0,
+    total_cache_creation_tokens: 0, total_cache_read_tokens: 0, total_sessions: 0,
+    by_model: [], by_date: [], by_project: [],
+  }),
+  async getUsageByDateRange(start: string, end: string): Promise<UsageStats> {
+    try { return await apiCall<UsageStats>('get_usage_by_date_range', { startDate: start, endDate: end }) }
+    catch {
+      return {
+        total_cost: 0, total_tokens: 0, total_input_tokens: 0, total_output_tokens: 0,
+        total_cache_creation_tokens: 0, total_cache_read_tokens: 0, total_sessions: 0,
+        by_model: [], by_date: [], by_project: []
+      }
+    }
+  },
+  getSessionStats: safeCall(() => apiCall<ProjectUsage[]>('get_session_stats'), []),
+  async getUsageDetails(limit?: number): Promise<UsageEntry[]> {
+    try { return await apiCall<UsageEntry[]>('get_usage_details', { limit }) } catch { return [] }
+  },
+
+  // --- MCP APIs (mock) ---
+  mcpList: safeCall(() => apiCall<MCPServer[]>('mcp_list'), []),
+  mcpAdd: (name: string, transport: string, command?: string, args?: string[], env?: Record<string, string>, url?: string, scope?: string) =>
+    apiCall('mcp_add', { name, transport, command, args, env, url, scope }),
+  mcpRemove: (name: string) => apiCall<string>('mcp_remove', { name }),
+  mcpTestConnection: (name: string) => apiCall<string>('mcp_test_connection', { name }),
+  mcpAddFromClaudeDesktop: (scope?: string) => apiCall<ImportResult>('mcp_add_from_claude_desktop', { scope }),
+
+  // --- Settings APIs ---
+  getSettings: safeCall(() => apiCall<Settings>('get_settings'), {}),
+  saveSettings: (settings: Settings) => apiCall<string>('save_settings', { settings }),
+
+  // --- File/Folder APIs ---
+  async getRootSubFolders(): Promise<FolderItem[]> {
+    await delay(200)
+    try {
+      const response = await fetch('/dashboard/api/files/root_sub_folders', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch folders')
+      const result: FolderListResponse = await response.json()
+      return result.data.folders
+    } catch {
+      return []
+    }
+  },
+
+  // --- Sites APIs ---
+  async getSites(): Promise<Site[]> {
+    await delay(200)
+    try {
+      const response = await fetch('/dashboard/api/site/sites', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch sites')
+      const result = await response.json()
+      return result.success && result.data ? result.data : result
+    } catch {
+      const raw = localStorage.getItem('boxagnts_sites')
+      return raw ? JSON.parse(raw) : []
+    }
+  },
+  async getSite(id: string): Promise<Site | null> {
+    await delay(100)
+    try {
+      const response = await fetch(`/dashboard/api/site/sites/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch site')
+      const result = await response.json()
+      return result.success && result.data ? result.data : null
+    } catch {
+      const sites = await this.getSites()
+      return sites.find(s => s.id === id) || null
+    }
+  },
+  async createSite(data: Omit<Site, 'id'>): Promise<Site> {
+    await delay(300)
+    try {
+      const response = await fetch('/dashboard/api/site/sites/create_site', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error('Failed to create site')
+      const result = await response.json()
+      if (result.success && result.data) return result.data
+    } catch {
+      const sites = await this.getSites()
+      const site: Site = {
+        ...data,
+        id: 'site_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      }
+      sites.push(site)
+      localStorage.setItem('boxagnts_sites', JSON.stringify(sites))
+      return site
+    }
+    throw new Error('Failed to create site')
+  },
+  async updateSite(id: string, data: Partial<Omit<Site, 'id'>>): Promise<Site> {
+    await delay(300)
+    try {
+      const response = await fetch(`/dashboard/api/site/sites/update_site/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error('Failed to update site')
+      const result = await response.json()
+      if (result.success && result.data) return result.data
+    } catch {
+      const sites = await this.getSites()
+      const idx = sites.findIndex(s => s.id === id)
+      if (idx < 0) throw new Error('Site not found')
+      sites[idx] = { ...sites[idx], ...data }
+      localStorage.setItem('boxagnts_sites', JSON.stringify(sites))
+      return sites[idx]
+    }
+    throw new Error('Failed to update site')
+  },
+  async deleteSite(id: string): Promise<void> {
+    await delay(200)
+    try {
+      const response = await fetch(`/dashboard/api/site/sites/delete_site/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to delete site')
+    } catch {
+      const sites = await this.getSites()
+      const filtered = sites.filter(s => s.id !== id)
+      localStorage.setItem('boxagnts_sites', JSON.stringify(filtered))
+    }
+  },
+
+  // --- Crons APIs ---
+  async getCrons(): Promise<CronJob[]> {
+    await delay(200)
+    try {
+      const response = await fetch('/dashboard/api/cron/jobs', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch crons')
+      return await response.json()
+    } catch {
+      return []
+    }
+  },
+  async getCron(id: string): Promise<CronJob | null> {
+    await delay(100)
+    try {
+      const response = await fetch(`/dashboard/api/cron/jobs/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch cron')
+      return await response.json()
+    } catch {
+      return null
+    }
+  },
+  async createCron(data: Omit<CronJob, 'id' | 'last_run_at' | 'last_run_success'>): Promise<CronJob> {
+    await delay(300)
+    const response = await fetch('/dashboard/api/cron/jobs/create_job', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) throw new Error('Failed to create cron')
+    return await response.json()
+  },
+  async updateCron(id: string, data: Partial<Omit<CronJob, 'id'>>): Promise<CronJob> {
+    await delay(300)
+    const response = await fetch(`/dashboard/api/cron/jobs/update_job/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) throw new Error('Failed to update cron')
+    return await response.json()
+  },
+  async deleteCron(id: string): Promise<void> {
+    await delay(200)
+    const response = await fetch(`/dashboard/api/cron/jobs/delete_job/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!response.ok) throw new Error('Failed to delete cron')
+  },
+
+  // --- Cron Logs APIs ---
+  async getCronLogs(jobId: string): Promise<CronLog[]> {
+    await delay(150)
+    try {
+      const response = await fetch(`/dashboard/api/cron/jobs/${jobId}/logs`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch cron logs')
+      return await response.json()
+    } catch {
+      return []
+    }
+  },
+
+  // --- Agents APIs (mock with localStorage) ---
+  async getAgents(): Promise<Agent[]> {
+    await delay(200)
+    const raw = localStorage.getItem('boxagnts_agents')
+    return raw ? JSON.parse(raw) : []
+  },
+  async createAgent(data: Omit<Agent, 'id'>): Promise<Agent> {
+    await delay(300)
+    const agents = await this.getAgents()
+    const now = Date.now()
+    const agent: Agent = {
+      ...data,
+      id: 'agent_' + now + '_' + Math.random().toString(36).slice(2, 8),
+    }
+    agents.push(agent)
+    localStorage.setItem('boxagnts_agents', JSON.stringify(agents))
+    return agent
+  },
+  async updateAgent(id: string, data: Partial<Omit<Agent, 'id'>>): Promise<Agent> {
+    await delay(300)
+    const agents = await this.getAgents()
+    const idx = agents.findIndex(a => a.id === id)
+    if (idx < 0) throw new Error('Agent not found')
+    agents[idx] = { ...agents[idx], ...data }
+    localStorage.setItem('boxagnts_agents', JSON.stringify(agents))
+    return agents[idx]
+  },
+  async deleteAgent(id: string): Promise<void> {
+    await delay(200)
+    const agents = await this.getAgents()
+    const filtered = agents.filter(a => a.id !== id)
+    localStorage.setItem('boxagnts_agents', JSON.stringify(filtered))
+  },
+
+  // --- Skills APIs ---
+  async getSkills(): Promise<Skill[]> {
+    await delay(200)
+    try {
+      const response = await fetch('/dashboard/api/skills', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch skills')
+      const result = await response.json()
+      return result.success && result.data ? result.data : []
+    } catch {
+      const raw = localStorage.getItem('boxagnts_skills')
+      return raw ? JSON.parse(raw) : []
+    }
+  },
+  async createSkill(data: Omit<Skill, 'id'>): Promise<Skill> {
+    await delay(300)
+    try {
+      const response = await fetch('/dashboard/api/skills', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error('Failed to create skill')
+      const result = await response.json()
+      if (result.success && result.data) return result.data
+    } catch {
+      const skills = await this.getSkills()
+      const now = Date.now()
+      const skill: Skill = {
+        ...data,
+        id: 'skill_' + now + '_' + Math.random().toString(36).slice(2, 8),
+      }
+      skills.push(skill)
+      localStorage.setItem('boxagnts_skills', JSON.stringify(skills))
+      return skill
+    }
+    throw new Error('Failed to create skill')
+  },
+  async updateSkill(id: string, data: Partial<Omit<Skill, 'id'>>): Promise<Skill> {
+    await delay(300)
+    try {
+      const response = await fetch(`/dashboard/api/skills/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error('Failed to update skill')
+      const result = await response.json()
+      if (result.success && result.data) return result.data
+    } catch {
+      const skills = await this.getSkills()
+      const idx = skills.findIndex(s => s.id === id)
+      if (idx < 0) throw new Error('Skill not found')
+      skills[idx] = { ...skills[idx], ...data }
+      localStorage.setItem('boxagnts_skills', JSON.stringify(skills))
+      return skills[idx]
+    }
+    throw new Error('Failed to update skill')
+  },
+  async deleteSkill(id: string): Promise<void> {
+    await delay(200)
+    try {
+      const response = await fetch(`/dashboard/api/skills/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to delete skill')
+    } catch {
+      const skills = await this.getSkills()
+      const filtered = skills.filter(s => s.id !== id)
+      localStorage.setItem('boxagnts_skills', JSON.stringify(filtered))
+    }
+  },
+
+  // --- Tools APIs ---
+  async getTools(): Promise<Tool[]> {
+    await delay(200)
+    try {
+      const response = await fetch('/dashboard/api/tools', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to fetch tools')
+      const result = await response.json()
+      return result.success && result.data ? result.data : []
+    } catch {
+      const raw = localStorage.getItem('boxagnts_tools')
+      return raw ? JSON.parse(raw) : []
+    }
+  },
+  async createTool(data: Omit<Tool, 'id'>): Promise<Tool> {
+    await delay(300)
+    try {
+      const response = await fetch('/dashboard/api/tools', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error('Failed to create tool')
+      const result = await response.json()
+      if (result.success && result.data) return result.data
+    } catch {
+      const tools = await this.getTools()
+      const now = Date.now()
+      const tool: Tool = {
+        ...data,
+        id: 'tool_' + now + '_' + Math.random().toString(36).slice(2, 8),
+      }
+      tools.push(tool)
+      localStorage.setItem('boxagnts_tools', JSON.stringify(tools))
+      return tool
+    }
+    throw new Error('Failed to create tool')
+  },
+  async updateTool(id: string, data: Partial<Omit<Tool, 'id'>>): Promise<Tool> {
+    await delay(300)
+    try {
+      const response = await fetch(`/dashboard/api/tools/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+      if (!response.ok) throw new Error('Failed to update tool')
+      const result = await response.json()
+      if (result.success && result.data) return result.data
+    } catch {
+      const tools = await this.getTools()
+      const idx = tools.findIndex(t => t.id === id)
+      if (idx < 0) throw new Error('Tool not found')
+      tools[idx] = { ...tools[idx], ...data }
+      localStorage.setItem('boxagnts_tools', JSON.stringify(tools))
+      return tools[idx]
+    }
+    throw new Error('Failed to update tool')
+  },
+  async deleteTool(id: string): Promise<void> {
+    await delay(200)
+    try {
+      const response = await fetch(`/dashboard/api/tools/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) throw new Error('Failed to delete tool')
+    } catch {
+      const tools = await this.getTools()
+      const filtered = tools.filter(t => t.id !== id)
+      localStorage.setItem('boxagnts_tools', JSON.stringify(filtered))
+    }
+  },
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}

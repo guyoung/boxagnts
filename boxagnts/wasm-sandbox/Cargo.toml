@@ -1,0 +1,135 @@
+
+[package]
+name = "boxagnts-wasm-sandbox"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = [
+    "run",
+    "serve",
+
+    "gc",
+
+    "wasi-http",
+    "wasi-config",
+    "wasi-keyvalue",
+
+    "component-model",
+    "component-model-async",
+
+    "cranelift",
+    "pooling-allocator"
+]
+
+
+run = [
+    "dep:wasmtime-wasi",
+    "wasmtime/runtime",
+    "wasmtime/wave",
+    "dep:listenfd",
+    "dep:wasi-common",
+    "dep:tokio",
+    "wasmtime-cli-flags/async",
+]
+
+serve = [
+    "wasi-http",
+    "wasmtime-wasi-http/component-model-async",
+    "component-model",
+    "dep:http-body-util",
+    "dep:http",
+    "wasmtime-cli-flags/async",
+]
+
+gc = ["wasmtime-cli-flags/gc", "wasmtime/gc"]
+
+wasi-nn = ["dep:wasmtime-wasi-nn"]
+wasi-tls = ["dep:wasmtime-wasi-tls"]
+wasi-threads = ["dep:wasmtime-wasi-threads", "threads"]
+wasi-http = ["component-model", "dep:wasmtime-wasi-http", "dep:tokio", "dep:hyper", "wasmtime-wasi-http/default-send-request"]
+wasi-config = ["dep:wasmtime-wasi-config"]
+wasi-keyvalue = ["dep:wasmtime-wasi-keyvalue"]
+
+
+component-model = [
+    "wasmtime/component-model",
+    "wasmtime-wast?/component-model",
+    "wasmtime-cli-flags/component-model",
+    "wasmtime-wizer?/component-model",
+]
+component-model-async = [
+    "wasmtime-cli-flags/component-model-async",
+    "component-model",
+    "wasmtime-wasi?/p3",
+    "wasmtime-wasi-http?/p3",
+
+]
+
+cranelift = ["wasmtime-cli-flags/cranelift", "dep:wasmtime-cranelift"]
+winch = ["wasmtime/winch"]
+pooling-allocator = ["wasmtime/pooling-allocator", "wasmtime-cli-flags/pooling-allocator"]
+
+threads = ["wasmtime-cli-flags/threads"]
+profiling = ["wasmtime/profiling", "wasmtime/call-hook"]
+coredump = ["wasmtime-cli-flags/coredump"]
+
+[dependencies]
+wasmtime = { version = "42.0", features = ['std'] }
+wasmtime-wasi = { version = "42.0", optional = true }
+wasmtime-wasi-http = { version = "42.0", optional = true}
+wasmtime-wasi-config = { version = "42.0", optional = true }
+wasmtime-wasi-keyvalue = { version = "42.0", optional = true }
+wasmtime-cranelift = { package = 'wasmtime-internal-cranelift', version = "42.0", optional = true }
+wasmtime-wast = { version = "42.0", optional = true }
+wasmtime-wizer = { version = "42.0", optional = true, features = ['clap', 'wasmtime'] }
+
+wasmtime-cli-flags = { version = "42.0"}
+
+wasmtime-wasi-nn = { version = "42.0", optional = true }
+wasmtime-wasi-tls = { version = "42.0", optional = true }
+wasmtime-wasi-threads = { version = "42.0", optional = true }
+
+wasi-common = { version = "42.0", default-features = true, features = ["exit", "tokio"], optional = true }
+
+wasmparser = { version = "0.244.0", default-features = false, features = ['simd'] }
+
+cfg-if = { version = "1.0" }
+bytes = { version = "1.10", default-features = false }
+log = { version = "0.4", default-features = false }
+async-trait = "0.1"
+clap = { version = "4.6", features = ["derive"] }
+
+listenfd = { version = "1.0", optional = true }
+tokio = { version = "1.50", features = [ "signal", "macros" ], optional = true }
+http = { version = "1.3", optional = true }
+http-body-util = { version = "0.1", optional = true }
+hyper = { version = "1.7", optional = true  }
+
+futures = { version = "0.3" }
+
+anyhow = { version = "1.0" }
+
+url = { version = "2.5" }
+urlencoding = { version = "2.1" }
+futures-util = { version = "0.3" }
+tracing = { version = "0.1", features = ["log"] }
+serde = { version = "1", features = ["derive"] }
+ip_network = { version = "0.4" }
+ip_network_table = { version = "0.2" }
+thiserror = { version = "2.0" }
+md5 = "0.8"
+
+http-body = "1.0"
+
+
+if-addrs = "0.15"
+
+rustls = "0.22"
+webpki-roots = "0.26"
+tokio-rustls = "0.25"
+
+
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "1.0", features = ["mm", "process"] }
+

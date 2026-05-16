@@ -1,0 +1,22 @@
+[package]
+name = "boxagnts-tools"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+
+[dependencies]
+boxagnts-workspace  = { workspace = true }
+boxagnts-mcp = { workspace = true }
+
+boxagnts-core = { workspace = true }
+
+async-trait = { workspace = true }
+chrono = { workspace = true }
+dashmap = { workspace = true }
+once_cell = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+parking_lot = { workspace = true }

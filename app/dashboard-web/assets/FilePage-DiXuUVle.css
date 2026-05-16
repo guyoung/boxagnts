@@ -1,0 +1,31 @@
+
+.editor-wrapper[data-v-a6151f85] {
+  overflow: auto;
+}
+.editor-wrapper[data-v-a6151f85] .cm-editor {
+  height: 100%;
+}
+.editor-wrapper[data-v-a6151f85] .cm-scroller {
+  overflow: auto;
+  font-family: 'Consolas', 'Courier New', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.image-preview-container[data-v-628163dc] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 280px);
+  max-height: calc(100vh - 200px);
+  overflow: auto;
+  background:
+    repeating-conic-gradient(rgba(var(--v-theme-on-surface), 0.04) 0% 25%, transparent 0% 50%) 50% / 20px 20px;
+  padding: 16px;
+}
+.image-preview[data-v-628163dc] {
+  max-width: 100%;
+  max-height: calc(100vh - 320px);
+  object-fit: contain;
+  border-radius: 4px;
+}

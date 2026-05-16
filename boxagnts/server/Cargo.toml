@@ -1,0 +1,37 @@
+[package]
+name = "boxagnts-server"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "Boxagnts"
+path = "src/main.rs"
+
+[dependencies]
+
+boxagnts-gateway = { workspace = true }
+boxagnts-workspace = { workspace = true }
+boxagnts-wasm-sandbox = { workspace = true }
+
+anyhow = { workspace = true }
+env_logger = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true, features = ["v4", "serde"] }
+futures-util = { workspace = true }
+tokio-util = { workspace = true }
+
+axum = { version = "0.8", features = ["ws", "multipart"] }
+tower = { version = "0.5" }
+hyper = { version = "1.9" }
+bytes = { workspace = true }
+http-body-util = { version = "0.1" }
+http = { version = "1.4" }
+
+
+tower-http = { version = "0.6", features = ["fs", "cors"] }
+
+
+

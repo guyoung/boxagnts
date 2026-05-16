@@ -1,0 +1,11 @@
+[package]
+name = "boxagnts-tools-manager"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+boxagnts-wasm-tools = { workspace = true }
+boxagnts-tools =  { workspace = true }
+
+serde_json = { workspace = true }

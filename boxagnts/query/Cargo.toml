@@ -1,0 +1,21 @@
+[package]
+name = "boxagnts-query"
+version = "0.1.0"
+edition = "2024"
+
+
+[dependencies]
+boxagnts-tools = { workspace = true }
+boxagnts-workspace = { workspace = true }
+boxagnts-core = { workspace = true }
+boxagnts-api = { workspace = true }
+
+tokio = { workspace = true }
+futures = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+tokio-util = { workspace = true }
+
+
+

@@ -1,0 +1,19 @@
+
+.description-preview[data-v-5c3f29e3] {
+  max-height: 48px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  line-height: 1.5;
+}
+.config-preview[data-v-5c3f29e3] {
+  max-height: 64px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  line-height: 1.5;
+}
