@@ -94,7 +94,7 @@ unicode-segmentation = "1"
 tokio-util = { version = "0.7", features = ["codec", "rt"] }
 
 ## WebSocket
-tokio-tungstenite = { version = "0.24", features = ["rustls-tls-native-roots"] }
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls"] }
 
 ## JSON Schema
 schemars = { version = "0.8", features = ["derive"] }
