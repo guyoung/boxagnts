@@ -31,7 +31,7 @@ async-trait = "0.1"
 async-stream = "0.3"
 
 ## HTTP
-reqwest = { version = "0.12", features = ["json", "stream", "rustls-tls", "multipart"], default-features = false }
+reqwest = { version = "0.13", features = ["json", "stream", "rustls", "multipart", "form"], default-features = false }
 reqwest-eventsource = "0.6"
 
 ## Serialization
