@@ -49,27 +49,32 @@ jobs:
             target: x86_64-unknown-linux-gnu
             suffix: linux-x86_64
             ext: ''
+            use-cross: false
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             suffix: linux-aarch64
             ext: ''
-            cross-packages: gcc-aarch64-linux-gnu libssl-dev:arm64 pkg-config:arm64
+            use-cross: true
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             suffix: windows-x86_64
             ext: '.exe'
+            use-cross: false
           - os: windows-latest
             target: aarch64-pc-windows-msvc
             suffix: windows-aarch64
             ext: '.exe'
+            use-cross: false
           - os: macos-latest
             target: x86_64-apple-darwin
             suffix: macos-x86_64
             ext: ''
+            use-cross: false
           - os: macos-latest
             target: aarch64-apple-darwin
             suffix: macos-aarch64
             ext: ''
+            use-cross: false
 
     steps:
       - uses: actions/checkout@v4
@@ -79,18 +84,11 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install cross-compilation tools
-        if: matrix.cross-packages != ''
-        run: |
-          sudo dpkg --add-architecture arm64
-          sudo apt-get update
-          sudo apt-get install -y ${{ matrix.cross-packages }}
-          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> "$GITHUB_ENV"
-          echo "PKG_CONFIG_ALLOW_CROSS=1" >> "$GITHUB_ENV"
-          echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> "$GITHUB_ENV"
-          echo "OPENSSL_DIR=/usr" >> "$GITHUB_ENV"
-          echo "OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu" >> "$GITHUB_ENV"
-          echo "OPENSSL_INCLUDE_DIR=/usr/include/aarch64-linux-gnu" >> "$GITHUB_ENV"
+      - name: Install cross
+        if: matrix.use-cross
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -104,7 +102,7 @@ jobs:
             cargo-${{ runner.os }}-${{ matrix.target }}-
 
       - name: Build (release)
-        run: cargo build --release --package boxagnts-server --target ${{ matrix.target }}
+        run: ${{ matrix.use-cross && 'cross' || 'cargo' }} build --release --package boxagnts-server --target ${{ matrix.target }}
 
       - name: Download app
         uses: actions/download-artifact@v4
