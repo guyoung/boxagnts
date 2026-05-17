@@ -5,204 +5,187 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version (e.g., 20260517)'
+        required: false
 
-permissions:
-  contents: write
+env:
+  RUST_VERSION: stable
+  NODE_VERSION: 24
+  CARGO_TERM_COLOR: always
 
 jobs:
-
-  # ── Build Frontend (once, shared across all platforms) ──
+  # Build frontend dashboard
   build-frontend:
-    name: Build Frontend
+    name: Build Frontend Dashboard
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: boxagnts-dashboard-web/package-lock.json
 
-      - name: Install & Build
+      - name: Install dependencies
         working-directory: boxagnts-dashboard-web
-        run: |
-          npm ci
-          npm run build
+        run: npm ci
 
-      - name: Upload app artifact
+      - name: Build frontend
+        working-directory: boxagnts-dashboard-web
+        run: npm run build
+
+      - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app
-          path: app/
+          name: frontend
+          path: app/dashboard-web
 
-  # ── Build Rust Backend (per platform) ──
-  build-backend:
-    name: Build Backend (${{ matrix.os }})
+  # Build Rust binaries
+  build-rust:
+    name: Build ${{ matrix.os }} ${{ matrix.arch }}
     needs: build-frontend
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            suffix: linux-x86_64
-            ext: ''
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            suffix: linux-aarch64
-            ext: ''
+          # Windows x86_64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            suffix: windows-x86_64
-            ext: '.exe'
+            arch: x86_64
+          # Windows aarch64
           - os: windows-latest
             target: aarch64-pc-windows-msvc
-            suffix: windows-aarch64
-            ext: '.exe'
+            arch: aarch64
+          # Linux x86_64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            arch: x86_64
+          # Linux aarch64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            arch: aarch64
+          # macOS x86_64 (Intel)
           - os: macos-latest
             target: x86_64-apple-darwin
-            suffix: macos-x86_64
-            ext: ''
+            arch: x86_64
+          # macOS aarch64 (Apple Silicon)
           - os: macos-latest
             target: aarch64-apple-darwin
-            suffix: macos-aarch64
-            ext: ''
+            arch: aarch64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      - name: Install Zig
-        if: startsWith(runner.os, 'Linux')
-        uses: goto-bus-stop/setup-zig@v2
-
-      - name: Install cargo-zigbuild
-        if: startsWith(runner.os, 'Linux')
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-zigbuild
-
-      - name: Cache Cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry/
-            ~/.cargo/git/
-            target/
-          key: cargo-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            cargo-${{ runner.os }}-${{ matrix.target }}-
-
-      - name: Build (release)
-        run: |
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            cargo zigbuild --release --package boxagnts-server --target ${{ matrix.target }}
-          else
-            cargo build --release --package boxagnts-server --target ${{ matrix.target }}
-          fi
-
-      - name: Download app
+      - name: Download frontend artifact
         uses: actions/download-artifact@v4
         with:
-          name: app
-          path: app/
+          name: frontend
+          path: app/dashboard-web
 
-      - name: Package (Linux / macOS)
-        if: runner.os != 'Windows'
+      - name: Install Rust (${{ env.RUST_VERSION }})
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          key: ${{ matrix.os }}-${{ matrix.arch }}-${{ hashFiles('Cargo.lock') }}
+
+      # Install cross-compilation dependencies for Linux aarch64
+      - name: Install dependencies for Linux aarch64
+        if: matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      # Build Rust binary
+      - name: Build Rust binary
+        run: |
+          cargo build --release --package boxagnts-server --bin Boxagnts --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+
+      - name: Prepare release package
         shell: bash
         run: |
-          mkdir -p release
-          cp "target/${{ matrix.target }}/release/Boxagnts${{ matrix.ext }}" release/
-          cp -r app release/
+          # Create package directory
+          mkdir -p release-package
 
-          cd release
-          tar czf "../Boxagnts-${{ matrix.suffix }}.tar.gz" *
-          cd ..
+          # Copy app directory
+          cp -r app/* release-package/
 
-      - name: Package (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
+          # Copy binary
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp target/${{ matrix.target }}/release/Boxagnts.exe release-package/
+          else
+            cp target/${{ matrix.target }}/release/Boxagnts release-package/
+            chmod +x release-package/Boxagnts
+          fi
+
+      - name: Package release
+        shell: bash
         run: |
-          New-Item -ItemType Directory -Force -Path release
-          Copy-Item "target/${{ matrix.target }}/release/Boxagnts.exe" -Destination release/
-          Copy-Item -Recurse app release/app
+          ARCHIVE_NAME="Boxagnts-${{ matrix.os }}-${{ matrix.arch }}"
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            7z a ${ARCHIVE_NAME}.zip ./release-package/*
+            echo "ASSET_NAME=${ARCHIVE_NAME}.zip" >> $GITHUB_ENV
+          else
+            tar -czf ${ARCHIVE_NAME}.tar.gz -C release-package .
+            echo "ASSET_NAME=${ARCHIVE_NAME}.tar.gz" >> $GITHUB_ENV
+          fi
 
-          Compress-Archive -Path release/* -DestinationPath "Boxagnts-${{ matrix.suffix }}.zip"
-
-      - name: Upload release artifact
+      - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Boxagnts-${{ matrix.suffix }}
-          path: Boxagnts-${{ matrix.suffix }}.*
+          name: ${{ env.ASSET_NAME }}
+          path: ${{ env.ASSET_NAME }}
 
-  # ── Create GitHub Release ──
+  # Create and publish release
   create-release:
     name: Create Release
-    needs: build-backend
+    needs: build-rust
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
-          pattern: Boxagnts-*
-          merge-multiple: false
+          path: ./artifacts
+          merge-multiple: true
 
-      - name: Prepare release assets
+      - name: Generate tag from date
+        id: generate-tag
         run: |
-          mkdir -p release-assets
-          find artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' \) -exec cp {} release-assets/ \;
-          ls -lh release-assets/
-
-      - name: Generate changelog
-        id: changelog
-        run: |
-          TAG_REF="${{ github.ref }}"
-          if [[ "$TAG_REF" == refs/tags/* ]]; then
-            TAG_NAME="${TAG_REF#refs/tags/}"
-            IS_RELEASE="true"
+          if [ -n "${{ github.event.inputs.release_version }}" ]; then
+            TAG="${{ github.event.inputs.release_version }}"
           else
-            TAG_NAME="nightly-$(date +%Y%m%d)-${GITHUB_SHA:0:7}"
-            IS_RELEASE="false"
+            TAG=$(date +'%Y%m%d')
           fi
-          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
-          echo "is_release=${IS_RELEASE}" >> "$GITHUB_OUTPUT"
-          cat > release-notes.md << 'CHANGELOG_EOF'
-          ### 安装说明
-
-          1. 下载对应平台的压缩包
-          2. 解压后即可运行
-
-          ```bash
-          # Linux / macOS
-          tar xzf Boxagnts-*.tar.gz
-          ./release/Boxagnts --port 30001
-
-          # Windows
-          # 解压 Boxagnts-*.zip
-          # .\release\Boxagnts.exe --port 30001
-          ```
-
-          访问 `http://127.0.0.1:30001/dashboard` 打开管理面板。
-          CHANGELOG_EOF
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.changelog.outputs.tag }}
-          name: ${{ steps.changelog.outputs.tag }}
-          body_path: release-notes.md
-          files: release-assets/*
+          tag_name: ${{ steps.generate-tag.outputs.tag }}
+          name: Boxagnts ${{ steps.generate-tag.outputs.tag }}
+          files: ./artifacts/*.{zip,tar.gz}
           draft: false
-          prerelease: ${{ steps.changelog.outputs.is_release == 'false' || contains(github.ref, '-rc') || contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
-          make_latest: ${{ steps.changelog.outputs.is_release }}
+          prerelease: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
