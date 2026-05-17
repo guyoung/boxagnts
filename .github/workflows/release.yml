@@ -122,7 +122,9 @@ jobs:
           mkdir -p release-package
 
           # Copy app directory
-          cp -r app/* release-package/
+          cp -r app/dashboard-web release-package/
+          cp -r app/extensions release-package/
+          cp -r app/AGENTS.md release-package/
 
           # Copy binary
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
