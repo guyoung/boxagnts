@@ -101,4 +101,43 @@ schemars = { version = "0.8", features = ["derive"] }
 
 futures-util = "0.3"
 
+[profile.release]
+
+##
+## 0: no optimizations
+## 1: basic optimizations
+## 2: some optimizations
+## 3: all optimizations
+## "s": optimize for binary size
+## "z": optimize for binary size, but also turn off loop vectorization.
+opt-level = 'z'
+
+##
+## 0, false, or "none": no debug info at all, default for release
+## "line-directives-only": line info directives only. For the nvptx* targets this enables profiling. For other use cases, line-tables-only is the better, more compatible choice.
+## "line-tables-only": line tables only. Generates the minimal amount of debug info for backtraces with filename/line number info, but not anything else, i.e. no variable or function parameter info.
+## 1 or "limited": debug info without type or variable-level information. Generates more detailed module-level info than line-tables-only.
+## 2, true, or "full": full debug info, default for dev
+debug = false
+
+##
+## "none", false, strip = false is equivalent to strip = "none" and disables strip completely
+## "debuginfo",
+## "symbols", true, strip = true is equivalent to strip = "symbols"
+strip = "symbols"
+
+##
+## true or "fat": Performs “fat” LTO which attempts to perform optimizations across all crates within the dependency graph.
+## "thin": Performs “thin” LTO. This is similar to “fat”, but takes substantially less time to run while still achieving performance gains similar to “fat”.
+## false: Performs “thin local LTO” which performs “thin” LTO on the local crate only across its codegen units. No LTO is performed if codegen units is 1 or opt-level is 0.
+## off": Disables LTO.
+lto = "thin"
+
+##
+## "unwind": Unwind the stack upon panic.
+## "abort": Terminate the process upon panic.
+panic = "abort"
+
+##
+codegen-units = 1
 
