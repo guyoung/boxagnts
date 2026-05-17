@@ -1,0 +1,176 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+
+  # ── Build Frontend (once, shared across all platforms) ──
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: boxagnts-dashboard-web/package-lock.json
+
+      - name: Install & Build
+        working-directory: boxagnts-dashboard-web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: app/
+
+  # ── Build Rust Backend (per platform) ──
+  build-backend:
+    name: Build Backend (${{ matrix.os }})
+    needs: build-frontend
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: linux-x86_64
+            ext: ''
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: windows-x86_64
+            ext: '.exe'
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: macos-x86_64
+            ext: ''
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: macos-aarch64
+            ext: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/
+            ~/.cargo/git/
+            target/
+          key: cargo-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            cargo-${{ runner.os }}-${{ matrix.target }}-
+
+      - name: Build (release)
+        run: cargo build --release --package boxagnts-server --target ${{ matrix.target }}
+
+      - name: Download app
+        uses: actions/download-artifact@v4
+        with:
+          name: app
+          path: app/
+
+      - name: Package (Linux / macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p release
+          cp "target/${{ matrix.target }}/release/Boxagnts${{ matrix.ext }}" release/
+          cp -r app release/
+
+          cd release
+          tar czf "../Boxagnts-${{ matrix.suffix }}.tar.gz" *
+          cd ..
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release
+          Copy-Item "target/${{ matrix.target }}/release/Boxagnts.exe" -Destination release/
+          Copy-Item -Recurse app release/app
+
+          Compress-Archive -Path release/* -DestinationPath "Boxagnts-${{ matrix.suffix }}.zip"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Boxagnts-${{ matrix.suffix }}
+          path: Boxagnts-${{ matrix.suffix }}.*
+
+  # ── Create GitHub Release ──
+  create-release:
+    name: Create Release
+    needs: build-backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: Boxagnts-*
+          merge-multiple: false
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' \) -exec cp {} release-assets/ \;
+          ls -lh release-assets/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          TAG_REF="${{ github.ref }}"
+          TAG_NAME="${TAG_REF#refs/tags/}"
+          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+          cat > release-notes.md << 'CHANGELOG_EOF'
+          ### 安装说明
+
+          1. 下载对应平台的压缩包
+          2. 解压后即可运行
+
+          ```bash
+          # Linux / macOS
+          tar xzf Boxagnts-*.tar.gz
+          ./release/Boxagnts --port 30001
+
+          # Windows
+          # 解压 Boxagnts-*.zip
+          # .\release\Boxagnts.exe --port 30001
+          ```
+
+          访问 `http://127.0.0.1:30001/dashboard` 打开管理面板。
+          CHANGELOG_EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.changelog.outputs.tag }}
+          body_path: release-notes.md
+          files: release-assets/*
+          draft: false
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
