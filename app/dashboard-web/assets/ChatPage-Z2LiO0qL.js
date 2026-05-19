@@ -2,7 +2,7 @@ var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var _a;
-import { O as defineComponent, a5 as useAppStore, a9 as useSessionStore, ab as watch, Y as onMounted, G as api, L as createElementBlock, I as createBaseVNode, N as createVNode, ac as withCtx, p as VIcon, a2 as toDisplayString, K as createCommentVNode, F as Fragment, a0 as renderList, d as VCard, m as VDialog, $ as ref, Z as openBlock, M as createTextVNode, k as VChip, ae as withKeys, af as withModifiers, D as VTextarea, c as VBtn, J as createBlock, W as normalizeClass, A as VSpacer, o as VExpandTransition, ad as withDirectives, n as VDivider, aa as vShow, h as VCardText, y as VSelect, i as VCardTitle, e as VCardActions, U as nextTick, _ as _export_sfc } from "./index-orSBHcqs.js";
+import { R as defineComponent, a9 as useAppStore, ad as useSessionStore, af as watch, a0 as onMounted, J as api, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, a6 as toDisplayString, N as createCommentVNode, d as VBtn, F as Fragment, a3 as renderList, e as VCard, n as VDialog, a2 as ref, ac as useRouter, a1 as openBlock, P as createTextVNode, l as VChip, ai as withKeys, aj as withModifiers, H as VTextarea, M as createBlock, Z as normalizeClass, B as VSpacer, p as VExpandTransition, ah as withDirectives, o as VDivider, ae as vShow, i as VCardText, z as VSelect, j as VCardTitle, f as VCardActions, Y as nextTick, _ as _export_sfc } from "./index-CD7sFTTo.js";
 function _getDefaults() {
   return {
     async: false,
@@ -3234,69 +3234,70 @@ const _hoisted_4 = {
   key: 0,
   class: "empty-state"
 };
-const _hoisted_5 = { class: "d-flex gap-2 mt-4 flex-wrap justify-center" };
-const _hoisted_6 = {
+const _hoisted_5 = {
+  key: 1,
+  class: "empty-state"
+};
+const _hoisted_6 = { class: "d-flex gap-2 mt-4 flex-wrap justify-center" };
+const _hoisted_7 = {
   key: 0,
   class: /* @__PURE__ */ normalizeClass(["message-row", "justify-end"])
 };
-const _hoisted_7 = { class: "message-bubble user" };
-const _hoisted_8 = {
+const _hoisted_8 = { class: "message-bubble user" };
+const _hoisted_9 = {
   key: 0,
   class: "edit-wrap"
 };
-const _hoisted_9 = { class: "d-flex justify-end mt-1" };
-const _hoisted_10 = { class: "message-text" };
-const _hoisted_11 = { class: "d-flex justify-end mt-1" };
-const _hoisted_12 = { class: "d-flex" };
-const _hoisted_13 = {
+const _hoisted_10 = { class: "d-flex justify-end mt-1" };
+const _hoisted_11 = { class: "message-text" };
+const _hoisted_12 = { class: "d-flex justify-end mt-1" };
+const _hoisted_13 = { class: "d-flex" };
+const _hoisted_14 = {
   key: 1,
   class: "tool-standalone"
 };
-const _hoisted_14 = ["onClick"];
-const _hoisted_15 = { class: "flex-1" };
-const _hoisted_16 = { class: "text-body-2 font-weight-medium" };
-const _hoisted_17 = { key: 0 };
-const _hoisted_18 = { key: 1 };
-const _hoisted_19 = { key: 2 };
-const _hoisted_20 = {
+const _hoisted_15 = ["onClick"];
+const _hoisted_16 = { class: "flex-1" };
+const _hoisted_17 = { class: "text-body-2 font-weight-medium" };
+const _hoisted_18 = { key: 0 };
+const _hoisted_19 = { key: 1 };
+const _hoisted_20 = { key: 2 };
+const _hoisted_21 = {
   key: 0,
   class: "text-caption text-medium-emphasis mt-1 line-clamp-1"
 };
-const _hoisted_21 = { class: "pa-3" };
-const _hoisted_22 = {
+const _hoisted_22 = { class: "pa-3" };
+const _hoisted_23 = {
   key: 0,
   class: "mb-3"
 };
-const _hoisted_23 = { class: "tool-detail-text" };
-const _hoisted_24 = { key: 1 };
-const _hoisted_25 = { class: "tool-detail-text" };
-const _hoisted_26 = {
+const _hoisted_24 = { class: "tool-detail-text" };
+const _hoisted_25 = { key: 1 };
+const _hoisted_26 = { class: "tool-detail-text" };
+const _hoisted_27 = {
   key: 2,
   class: "message-row justify-start"
 };
-const _hoisted_27 = { class: "message-bubble assistant" };
-const _hoisted_28 = ["innerHTML"];
-const _hoisted_29 = {
+const _hoisted_28 = { class: "message-bubble assistant" };
+const _hoisted_29 = ["innerHTML"];
+const _hoisted_30 = {
   key: 1,
   class: "loading-indicator"
 };
-const _hoisted_30 = { class: "d-flex justify-end mt-1" };
-const _hoisted_31 = { class: "d-flex" };
-const _hoisted_32 = { class: "d-flex align-end gap-3" };
-const _hoisted_33 = { class: "d-flex flex-column gap-2" };
-const _hoisted_34 = { class: "d-flex align-center mt-2" };
-const _hoisted_35 = {
+const _hoisted_31 = { class: "d-flex justify-end mt-1" };
+const _hoisted_32 = { class: "d-flex" };
+const _hoisted_33 = { class: "d-flex align-end gap-3" };
+const _hoisted_34 = { class: "d-flex flex-column gap-2" };
+const _hoisted_35 = { class: "d-flex align-center mt-2" };
+const _hoisted_36 = {
   key: 0,
   class: "text-caption text-medium-emphasis mt-2"
 };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ChatPage",
   setup(__props) {
-    const availableModels = [
-      "minimax/MiniMax-M2.7",
-      "deepseek/deepseek-v4-pro",
-      "deepseek/deepseek-v4-flash"
-    ];
+    const router = useRouter();
+    const availableModels = ref([]);
     const quickPrompts = [
       "Explain this codebase",
       "Find bugs and suggest fixes",
@@ -3311,7 +3312,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const messages = ref([]);
     const isRunning = ref(false);
     const sessionId = ref(null);
-    const selectedModel = ref(availableModels[0]);
+    const selectedModel = ref("");
+    function goToModelSettings() {
+      router.push("/settings/model");
+    }
     const messagesEnd = ref(null);
     const scrollContainer = ref(null);
     let activeUserIdx = -1;
@@ -3834,6 +3838,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       } catch {
         appStore.showMessage("Could not detect current project", "warning");
       }
+      try {
+        const models = await api.getModels();
+        availableModels.value = models;
+        if (models.length > 0) {
+          selectedModel.value = models[0];
+        }
+      } catch {
+        availableModels.value = [];
+      }
       sessionStore.fetchSessions();
     });
     return (_ctx, _cache) => {
@@ -3856,20 +3869,45 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ref: scrollContainer,
             class: "messages-container mb-4"
           }, [
-            messages.value.length === 0 && !isRunning.value ? (openBlock(), createElementBlock("div", _hoisted_4, [
+            messages.value.length === 0 && !isRunning.value && availableModels.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_4, [
+              createVNode(VIcon, {
+                size: "80",
+                color: "warning",
+                class: "mb-4"
+              }, {
+                default: withCtx(() => [..._cache[7] || (_cache[7] = [
+                  createTextVNode("mdi-alert-circle", -1)
+                ])]),
+                _: 1
+              }),
+              _cache[9] || (_cache[9] = createBaseVNode("p", { class: "text-h6 text-medium-emphasis" }, "No models available", -1)),
+              _cache[10] || (_cache[10] = createBaseVNode("p", { class: "text-body-2 text-medium-emphasis mt-1" }, "Please configure a model provider first.", -1)),
+              createVNode(VBtn, {
+                color: "primary",
+                variant: "tonal",
+                class: "mt-4",
+                "prepend-icon": "mdi-robot",
+                onClick: goToModelSettings
+              }, {
+                default: withCtx(() => [..._cache[8] || (_cache[8] = [
+                  createTextVNode(" Go to Model Settings ", -1)
+                ])]),
+                _: 1
+              })
+            ])) : messages.value.length === 0 && !isRunning.value ? (openBlock(), createElementBlock("div", _hoisted_5, [
               createVNode(VIcon, {
                 size: "80",
                 color: "medium-emphasis",
                 class: "mb-4"
               }, {
-                default: withCtx(() => [..._cache[7] || (_cache[7] = [
+                default: withCtx(() => [..._cache[11] || (_cache[11] = [
                   createTextVNode("mdi-robot", -1)
                 ])]),
                 _: 1
               }),
-              _cache[8] || (_cache[8] = createBaseVNode("p", { class: "text-h6 text-medium-emphasis" }, "Ask Boxagnts anything", -1)),
-              _cache[9] || (_cache[9] = createBaseVNode("p", { class: "text-body-2 text-medium-emphasis mt-1" }, "Type your message below to start", -1)),
-              createBaseVNode("div", _hoisted_5, [
+              _cache[12] || (_cache[12] = createBaseVNode("p", { class: "text-h6 text-medium-emphasis" }, "Ask Boxagnts anything", -1)),
+              _cache[13] || (_cache[13] = createBaseVNode("p", { class: "text-body-2 text-medium-emphasis mt-1" }, "Type your message below to start", -1)),
+              createBaseVNode("div", _hoisted_6, [
                 (openBlock(), createElementBlock(Fragment, null, renderList(quickPrompts, (suggestion) => {
                   return createVNode(VChip, {
                     key: suggestion,
@@ -3890,9 +3928,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ])) : createCommentVNode("", true),
             (openBlock(true), createElementBlock(Fragment, null, renderList(messages.value, (item, idx) => {
               return openBlock(), createElementBlock(Fragment, { key: idx }, [
-                item.kind === "user" ? (openBlock(), createElementBlock("div", _hoisted_6, [
-                  createBaseVNode("div", _hoisted_7, [
-                    item.editing ? (openBlock(), createElementBlock("div", _hoisted_8, [
+                item.kind === "user" ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                  createBaseVNode("div", _hoisted_8, [
+                    item.editing ? (openBlock(), createElementBlock("div", _hoisted_9, [
                       createVNode(VTextarea, {
                         modelValue: editText.value,
                         "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => editText.value = $event),
@@ -3903,7 +3941,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         class: "edit-textarea",
                         onKeydown: withKeys(withModifiers(($event) => confirmEdit(idx), ["exact", "prevent"]), ["enter"])
                       }, null, 8, ["modelValue", "onKeydown"]),
-                      createBaseVNode("div", _hoisted_9, [
+                      createBaseVNode("div", _hoisted_10, [
                         createVNode(VBtn, {
                           icon: "mdi-close",
                           variant: "text",
@@ -3922,9 +3960,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         }, null, 8, ["onClick"])
                       ])
                     ])) : (openBlock(), createElementBlock(Fragment, { key: 1 }, [
-                      createBaseVNode("div", _hoisted_10, toDisplayString(item.text), 1),
-                      createBaseVNode("div", _hoisted_11, [
-                        createBaseVNode("div", _hoisted_12, [
+                      createBaseVNode("div", _hoisted_11, toDisplayString(item.text), 1),
+                      createBaseVNode("div", _hoisted_12, [
+                        createBaseVNode("div", _hoisted_13, [
                           isLastUserMessage(idx) && !isRunning.value ? (openBlock(), createBlock(VBtn, {
                             key: 0,
                             icon: "mdi-pencil",
@@ -3956,7 +3994,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       ])
                     ], 64))
                   ])
-                ])) : item.kind === "tool" ? (openBlock(), createElementBlock("div", _hoisted_13, [
+                ])) : item.kind === "tool" ? (openBlock(), createElementBlock("div", _hoisted_14, [
                   createVNode(VCard, {
                     variant: "flat",
                     color: "surface",
@@ -3978,12 +4016,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 2
                         }, 1032, ["color"]),
-                        createBaseVNode("div", _hoisted_15, [
-                          createBaseVNode("div", _hoisted_16, [
+                        createBaseVNode("div", _hoisted_16, [
+                          createBaseVNode("div", _hoisted_17, [
                             createTextVNode(toDisplayString(item.tool) + " ", 1),
-                            item.toolType === "tool_start" ? (openBlock(), createElementBlock("span", _hoisted_17, " · running")) : item.isError ? (openBlock(), createElementBlock("span", _hoisted_18, " · failed")) : (openBlock(), createElementBlock("span", _hoisted_19, " · done"))
+                            item.toolType === "tool_start" ? (openBlock(), createElementBlock("span", _hoisted_18, " · running")) : item.isError ? (openBlock(), createElementBlock("span", _hoisted_19, " · failed")) : (openBlock(), createElementBlock("span", _hoisted_20, " · done"))
                           ]),
-                          item.toolType === "tool_start" && item.inputParams ? (openBlock(), createElementBlock("div", _hoisted_20, toDisplayString(item.inputParams), 1)) : item.toolType === "tool_end" ? (openBlock(), createElementBlock("div", {
+                          item.toolType === "tool_start" && item.inputParams ? (openBlock(), createElementBlock("div", _hoisted_21, toDisplayString(item.inputParams), 1)) : item.toolType === "tool_end" ? (openBlock(), createElementBlock("div", {
                             key: 1,
                             class: normalizeClass(["text-caption mt-1 line-clamp-1", item.isError ? "text-error" : "text-medium-emphasis"])
                           }, toDisplayString(item.content || (item.isError ? "Execution failed" : "Completed")), 3)) : createCommentVNode("", true)
@@ -3998,19 +4036,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 2
                         }, 1024)
-                      ], 8, _hoisted_14),
+                      ], 8, _hoisted_15),
                       createVNode(VExpandTransition, null, {
                         default: withCtx(() => [
                           withDirectives(createBaseVNode("div", null, [
                             createVNode(VDivider),
-                            createBaseVNode("div", _hoisted_21, [
-                              item.inputParams ? (openBlock(), createElementBlock("div", _hoisted_22, [
-                                _cache[10] || (_cache[10] = createBaseVNode("div", { class: "text-caption font-weight-bold text-medium-emphasis mb-1" }, "Input Parameters", -1)),
-                                createBaseVNode("pre", _hoisted_23, toDisplayString(item.inputParams), 1)
+                            createBaseVNode("div", _hoisted_22, [
+                              item.inputParams ? (openBlock(), createElementBlock("div", _hoisted_23, [
+                                _cache[14] || (_cache[14] = createBaseVNode("div", { class: "text-caption font-weight-bold text-medium-emphasis mb-1" }, "Input Parameters", -1)),
+                                createBaseVNode("pre", _hoisted_24, toDisplayString(item.inputParams), 1)
                               ])) : createCommentVNode("", true),
-                              item.toolType === "tool_end" ? (openBlock(), createElementBlock("div", _hoisted_24, [
-                                _cache[11] || (_cache[11] = createBaseVNode("div", { class: "text-caption font-weight-bold text-medium-emphasis mb-1" }, "Result", -1)),
-                                createBaseVNode("pre", _hoisted_25, toDisplayString(item.content || "(empty)"), 1)
+                              item.toolType === "tool_end" ? (openBlock(), createElementBlock("div", _hoisted_25, [
+                                _cache[15] || (_cache[15] = createBaseVNode("div", { class: "text-caption font-weight-bold text-medium-emphasis mb-1" }, "Result", -1)),
+                                createBaseVNode("pre", _hoisted_26, toDisplayString(item.content || "(empty)"), 1)
                               ])) : createCommentVNode("", true)
                             ])
                           ], 512), [
@@ -4022,19 +4060,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     ]),
                     _: 2
                   }, 1024)
-                ])) : item.kind === "assistant" ? (openBlock(), createElementBlock("div", _hoisted_26, [
-                  createBaseVNode("div", _hoisted_27, [
+                ])) : item.kind === "assistant" ? (openBlock(), createElementBlock("div", _hoisted_27, [
+                  createBaseVNode("div", _hoisted_28, [
                     item.text ? (openBlock(), createElementBlock("div", {
                       key: 0,
                       class: "message-text markdown-body",
                       innerHTML: renderMarkdown(item.text)
-                    }, null, 8, _hoisted_28)) : item.isLoading ? (openBlock(), createElementBlock("div", _hoisted_29, [..._cache[12] || (_cache[12] = [
+                    }, null, 8, _hoisted_29)) : item.isLoading ? (openBlock(), createElementBlock("div", _hoisted_30, [..._cache[16] || (_cache[16] = [
                       createBaseVNode("span", { class: "dot" }, null, -1),
                       createBaseVNode("span", { class: "dot" }, null, -1),
                       createBaseVNode("span", { class: "dot" }, null, -1)
                     ])])) : createCommentVNode("", true),
-                    createBaseVNode("div", _hoisted_30, [
-                      createBaseVNode("div", _hoisted_31, [
+                    createBaseVNode("div", _hoisted_31, [
+                      createBaseVNode("div", _hoisted_32, [
                         item.text ? (openBlock(), createBlock(VBtn, {
                           key: 0,
                           icon: "mdi-content-copy",
@@ -4073,7 +4111,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(VCardText, { class: "pa-3" }, {
                 default: withCtx(() => [
-                  createBaseVNode("div", _hoisted_32, [
+                  createBaseVNode("div", _hoisted_33, [
                     createVNode(VTextarea, {
                       modelValue: prompt.value,
                       "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => prompt.value = $event),
@@ -4089,7 +4127,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       disabled: isRunning.value,
                       class: "chat-input"
                     }, null, 8, ["modelValue", "onKeydown", "disabled"]),
-                    createBaseVNode("div", _hoisted_33, [
+                    createBaseVNode("div", _hoisted_34, [
                       createVNode(VBtn, {
                         icon: "mdi-send",
                         color: "primary",
@@ -4109,13 +4147,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       })) : createCommentVNode("", true)
                     ])
                   ]),
-                  createBaseVNode("div", _hoisted_34, [
+                  createBaseVNode("div", _hoisted_35, [
                     createVNode(VIcon, {
                       size: "small",
                       class: "mr-1",
                       color: "medium-emphasis"
                     }, {
-                      default: withCtx(() => [..._cache[13] || (_cache[13] = [
+                      default: withCtx(() => [..._cache[17] || (_cache[17] = [
                         createTextVNode("mdi-cube", -1)
                       ])]),
                       _: 1
@@ -4123,13 +4161,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     createVNode(VSelect, {
                       modelValue: selectedModel.value,
                       "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => selectedModel.value = $event),
-                      items: availableModels,
+                      items: availableModels.value,
                       density: "compact",
                       variant: "solo-filled",
                       "hide-details": "",
                       flat: "",
                       style: { "max-width": "200px" }
-                    }, null, 8, ["modelValue"])
+                    }, null, 8, ["modelValue", "items"])
                   ])
                 ]),
                 _: 1
@@ -4147,15 +4185,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[14] || (_cache[14] = [
+                  default: withCtx(() => [..._cache[18] || (_cache[18] = [
                     createTextVNode("Delete Message", -1)
                   ])]),
                   _: 1
                 }),
                 createVNode(VCardText, null, {
                   default: withCtx(() => [
-                    _cache[15] || (_cache[15] = createBaseVNode("p", null, "Delete this message?", -1)),
-                    deleteMsgIsUser.value ? (openBlock(), createElementBlock("p", _hoisted_35, " This will also delete the assistant's response below it. ")) : createCommentVNode("", true)
+                    _cache[19] || (_cache[19] = createBaseVNode("p", null, "Delete this message?", -1)),
+                    deleteMsgIsUser.value ? (openBlock(), createElementBlock("p", _hoisted_36, " This will also delete the assistant's response below it. ")) : createCommentVNode("", true)
                   ]),
                   _: 1
                 }),
@@ -4166,7 +4204,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       variant: "text",
                       onClick: _cache[4] || (_cache[4] = ($event) => deleteMsgDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[16] || (_cache[16] = [
+                      default: withCtx(() => [..._cache[20] || (_cache[20] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -4176,7 +4214,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       onClick: handleDeleteMsg,
                       loading: deletingMsg.value
                     }, {
-                      default: withCtx(() => [..._cache[17] || (_cache[17] = [
+                      default: withCtx(() => [..._cache[21] || (_cache[21] = [
                         createTextVNode("Delete", -1)
                       ])]),
                       _: 1
@@ -4194,7 +4232,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ChatPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-d3118253"]]);
+const ChatPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-23ca6f19"]]);
 export {
   ChatPage as default
 };

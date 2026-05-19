@@ -1,6 +1,12 @@
 ---
 name: front-component-generator
 description: Generate a React or Vue component from a natural language description, including TypeScript types, styles, and basic tests.
+when_to_use: |
+   - The user asks to create a new UI component (e.g., "Create a button with loading state", "Generate a modal component").
+   - The user provides a natural language description of a component and wants production‑ready code (TypeScript, styles, tests).
+   - The user mentions specific frameworks like React or Vue, or the project already uses them.
+   - The user needs to scaffold a component following existing project conventions (styling, testing, type definitions).
+   - The user wants to avoid manual setup for component files, types, and basic error/loading states.
 tools: read, write, glob, bash
 args:
   - name: description

@@ -6,7 +6,16 @@
     </div>
 
     <div ref="scrollContainer" class="messages-container mb-4">
-      <div v-if="messages.length === 0 && !isRunning" class="empty-state">
+      <div v-if="messages.length === 0 && !isRunning && availableModels.length === 0" class="empty-state">
+        <v-icon size="80" color="warning" class="mb-4">mdi-alert-circle</v-icon>
+        <p class="text-h6 text-medium-emphasis">No models available</p>
+        <p class="text-body-2 text-medium-emphasis mt-1">Please configure a model provider first.</p>
+        <v-btn color="primary" variant="tonal" class="mt-4" prepend-icon="mdi-robot" @click="goToModelSettings">
+          Go to Model Settings
+        </v-btn>
+      </div>
+
+      <div v-else-if="messages.length === 0 && !isRunning" class="empty-state">
         <v-icon size="80" color="medium-emphasis" class="mb-4">mdi-robot</v-icon>
         <p class="text-h6 text-medium-emphasis">Ask Boxagnts anything</p>
         <p class="text-body-2 text-medium-emphasis mt-1">Type your message below to start</p>
@@ -158,16 +167,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { api, type Project, type SessionMessage, type ContentBlock } from '@/api'
 import { useAppStore } from '@/stores/app'
 import { useSessionStore } from '@/stores/sessions'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
+const router = useRouter()
 
-const availableModels = [
-  'minimax/MiniMax-M2.7', 'deepseek/deepseek-v4-pro', 'deepseek/deepseek-v4-flash'
-]
+const availableModels = ref<string[]>([])
 const quickPrompts = [
   'Explain this codebase', 'Find bugs and suggest fixes', 'Refactor for better readability',
   'Add unit tests', 'Write documentation',
@@ -180,7 +189,11 @@ const prompt = ref('')
 const messages = ref<DisplayItem[]>([])
 const isRunning = ref(false)
 const sessionId = ref<string | null>(null)
-const selectedModel = ref<string>(availableModels[0])
+const selectedModel = ref<string>('')
+
+function goToModelSettings() {
+  router.push('/settings/model')
+}
 const messagesEnd = ref<HTMLElement | null>(null)
 const scrollContainer = ref<HTMLElement | null>(null)
 
@@ -752,6 +765,15 @@ onMounted(async () => {
     currentProject.value = await api.getCurrentProject()
   } catch {
     appStore.showMessage('Could not detect current project', 'warning')
+  }
+  try {
+    const models = await api.getModels()
+    availableModels.value = models
+    if (models.length > 0) {
+      selectedModel.value = models[0]
+    }
+  } catch {
+    availableModels.value = []
   }
   sessionStore.fetchSessions()
 })

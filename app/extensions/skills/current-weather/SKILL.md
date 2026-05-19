@@ -1,6 +1,7 @@
 ---
 name: current-weather
 description: Query real-time weather for a given city using the wttr.in API, returning temperature, humidity, wind, and conditions.
+when_to_use: Use this skill when the user asks for the current weather of a specific city, including temperature, humidity, wind conditions, or general weather status.
 tools: web-fetch, read
 args:
   - name: city

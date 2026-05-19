@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use boxagnts_core::provider_id::ProviderId;
+use boxagnts_core::error::ClaudeError;
 
 use crate::client::ClientConfig;
 use crate::provider::LlmProvider;
@@ -264,12 +265,17 @@ pub async fn runtime_provider_for(provider_id: &str) -> Option<Arc<dyn LlmProvid
         _ => {}
     }
 
-    let auth_store = boxagnts_workspace::auth_store::AuthStore::load().await;
-    let key = auth_store.api_key_for(provider_id)?;
-    if key.is_empty() {
-        return None;
-    }
-    provider_from_key(provider_id, key)
+    if let Ok(auth_store) = boxagnts_workspace::auth_store::AuthStore::load().await {
+        let key = auth_store.api_key_for(provider_id)?;
+
+        if key.is_empty() {
+            return None;
+        }
+
+        provider_from_key(provider_id, key)
+    } else {
+        None
+    }   
 }
 
 impl ProviderRegistry {
@@ -353,15 +359,16 @@ impl ProviderRegistry {
     pub async fn from_config(
         config: &boxagnts_workspace::config::Config,
         anthropic_config: ClientConfig,
-    ) -> Self {
+    ) -> Result<Self, ClaudeError> {
         let mut registry = Self::from_environment_with_auth_store(anthropic_config).await;
-        let active_provider = config.selected_provider_id();
+        let active_provider = config.selected_provider_id().ok_or(ClaudeError::Other("No acitve provider".to_string()))?;
 
         let mut configured_provider_ids: Vec<String> =
             config.provider_configs.keys().cloned().collect();
+
         if configured_provider_ids
             .iter()
-            .all(|id| id != active_provider)
+            .all(|id| id != &active_provider)
         {
             configured_provider_ids.push(active_provider.to_string());
         }
@@ -377,7 +384,7 @@ impl ProviderRegistry {
             registry.set_default(default_provider_id);
         }
 
-        registry
+        Ok(registry)
     }
 
     /// Register [`GoogleProvider`] if `GOOGLE_API_KEY` or
@@ -483,6 +490,12 @@ impl ProviderRegistry {
         // Now check the auth store for providers that weren't registered from
         // env vars.
         let auth_store = boxagnts_workspace::auth_store::AuthStore::load().await;
+        
+        if auth_store.is_err() {
+            return registry;
+        }
+        
+        let auth_store = auth_store.unwrap();
 
         for (provider_id, _cred) in &auth_store.credentials {
             let pid = boxagnts_core::provider_id::ProviderId::new(provider_id.as_str());

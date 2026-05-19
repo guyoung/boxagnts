@@ -22,6 +22,8 @@ export type {
   Agent,
   Skill,
   Tool,
-  ModelProvider,
+  ConfigProvider,
+  ProviderModel,
+  ProviderOption,
   Settings,
 } from './api'

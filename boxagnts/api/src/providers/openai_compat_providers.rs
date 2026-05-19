@@ -117,7 +117,7 @@ pub fn custom_openai() -> OpenAiCompatProvider {
         futures::executor::block_on(async { Settings::load().await.unwrap_or_default() });
 
     let base_url = settings
-        .providers
+        .config.provider_configs
         .get("custom-openai")
         .and_then(|config| config.api_base.as_deref())
         .filter(|url| !url.trim().is_empty())

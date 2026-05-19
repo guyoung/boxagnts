@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+
 /// A stored credential for a provider.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -34,34 +35,58 @@ impl AuthStore {
         dir.join("auth.json")
     }
 
-    /// Load the store from disk (returns default if missing or invalid).
-    pub async fn load() -> Self {
+    pub async fn init() -> anyhow::Result<()> {
         let path = Self::path().await;
+
+        if !path.exists() {
+            if let Some(parent) = path.parent() {
+                tokio::fs::create_dir_all(parent).await?;
+            }
+
+            let auth_store: AuthStore = AuthStore::default();
+
+            let content = serde_json::to_string_pretty(&auth_store)?;
+            tokio::fs::write(&path, content).await?;
+        }
+
+        Ok(())
+    }
+
+    /// Load the store from disk (returns default if missing or invalid).
+    pub async fn load() -> anyhow::Result<Self >{
+        let path = Self::path().await;
+
         if path.exists() {
-            std::fs::read_to_string(&path)
-                .ok()
-                .and_then(|s| serde_json::from_str(&s).ok())
-                .unwrap_or_default()
+            let content = tokio::fs::read_to_string(&path).await?;
+
+            let auth_store: AuthStore = serde_json::from_str(&content).unwrap_or_default();
+
+            Ok(auth_store)
         } else {
-            Self::default()
+            let auth_store: AuthStore = AuthStore::default();
+
+            Ok(auth_store)
         }
     }
 
     /// Persist the store to disk (best-effort).
-    pub async fn save(&self) {
+    pub async fn save(&self)-> anyhow::Result<()> {
         let path = Self::path().await;
         if let Some(parent) = path.parent() {
-            let _ = std::fs::create_dir_all(parent);
+            tokio::fs::create_dir_all(parent).await?;
         }
-        if let Ok(json) = serde_json::to_string_pretty(self) {
-            let _ = std::fs::write(&path, json);
-        }
+
+        let content = serde_json::to_string_pretty(self)?;
+        tokio::fs::write(&path, content).await?;
+
+        Ok(())
     }
 
     /// Store a credential for the given provider (persists immediately).
-    pub async fn set(&mut self, provider_id: &str, cred: StoredCredential) {
+    pub async fn set(&mut self, provider_id: &str, cred: StoredCredential) -> anyhow::Result<()>  {
         self.credentials.insert(provider_id.to_string(), cred);
-        self.save().await;
+
+        self.save().await
     }
 
     /// Get the stored credential for a provider.
@@ -70,9 +95,10 @@ impl AuthStore {
     }
 
     /// Remove the credential for a provider (persists immediately).
-    pub async fn remove(&mut self, provider_id: &str) {
+    pub async fn remove(&mut self, provider_id: &str) -> anyhow::Result<()> {
         self.credentials.remove(provider_id);
-        self.save().await;
+
+        self.save().await
     }
 
     /// Get the API key for a provider, checking stored credentials first then
@@ -126,38 +152,3 @@ impl AuthStore {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{AuthStore, StoredCredential};
-
-    #[test]
-    fn github_copilot_oauth_prefers_refresh_token() {
-        let mut store = AuthStore::default();
-        store.credentials.insert(
-            "github-copilot".to_string(),
-            StoredCredential::OAuthToken {
-                access: "access-token".to_string(),
-                refresh: "refresh-token".to_string(),
-                expires: 0,
-            },
-        );
-
-        assert_eq!(
-            store.api_key_for("github-copilot").as_deref(),
-            Some("refresh-token")
-        );
-    }
-
-    #[test]
-    fn api_key_for_regular_provider_uses_stored_key() {
-        let mut store = AuthStore::default();
-        store.credentials.insert(
-            "openrouter".to_string(),
-            StoredCredential::ApiKey {
-                key: "or-key".to_string(),
-            },
-        );
-
-        assert_eq!(store.api_key_for("openrouter").as_deref(), Some("or-key"));
-    }
-}

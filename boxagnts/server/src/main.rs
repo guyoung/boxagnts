@@ -13,6 +13,7 @@ use clap::Parser;
 #[derive(Parser)]
 #[command(name = "Boxagnts")]
 #[command(about = "Boxagnts is an AI coding assistant focused on safe and effective software engineering assistance.")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 struct Args {
     /// Port to run the web server on
     #[arg(long, value_name = "PORT", default_value = "30001")]
@@ -64,6 +65,7 @@ async fn main() {
     };
 
     boxagnts_workspace::path::set_app_dir(&app_dir).await;
+
 
 
 

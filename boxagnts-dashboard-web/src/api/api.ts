@@ -123,17 +123,34 @@ export interface ClaudeInstallation {
   installation_type: string
 }
 
-export interface ModelProvider {
+export interface ProviderModel {
   id: string
   name: string
+  context_window: number
+  max_tokens: number
+  temperature: number
+}
+
+export interface ConfigProvider {
+  id: string
+  name: string
+  api_base: string
   api_key?: string
-  base_url?: string
-  models: string[]
+  enabled: boolean
+  models: ProviderModel[]
+  options: Record<string, any>
+}
+
+export interface ProviderOption {
+  badge: string | null
+  category: string
+  description: string
+  id: string
+  title: string
 }
 
 export interface Settings {
   system_prompt?: string
-  model_providers?: ModelProvider[]
   default_model?: string
   default_provider?: string
   allowed_outbound_hosts?: string[]
@@ -349,9 +366,103 @@ export const api = {
   mcpTestConnection: (name: string) => apiCall<string>('mcp_test_connection', { name }),
   mcpAddFromClaudeDesktop: (scope?: string) => apiCall<ImportResult>('mcp_add_from_claude_desktop', { scope }),
 
-  // --- Settings APIs ---
-  getSettings: safeCall(() => apiCall<Settings>('get_settings'), {}),
-  saveSettings: (settings: Settings) => apiCall<string>('save_settings', { settings }),
+  // --- Update Default Model API ---
+  async updateDefaultModel(id: string): Promise<void> {
+    const response = await fetch('/dashboard/api/config/update_default_model', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (!response.ok) throw new Error('Failed to update default model')
+  },
+
+  // --- Get Available Models API ---
+  async getModels(): Promise<string[]> {
+    const response = await fetch('/dashboard/api/config/get_models', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) throw new Error('Failed to fetch models')
+    return await response.json()
+  },
+
+  // --- Config Providers APIs ---
+  async getConfigProviders(): Promise<ConfigProvider[]> {
+    const response = await fetch('/dashboard/api/config/providers', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) throw new Error('Failed to fetch providers')
+    return await response.json()
+  },
+  async getConfigProvider(id: string): Promise<ConfigProvider | null> {
+    const response = await fetch(`/dashboard/api/config/providers/${id}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) throw new Error('Failed to fetch provider')
+    return await response.json()
+  },
+  async createConfigProvider(data: { id: string; name: string; api_base: string; api_key: string; enabled: boolean }): Promise<ConfigProvider> {
+    const response = await fetch('/dashboard/api/config/providers/create_provider', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) throw new Error('Failed to create provider')
+    return await response.json()
+  },
+  async updateConfigProvider(id: string, data: { name: string; api_base: string; api_key: string; enabled: boolean }): Promise<ConfigProvider> {
+    const response = await fetch(`/dashboard/api/config/providers/update_provider/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) throw new Error('Failed to update provider')
+    return await response.json()
+  },
+  async deleteConfigProvider(id: string): Promise<void> {
+    const response = await fetch(`/dashboard/api/config/providers/delete_provider/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) throw new Error('Failed to delete provider')
+  },
+  async getProviderOptions(): Promise<ProviderOption[]> {
+    const response = await fetch('/dashboard/api/config/provider_options', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) throw new Error('Failed to fetch provider options')
+    return await response.json()
+  },
+
+  // --- Provider Model APIs ---
+  async createProviderModel(providerId: string, data: { id: string; name: string }): Promise<ProviderModel> {
+    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/create_model`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) throw new Error('Failed to create model')
+    return await response.json()
+  },
+  async updateProviderModel(providerId: string, modelId: string, data: { name: string }): Promise<ProviderModel> {
+    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/update_model/${encodeURIComponent(modelId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) throw new Error('Failed to update model')
+    return await response.json()
+  },
+  async deleteProviderModel(providerId: string, modelId: string): Promise<void> {
+    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/delete_model/${encodeURIComponent(modelId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) throw new Error('Failed to delete model')
+  },
 
   // --- File/Folder APIs ---
   async getRootSubFolders(): Promise<FolderItem[]> {

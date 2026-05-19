@@ -271,7 +271,7 @@ pub async fn run_query_loop(
         if let Some(ref registry) = config.provider_registry {
             let (provider_id_str, model_id_str) = if let Some(p) = tool_ctx
                 .config
-                .provider
+                .selected_provider_id()
                 .as_deref()
                 .filter(|p| *p != "anthropic")
             {
@@ -317,8 +317,8 @@ pub async fn run_query_loop(
                     // Treat the whole string as the model ID, fall through
                     // to auto-detection below.
                     let fallback_provider =
-                        tool_ctx.config.provider.as_deref().unwrap_or("anthropic");
-                    (fallback_provider.to_string(), effective_model.clone())
+                        tool_ctx.config.selected_provider_id().unwrap_or("anthropic".to_string());
+                    (fallback_provider, effective_model.clone())
                 }
             } else {
                 // No explicit provider set (or set to "anthropic"): try the
@@ -347,8 +347,9 @@ pub async fn run_query_loop(
                         ("anthropic".to_string(), effective_model.clone())
                     }
                 } else {
-                    let p = tool_ctx.config.provider.as_deref().unwrap_or("anthropic");
-                    (p.to_string(), effective_model.clone())
+                    let provider_id = tool_ctx.config.selected_provider_id().clone();
+                    let p = provider_id.unwrap_or("anthropic".to_string());
+                    (p, effective_model.clone())
                 }
             };
 

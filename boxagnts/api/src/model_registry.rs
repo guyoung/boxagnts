@@ -642,34 +642,4 @@ impl Default for ModelRegistry {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Dynamic model resolution helper
-// ---------------------------------------------------------------------------
 
-/// Resolve the effective model for a [`Config`], using the model registry to
-/// dynamically pick the best available model for the active provider.
-///
-/// **Resolution order** (mirrors OpenCode's approach):
-///  1. If the user explicitly set `config.model`, use it verbatim.
-///  2. Consult the model registry for the configured provider's best model
-///     (scored by flagship priority -> "latest" preference -> ID desc).
-///  3. Fall back to the hardcoded table in [`Config::effective_model()`].
-pub fn effective_model_for_config(
-    config: &boxagnts_workspace::config::Config,
-    registry: &ModelRegistry,
-) -> String {
-    // Explicit user override — always wins.
-    if config.model.is_some() {
-        return config.effective_model().to_string();
-    }
-
-    // Try the model registry for the configured provider.
-    if let Some(provider_id) = config.provider.as_deref() {
-        if let Some(best) = registry.best_model_for_provider(provider_id) {
-            return best;
-        }
-    }
-
-    // Fall back to the hardcoded table.
-    config.effective_model().to_string()
-}

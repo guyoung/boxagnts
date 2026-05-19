@@ -137,7 +137,7 @@ impl Default for QueryConfig {
 impl QueryConfig {
     pub fn from_config(cfg: &Config) -> Self {
         Self {
-            model: cfg.effective_model().to_string(),
+            model: cfg.model.clone().unwrap_or_default(),
             max_tokens: cfg.effective_max_tokens(),
             output_style: cfg.effective_output_style(),
             output_style_prompt: cfg.resolve_output_style_prompt(),
@@ -151,11 +151,11 @@ impl QueryConfig {
     ///
     /// Prefers the best model for the configured provider (from models.dev data)
     /// over the hardcoded defaults.
-    pub fn from_config_with_registry(cfg: &Config, registry: &boxagnts_api::ModelRegistry) -> Self {
+    pub fn from_config_with_registry(cfg: &Config, _registry: &boxagnts_api::ModelRegistry) -> Self {
         // We can't move the Arc here, but we need a clone for the query loop.
         // Callers typically wrap the registry in an Arc already.
         Self {
-            model: boxagnts_api::effective_model_for_config(cfg, registry),
+            model: cfg.model.clone().unwrap_or_default(),
             max_tokens: cfg.effective_max_tokens(),
             output_style: cfg.effective_output_style(),
             output_style_prompt: cfg.resolve_output_style_prompt(),

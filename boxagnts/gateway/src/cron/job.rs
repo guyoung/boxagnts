@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use anyhow::Context;
+use anyhow::{Context, anyhow};
 use serde_json::Value;
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::CancellationToken;
-use tracing::debug;
+//use tracing::debug;
 
 use boxagnts_core::cost::CostTracker;
 use boxagnts_query::{QueryEvent, QueryOutcome};
@@ -38,17 +38,25 @@ impl QuerySessionHandle {
     }
 }
 
-pub async fn execute(
-    prompt: String,
-    model: Option<String>,
-) -> anyhow::Result<QuerySessionHandle>
-{
+pub async fn execute(prompt: String, model: Option<String>) -> anyhow::Result<QuerySessionHandle> {
     let settings = Settings::load().await?;
-    let mut config = settings.effective_config();
+    let mut config = settings.config.clone();
 
     if let Some(ref model) = model {
         config.model = Some(model.clone());
     }
+
+    if config.model.is_none() && config.provider_configs.len() > 0 {
+        let providers: Vec<boxagnts_workspace::config::ProviderConfig> = config.provider_configs.values().cloned().collect();
+
+        let models = providers[0].models.clone();
+
+        if models.len() > 0 {
+            config.model = Some(models[0].id.clone());
+        }
+
+    }
+
     config.verbose = false;
     config.output_format = boxagnts_workspace::config::OutputFormat::StreamJson;
     config.disable_claude_mds = false;
@@ -75,11 +83,6 @@ pub async fn execute(
     }
     let system_prompt = system_parts.join("\n\n");
 
-    let active_provider = config.selected_provider_id();
-    debug!("active_provider = {}", active_provider);
-
-    config.provider = Some(active_provider.to_string());
-
     let (api_key, use_bearer_auth) = (String::new(), false);
 
     let client_config = boxagnts_api::client::ClientConfig {
@@ -94,13 +97,11 @@ pub async fn execute(
             .context("Failed to create API client")?,
     );
 
-    let provider_registry =
-        boxagnts_api::ProviderRegistry::from_config(&config, client_config).await;
-
-
+    let provider_registry = boxagnts_api::ProviderRegistry::from_config(&config, client_config)
+        .await
+        .map_err(|e| anyhow!("{:?}", e))?;
 
     let cost_tracker = CostTracker::new();
-
 
     let current_turn = Arc::new(std::sync::atomic::AtomicUsize::new(0));
 
@@ -156,7 +157,6 @@ pub async fn execute(
             cost_tracker,
             prompt,
             cancel_for_inner,
-
         )
         .await;
 
@@ -176,8 +176,7 @@ async fn execute_inner(
     cost_tracker: Arc<CostTracker>,
     prompt: String,
     cancel: CancellationToken,
-) -> anyhow::Result<Value>
-{
+) -> anyhow::Result<Value> {
     let messages = vec![boxagnts_core::types::Message::user(prompt)];
 
     let (event_tx, mut event_rx) = mpsc::unbounded_channel::<QueryEvent>();
@@ -215,9 +214,7 @@ async fn execute_inner(
 
     while let Some(_event) = event_rx.recv().await {}
 
-
     let messages = msgs_arc.lock().await.clone();
-
 
     let outcome = query_handle.await.unwrap_or(QueryOutcome::Error(
         boxagnts_core::error::ClaudeError::Other("Job query task panicked".to_string()),

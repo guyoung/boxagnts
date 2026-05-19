@@ -1,6 +1,7 @@
 ---
 name: weather-forecast
 description: Query a 3-day weather forecast for a given city using the wttr.in API, including daily high/low temperatures and conditions.
+when_to_use: Use this skill when the user asks for the current or upcoming weather in a specific city, especially when they need a 3‑day forecast with daily high/low temperatures and general conditions. Trigger on queries like “weather in London”, “forecast for Tokyo”, or “will it rain in Paris this week?”.
 tools: WebFetch, Read
 args:
   - name: city

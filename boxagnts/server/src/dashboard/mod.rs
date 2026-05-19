@@ -5,6 +5,7 @@ pub mod ws;
 mod site;
 mod skill;
 mod tool;
+mod provider;
 
 use std::path::PathBuf;
 
@@ -44,12 +45,14 @@ pub async fn crate_router(
     ws_state: ws::WSAppState,
     cron_state: boxagnts_gateway::cron::app_state::AppState,
     site_state: boxagnts_gateway::site::app_state::AppState,
+    config_state: boxagnts_gateway::config::app_state::AppState,
 ) -> Router {
     let assets = get_dashboard_dir().await.join("assets");
     let assets = ServeDir::new(assets.clone());
 
     let cron_router = create_cron_router();
     let site_router = create_site_router();
+    let config_router = create_config_router();
 
     // Create router with API endpoints
     let router = Router::new()
@@ -99,6 +102,9 @@ pub async fn crate_router(
         //
         .nest("/api/site", site_router)
         .with_state(site_state)
+        //
+        .nest("/api/config", config_router)
+        .with_state(config_state)
         // ws
         .route("/ws", get(ws::handle_websocket))
         .with_state(ws_state)
@@ -125,6 +131,21 @@ fn create_site_router() -> Router<boxagnts_gateway::site::app_state::AppState> {
         .route("/sites/create_site", post(site::create_site))
         .route("/sites/update_site/{id}", post(site::update_site))
         .route("/sites/delete_site/{id}", post(site::delete_site))
+}
+
+fn create_config_router() -> Router<boxagnts_gateway::config::app_state::AppState> {
+    Router::new()
+        .route("/providers", get(provider::list_providers))
+        .route("/providers/{id}", get(provider::get_provider))
+        .route("/providers/create_provider", post(provider::create_provider))
+        .route("/providers/update_provider/{id}", post(provider::update_provider))
+        .route("/providers/delete_provider/{id}", post(provider::delete_provider))
+        .route("/provider_options", get(provider::list_provider_options))
+        .route("/providers/{provider_id}/create_model", post(provider::create_provider_model))
+        .route("/providers/{provider_id}/update_model/{model_id}", post(provider::update_provider_model))
+        .route("/providers/{provider_id}/delete_model/{model_id}", post(provider::delete_provider_model))
+        .route("/update_default_model", post(provider::update_default_model))
+        .route("/get_models", get(provider::get_models))
 }
 
 

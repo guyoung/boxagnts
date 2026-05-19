@@ -39,13 +39,7 @@ pub struct HookEntry {
 
 // ---- AgentDefinition -------------------------------------------------
 
-fn default_agent_access() -> String {
-    "full".to_string()
-}
 
-fn default_true() -> bool {
-    true
-}
 
 /// Definition of a named agent with per-agent model, permissions,
 /// temperature, and system prompt.
@@ -204,12 +198,7 @@ pub struct ManagedAgentConfig {
     pub executor_isolation: bool,
 }
 
-fn default_executor_max_turns() -> u32 {
-    10
-}
-fn default_max_concurrent_executors() -> u32 {
-    4
-}
+
 
 /// A named preset for common manager-executor configurations.
 pub struct ManagedAgentPreset {
@@ -283,46 +272,48 @@ pub fn builtin_managed_agent_presets() -> Vec<ManagedAgentPreset> {
 
 // ---- ProviderConfig --------------------------------------------------
 
-/// Per-provider configuration: API keys, base URLs, and options.
+/// Provider configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderConfig {
-    /// API key (overrides environment variable)
-    pub api_key: Option<String>,
+    ///
+    pub id: String,
+    ///
+    pub name: String,
     /// Override the default base URL for this provider
+    #[serde(default)]
     pub api_base: Option<String>,
     /// Whether this provider is enabled (default: true)
     #[serde(default = "default_true")]
     pub enabled: bool,
-    /// Model ID whitelist (empty = allow all)
+    ///
     #[serde(default)]
-    pub models_whitelist: Vec<String>,
-    /// Model ID blacklist
-    #[serde(default)]
-    pub models_blacklist: Vec<String>,
+    pub models: Vec<ModelConfig>,
     /// Provider-specific options (passed through to provider implementation)
     #[serde(default)]
     pub options: HashMap<String, serde_json::Value>,
 }
 
-impl Default for ProviderConfig {
-    fn default() -> Self {
-        Self {
-            api_key: None,
-            api_base: None,
-            enabled: true,
-            models_whitelist: Vec::new(),
-            models_blacklist: Vec::new(),
-            options: HashMap::new(),
-        }
-    }
+
+
+///
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelConfig {
+    pub id: String,
+    pub name: String,
+    #[serde(default = "default_context_window")]
+    pub context_window: u32,
+    #[serde(default = "default_max_tokens")]
+    pub max_tokens: u32,
+    #[serde(default = "default_temperature")]
+    pub temperature: f32,
 }
+
 
 // ---- Config ----------------------------------------------------------
 
 /// Top-level configuration values, merged from CLI args + settings file + env.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Config {
-    pub api_key: Option<String>,
     pub model: Option<String>,
     pub max_tokens: Option<u32>,
     pub permission_mode: PermissionMode,
@@ -334,7 +325,7 @@ pub struct Config {
     pub verbose: bool,
     pub output_format: OutputFormat,
     pub mcp_servers: Vec<McpServerConfig>,
-    #[serde(default)]
+    // #[serde(default)]
     // pub lsp_servers: Vec<boxagnts_core::lsp::LspServerConfig>,
     pub allowed_tools: Vec<String>,
     pub disallowed_tools: Vec<String>,
@@ -354,10 +345,7 @@ pub struct Config {
     /// Event hooks: map of event → list of hook commands.
     #[serde(default)]
     pub hooks: HashMap<HookEvent, Vec<HookEntry>>,
-    /// Active provider ID (default: "anthropic")
-    #[serde(default)]
-    pub provider: Option<String>,
-    /// Per-provider configurations
+    // /// Per-provider configurations
     #[serde(default)]
     pub provider_configs: HashMap<String, ProviderConfig>,
     /// Formatter configurations (copied from Settings on load).
@@ -380,9 +368,7 @@ pub struct Config {
     pub allowed_outbound_hosts: Vec<String>,
 }
 
-fn default_max_auto_turns() -> u32 {
-    5
-}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -427,9 +413,7 @@ pub struct McpServerConfig {
     pub server_type: String,
 }
 
-fn default_mcp_type() -> String {
-    "stdio".to_string()
-}
+
 
 // ---- SkillsConfig ----------------------------------------------------
 
@@ -471,27 +455,6 @@ pub struct Settings {
     /// App version at last launch — used to detect upgrades and show release notes.
     #[serde(default, rename = "lastSeenVersion")]
     pub last_seen_version: Option<String>,
-    /// Active provider ID at the settings level (e.g. "anthropic", "openai").
-    #[serde(default)]
-    pub provider: Option<String>,
-    /// Per-provider configurations stored in settings.json.
-    #[serde(default)]
-    pub providers: HashMap<String, ProviderConfig>,
-    /// User-defined slash command templates.
-    #[serde(default)]
-    pub commands: HashMap<String, CommandTemplate>,
-    /// Formatter configurations keyed by a user-defined name.
-    #[serde(default)]
-    pub formatter: HashMap<String, FormatterConfig>,
-    /// Named agent definitions (overrides built-in defaults).
-    #[serde(default)]
-    pub agents: HashMap<String, AgentDefinition>,
-    /// Skill-discovery configuration (extra paths and git URLs).
-    #[serde(default)]
-    pub skills: SkillsConfig,
-    /// Managed agent (manager-executor) configuration.
-    #[serde(default)]
-    pub managed_agents: Option<ManagedAgentConfig>,
 }
 
 /// A user-defined slash command template.
@@ -576,46 +539,10 @@ pub fn default_agents() -> HashMap<String, AgentDefinition> {
 }
 
 impl Config {
-    pub fn selected_provider_id(&self) -> &str {
+    pub fn selected_provider_id(&self) -> Option<String> {
         self.model
             .as_deref()
-            .and_then(|model| model.split_once('/').map(|(provider, _)| provider))
-            .or_else(|| self.provider.as_deref())
-            .unwrap_or("anthropic")
-    }
-
-    /// Resolve the effective model, falling back to a provider-appropriate default.
-    ///
-    /// When a non-Anthropic provider is active and no model is explicitly set,
-    /// returns that provider's canonical default model instead of `DEFAULT_MODEL`
-    /// (which is Claude-specific).
-    pub fn effective_model(&self) -> &str {
-        if let Some(ref m) = self.model {
-            return m;
-        }
-        match self.provider.as_deref() {
-            Some("openai") => "gpt-4o",
-            Some("google") => "gemini-2.5-flash",
-            Some("groq") => "llama-3.3-70b-versatile",
-            Some("cerebras") => "llama-3.3-70b",
-            Some("deepseek") => "deepseek-v4-pro",
-            Some("mistral") => "mistral-large-latest",
-            Some("xai") => "grok-2",
-            Some("openrouter") => "anthropic/claude-sonnet-4",
-            Some("togetherai") | Some("together-ai") => "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-            Some("perplexity") => "sonar-pro",
-            Some("cohere") => "command-r-plus",
-            Some("deepinfra") => "meta-llama/Llama-3.3-70B-Instruct",
-            Some("github-copilot") => "gpt-4o",
-            Some("ollama") => "llama3.2",
-            Some("lmstudio") => "default",
-            Some("llamacpp") => "default",
-            Some("custom-openai") => "default",
-            Some("azure") => "gpt-4o",
-            Some("amazon-bedrock") => "anthropic.claude-sonnet-4-6-v1",
-            Some("venice") => "llama-3.3-70b",
-            _ => boxagnts_core::constants::DEFAULT_MODEL, // Anthropic default
-        }
+            .and_then(|model| model.split_once('/').map(|(provider, _)| provider.to_string()))
     }
 
     /// Resolve the effective max-tokens.
@@ -658,19 +585,6 @@ impl Config {
             return None;
         }
 
-        if provider_id == self.selected_provider_id() {
-            if let Some(key) = self.api_key.clone().filter(|key| !key.is_empty()) {
-                return Some(key);
-            }
-        }
-
-        if let Some(key) = provider_cfg
-            .and_then(|provider| provider.api_key.clone())
-            .filter(|key| !key.is_empty())
-        {
-            return Some(key);
-        }
-
         if let Some(key) = api_key_env_vars_for_provider(provider_id)
             .iter()
             .find_map(|var| std::env::var(var).ok().filter(|v| !v.is_empty()))
@@ -679,32 +593,34 @@ impl Config {
         }
 
         futures::executor::block_on(async {
-            crate::auth_store::AuthStore::load()
-                .await
-                .api_key_for(provider_id)
+            if let Ok(auth_store) = crate::auth_store::AuthStore::load().await {
+                auth_store.api_key_for(provider_id)
+            } else {
+                return None;
+            }
         })
     }
 
+    /***
     pub fn resolve_anthropic_api_key(&self) -> Option<String> {
         self.api_key
             .clone()
             .filter(|key| !key.is_empty())
-            .or_else(|| {
-                self.provider_configs
-                    .get("anthropic")
-                    .and_then(|provider| provider.api_key.clone())
-                    .filter(|key| !key.is_empty())
-            })
             .or_else(|| {
                 api_key_env_vars_for_provider("anthropic")
                     .iter()
                     .find_map(|var| std::env::var(var).ok().filter(|v| !v.is_empty()))
             })
     }
+    ***/
 
     /// Resolve the API key for the active provider.
     pub async fn resolve_api_key(&self) -> Option<String> {
-        self.resolve_provider_api_key(self.selected_provider_id())
+        if let Some(provider_id) = self.selected_provider_id() {
+            self.resolve_provider_api_key(&provider_id)
+        } else {
+            None
+        }
     }
 
     /// Async variant: also checks `<cwd>/oauth_tokens.json`.
@@ -713,8 +629,10 @@ impl Config {
     /// - For Claude.ai OAuth flow: credential is the access token, bearer=true.
     /// Silently attempts token refresh when the access token is expired.
     pub async fn resolve_auth_async(&self) -> Option<(String, bool)> {
-        if self.selected_provider_id() != "anthropic" {
-            return self.resolve_api_key().await.map(|key| (key, false));
+        if let Some(provider_id) = self.selected_provider_id() {
+            if provider_id != "anthropic" {
+                return self.resolve_api_key().await.map(|key| (key, false));
+            }
         }
 
         /***
@@ -812,8 +730,12 @@ impl Config {
 
     /// Resolve the API base URL for the active provider.
     pub fn resolve_api_base(&self) -> String {
-        self.resolve_provider_api_base(self.selected_provider_id())
-            .unwrap_or_else(|| self.resolve_anthropic_api_base())
+        if let Some(provider_id) = self.selected_provider_id() {
+            self.resolve_provider_api_base(&provider_id)
+                .unwrap_or_else(|| self.resolve_anthropic_api_base())
+        } else {
+            self.resolve_anthropic_api_base()
+        }
     }
 }
 
@@ -821,6 +743,23 @@ impl Settings {
     /// Full path to settings JSON file.
     pub async fn get_settings_path() -> PathBuf {
         crate::path::get_saved_dir().await.join("settings.json")
+    }
+
+    pub async fn init() -> anyhow::Result<()> {
+        let path = Self::get_settings_path().await;
+
+        if !path.exists() {
+            if let Some(parent) = path.parent() {
+                tokio::fs::create_dir_all(parent).await?;
+            }
+
+            let settings: Settings = Settings::default();
+
+            let content = serde_json::to_string_pretty(&settings)?;
+            tokio::fs::write(&path, content).await?;
+        }
+
+        Ok(())
     }
 
     /// Load settings from disk, returning defaults when the file is missing.
@@ -850,56 +789,6 @@ impl Settings {
         tokio::fs::write(&path, content).await?;
 
         Ok(())
-    }
-
-    /// Return the effective `Config`, merging top-level provider settings
-    /// into the embedded `config` field.
-    ///
-    /// - `settings.provider` wins over `settings.config.provider` (if set).
-    /// - `settings.providers` entries are merged into `config.provider_configs`,
-    ///   with the embedded config values taking precedence for keys already present.
-    pub fn effective_config(&self) -> Config {
-        let mut config = self.config.clone();
-        // Top-level `provider` key overrides config.provider when set.
-        if self.provider.is_some() && config.provider.is_none() {
-            config.provider = self.provider.clone();
-        }
-        // Merge top-level `providers` map into config.provider_configs.
-        for (id, pc) in &self.providers {
-            config
-                .provider_configs
-                .entry(id.clone())
-                .or_insert_with(|| pc.clone());
-        }
-        // Copy top-level formatters and commands into config.
-        for (k, v) in &self.formatter {
-            config
-                .formatter
-                .entry(k.clone())
-                .or_insert_with(|| v.clone());
-        }
-        for (k, v) in &self.commands {
-            config
-                .commands
-                .entry(k.clone())
-                .or_insert_with(|| v.clone());
-        }
-        // Copy top-level agent definitions into config.
-        for (k, v) in &self.agents {
-            config.agents.entry(k.clone()).or_insert_with(|| v.clone());
-        }
-        // Copy skills config into effective config (paths and urls merged).
-        for p in &self.skills.paths {
-            if !config.skills.paths.contains(p) {
-                config.skills.paths.push(p.clone());
-            }
-        }
-        for u in &self.skills.urls {
-            if !config.skills.urls.contains(u) {
-                config.skills.urls.push(u.clone());
-            }
-        }
-        config
     }
 }
 
@@ -981,3 +870,33 @@ pub fn substitute_env_vars(s: &str) -> String {
     }
     result
 }
+
+
+fn default_agent_access() -> String {
+    "full".to_string()
+}
+
+fn default_true() -> bool {
+    true
+}
+
+fn default_executor_max_turns() -> u32 {
+    10
+}
+
+fn default_max_concurrent_executors() -> u32 {
+    4
+}
+
+
+fn default_max_auto_turns() -> u32 {
+    5
+}
+
+fn default_mcp_type() -> String {
+    "stdio".to_string()
+}
+
+fn default_context_window() -> u32 { 4096 }
+fn default_max_tokens() -> u32 { 2048 }
+fn default_temperature() -> f32 { 0.7 }

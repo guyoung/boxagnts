@@ -25,29 +25,42 @@ pub async fn start_web_server(port: Option<u16>) -> Result<(), Box<dyn std::erro
 /// Create the web server
 async fn create_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
 
+    boxagnts_workspace::config::Settings::init().await?;
+    boxagnts_workspace::auth_store::AuthStore::init().await?;
+
+
+    boxagnts_gateway::cron::store::init_storage().await?;
+    boxagnts_gateway::site::store::init_storage().await?;
+
     let ws_state = crate::dashboard::ws::WSAppState {
         ws_instances: Arc::new(Mutex::new(HashMap::new())),
         running_queries: Arc::new(Mutex::new(HashMap::new())),
     };
 
-    boxagnts_gateway::cron::store::init_storage().await?;
-    boxagnts_gateway::site::store::init_storage().await?;
+    let settings = boxagnts_workspace::config::Settings::load().await?;
+    let config_state = boxagnts_gateway::config::app_state::AppState::new(RwLock::new(settings));
+
 
     let jobs = boxagnts_gateway::cron::store::load_jobs().await?;
-    let sites = boxagnts_gateway::site::store::load_sites().await?;
 
     let cron_state = boxagnts_gateway::cron::app_state::AppState {
         jobs: Arc::new(RwLock::new(jobs)),
         job_map: Arc::new(RwLock::new(HashMap::new())),
     };
 
+    let sites = boxagnts_gateway::site::store::load_sites().await?;
+
     let site_state = boxagnts_gateway::site::app_state::AppState {
         sites: Arc::new(RwLock::new(sites)),
         site_map: Arc::new(RwLock::new(HashMap::new())),
     };
 
+
+
     boxagnts_gateway::cron::scheduler::init_scheduler().await?;
     boxagnts_gateway::cron::scheduler::reload_all_jobs(cron_state.clone()).await?;
+
+
 
 
 
@@ -62,7 +75,7 @@ async fn create_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> 
     let app = Router::new()
         .route("/", get(sites_index))
         .route("/index.html", get(sites_index))
-        .nest("/dashboard", crate::dashboard::crate_router(ws_state, cron_state, site_state ).await)
+        .nest("/dashboard", crate::dashboard::crate_router(ws_state, cron_state, site_state, config_state ).await)
         .route_service(
             "/sites/{site}/{*path}",
             any_service(crate::sites::make_dynamic_service()),

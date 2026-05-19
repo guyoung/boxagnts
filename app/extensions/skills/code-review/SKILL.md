@@ -1,6 +1,7 @@
 ---
 name: code-review
 description: Perform an in-depth code review of changed files and produce a structured report. Defaults to reviewing staged changes.
+when_to_use: Use when the user asks to review code changes, requests a structured quality assessment covering logic, security, performance, and maintainability, or wants a detailed report with severity-ranked issues and fix suggestions. Defaults to reviewing staged changes but can target a specific file or directory.
 tools: read, bash, glob, grep
 args:
   - name: target

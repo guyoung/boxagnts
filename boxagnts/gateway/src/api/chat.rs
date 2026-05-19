@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use anyhow::Context;
+use anyhow::{Context, anyhow};
 use futures_util::future::BoxFuture;
 use serde_json::Value;
 use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::CancellationToken;
-use tracing::debug;
+//use tracing::debug;
 use uuid::Uuid;
 
 use boxagnts_core::cost::CostTracker;
@@ -50,13 +50,24 @@ where
     OutCb: Fn(Value) -> BoxFuture<'static, ()> + Send + Sync + 'static,
     ErrCb: Fn(Value) -> BoxFuture<'static, ()> + Send + Sync + 'static,
 {
-
     let settings = Settings::load().await?;
-    let mut config = settings.effective_config();
+    let mut config = settings.config.clone();
 
     if let Some(ref model) = model {
         config.model = Some(model.clone());
     }
+    
+    if config.model.is_none() && config.provider_configs.len() > 0 {
+        let providers: Vec<boxagnts_workspace::config::ProviderConfig> = config.provider_configs.values().cloned().collect();
+        
+        let models = providers[0].models.clone();
+        
+        if models.len() > 0 {
+            config.model = Some(models[0].id.clone());
+        }
+        
+    }
+    
     config.verbose = false;
     config.output_format = boxagnts_workspace::config::OutputFormat::StreamJson;
     config.disable_claude_mds = false;
@@ -83,25 +94,6 @@ where
     }
     let system_prompt = system_parts.join("\n\n");
 
-    let active_provider = config.selected_provider_id();
-    debug!("active_provider = {}", active_provider);
-
-    config.provider = Some(active_provider.to_string());
-
-
-    /***
-    let (api_key, use_bearer_auth) = if active_provider == "anthropic" {
-        match config.resolve_anthropic_auth_async().await {
-            Some(auth) => auth,
-            None => {
-                anyhow::bail!("No API key found. Options:");
-            }
-        }
-    } else {
-        (String::new(), false)
-    };
-    ***/
-
     let (api_key, use_bearer_auth) = (String::new(), false);
 
     let client_config = boxagnts_api::client::ClientConfig {
@@ -116,8 +108,9 @@ where
             .context("Failed to create API client")?,
     );
 
-    let provider_registry =
-        boxagnts_api::ProviderRegistry::from_config(&config, client_config).await;
+    let provider_registry = boxagnts_api::ProviderRegistry::from_config(&config, client_config)
+        .await
+        .map_err(|e| anyhow!("{:?}", e))?;
 
     /***
     let permission_manager = Arc::new(std::sync::Mutex::new(
@@ -194,7 +187,7 @@ where
     // Build model registry for dynamic model/provider resolution.
     // The registry is pre-populated with a hardcoded snapshot and enriched
     // from the models.dev cache if available.
-    let model_registry = load_cached_model_registry();
+    let model_registry = super::load_cached_model_registry();
 
     let mut query_config =
         boxagnts_query::QueryConfig::from_config_with_registry(&config, &model_registry);
@@ -246,7 +239,7 @@ async fn execute_inner<OutCb, ErrCb>(
     query_config: boxagnts_query::QueryConfig,
     cost_tracker: Arc<CostTracker>,
     session_id: String,
-    model_registry: Arc<boxagnts_api::ModelRegistry>,
+    _model_registry: Arc<boxagnts_api::ModelRegistry>,
     prompt: String,
     cancel: CancellationToken,
     out_callback_fn: OutCb,
@@ -260,7 +253,7 @@ where
         Ok(session) => session,
         Err(_e) => {
             let mut session = boxagnts_workspace::history::ConversationSession::new(
-                boxagnts_api::effective_model_for_config(&config, &model_registry),
+                config.model.clone().unwrap_or_default(),
             );
             session.id = session_id.clone();
             session
@@ -435,12 +428,4 @@ where
     };
 
     Ok(val)
-}
-
-fn load_cached_model_registry() -> Arc<boxagnts_api::ModelRegistry> {
-    let mut reg = boxagnts_api::ModelRegistry::new();
-
-    reg.load_cache();
-
-    Arc::new(reg)
 }

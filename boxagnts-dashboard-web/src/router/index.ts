@@ -50,8 +50,25 @@ const router = createRouter({
     },
     {
       path: '/settings',
-      name: 'settings',
       component: () => import('@/views/SettingsPage.vue'),
+      redirect: '/settings/model',
+      children: [
+        {
+          path: 'prompt',
+          name: 'settings-prompt',
+          component: () => import('@/views/SettingsPromptPage.vue'),
+        },
+        {
+          path: 'model',
+          name: 'settings-model',
+          component: () => import('@/views/SettingsModelPage.vue'),
+        },
+        {
+          path: 'security',
+          name: 'settings-security',
+          component: () => import('@/views/SettingsSecurityPage.vue'),
+        },
+      ],
     },
   ],
 })

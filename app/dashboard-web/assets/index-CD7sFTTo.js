@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ChatPage-HUV4quaB.js","assets/ChatPage-BCAXiHPr.css","assets/McpPage-Bum7OHpF.js","assets/McpPage-DjyTiLVM.css","assets/FilePage-BBl8GwbM.js","assets/FilePage-DiXuUVle.css","assets/CronsPage-UC978E30.js","assets/CronsPage-D1csH-xB.css","assets/AgentsPage-CfqTkYvo.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-D58mseOi.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-DvriBRRY.js","assets/ToolsPage-BLqpw-br.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ChatPage-Z2LiO0qL.js","assets/ChatPage-Cnktm_64.css","assets/McpPage-CXT05cNi.js","assets/McpPage-DjyTiLVM.css","assets/FilePage-D96Ontlb.js","assets/FilePage-DiXuUVle.css","assets/CronsPage-D5CiQYL4.js","assets/CronsPage-D1csH-xB.css","assets/AgentsPage-Cro4BIt_.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-Cenoo-Lu.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-Cc4f-Ioq.js","assets/ToolsPage-BLqpw-br.css","assets/SettingsPromptPage-BJZxxhlH.js","assets/settings-jnLiHyJO.js","assets/SettingsModelPage-DqKlgKLH.js","assets/SettingsSecurityPage-BMvZDzzx.js"])))=>i.map(i=>d[i]);
 var _a;
 (function polyfill() {
   const relList = document.createElement("link").relList;
@@ -45853,9 +45853,100 @@ const api = {
   mcpRemove: (name) => apiCall("mcp_remove", { name }),
   mcpTestConnection: (name) => apiCall("mcp_test_connection", { name }),
   mcpAddFromClaudeDesktop: (scope) => apiCall("mcp_add_from_claude_desktop", { scope }),
-  // --- Settings APIs ---
-  getSettings: safeCall(() => apiCall("get_settings"), {}),
-  saveSettings: (settings) => apiCall("save_settings", { settings }),
+  // --- Update Default Model API ---
+  async updateDefaultModel(id) {
+    const response = await fetch("/dashboard/api/config/update_default_model", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    if (!response.ok) throw new Error("Failed to update default model");
+  },
+  // --- Get Available Models API ---
+  async getModels() {
+    const response = await fetch("/dashboard/api/config/get_models", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!response.ok) throw new Error("Failed to fetch models");
+    return await response.json();
+  },
+  // --- Config Providers APIs ---
+  async getConfigProviders() {
+    const response = await fetch("/dashboard/api/config/providers", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!response.ok) throw new Error("Failed to fetch providers");
+    return await response.json();
+  },
+  async getConfigProvider(id) {
+    const response = await fetch(`/dashboard/api/config/providers/${id}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!response.ok) throw new Error("Failed to fetch provider");
+    return await response.json();
+  },
+  async createConfigProvider(data) {
+    const response = await fetch("/dashboard/api/config/providers/create_provider", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error("Failed to create provider");
+    return await response.json();
+  },
+  async updateConfigProvider(id, data) {
+    const response = await fetch(`/dashboard/api/config/providers/update_provider/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error("Failed to update provider");
+    return await response.json();
+  },
+  async deleteConfigProvider(id) {
+    const response = await fetch(`/dashboard/api/config/providers/delete_provider/${id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!response.ok) throw new Error("Failed to delete provider");
+  },
+  async getProviderOptions() {
+    const response = await fetch("/dashboard/api/config/provider_options", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!response.ok) throw new Error("Failed to fetch provider options");
+    return await response.json();
+  },
+  // --- Provider Model APIs ---
+  async createProviderModel(providerId, data) {
+    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/create_model`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error("Failed to create model");
+    return await response.json();
+  },
+  async updateProviderModel(providerId, modelId, data) {
+    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/update_model/${encodeURIComponent(modelId)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error("Failed to update model");
+    return await response.json();
+  },
+  async deleteProviderModel(providerId, modelId) {
+    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/delete_model/${encodeURIComponent(modelId)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!response.ok) throw new Error("Failed to delete model");
+  },
   // --- File/Folder APIs ---
   async getRootSubFolders() {
     await delay(200);
@@ -47676,52 +47767,69 @@ const router = createRouter({
     {
       path: "/",
       name: "chat",
-      component: () => __vitePreload(() => import("./ChatPage-HUV4quaB.js"), true ? __vite__mapDeps([0,1]) : void 0)
+      component: () => __vitePreload(() => import("./ChatPage-Z2LiO0qL.js"), true ? __vite__mapDeps([0,1]) : void 0)
     },
     {
       path: "/usage",
       name: "usage",
-      component: () => __vitePreload(() => import("./UsagePage-DohojWKQ.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./UsagePage-ozxHw5LQ.js"), true ? [] : void 0)
     },
     {
       path: "/mcp",
       name: "mcp",
-      component: () => __vitePreload(() => import("./McpPage-Bum7OHpF.js"), true ? __vite__mapDeps([2,3]) : void 0)
+      component: () => __vitePreload(() => import("./McpPage-CXT05cNi.js"), true ? __vite__mapDeps([2,3]) : void 0)
     },
     {
       path: "/files",
       name: "files",
-      component: () => __vitePreload(() => import("./FilePage-BBl8GwbM.js"), true ? __vite__mapDeps([4,5]) : void 0)
+      component: () => __vitePreload(() => import("./FilePage-D96Ontlb.js"), true ? __vite__mapDeps([4,5]) : void 0)
     },
     {
       path: "/sites",
       name: "sites",
-      component: () => __vitePreload(() => import("./SitesPage--n8G9tE8.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./SitesPage-CevGyQSP.js"), true ? [] : void 0)
     },
     {
       path: "/crons",
       name: "crons",
-      component: () => __vitePreload(() => import("./CronsPage-UC978E30.js"), true ? __vite__mapDeps([6,7]) : void 0)
+      component: () => __vitePreload(() => import("./CronsPage-D5CiQYL4.js"), true ? __vite__mapDeps([6,7]) : void 0)
     },
     {
       path: "/agents",
       name: "agents",
-      component: () => __vitePreload(() => import("./AgentsPage-CfqTkYvo.js"), true ? __vite__mapDeps([8,9]) : void 0)
+      component: () => __vitePreload(() => import("./AgentsPage-Cro4BIt_.js"), true ? __vite__mapDeps([8,9]) : void 0)
     },
     {
       path: "/skills",
       name: "skills",
-      component: () => __vitePreload(() => import("./SkillsPage-D58mseOi.js"), true ? __vite__mapDeps([10,11]) : void 0)
+      component: () => __vitePreload(() => import("./SkillsPage-Cenoo-Lu.js"), true ? __vite__mapDeps([10,11]) : void 0)
     },
     {
       path: "/tools",
       name: "tools",
-      component: () => __vitePreload(() => import("./ToolsPage-DvriBRRY.js"), true ? __vite__mapDeps([12,13]) : void 0)
+      component: () => __vitePreload(() => import("./ToolsPage-Cc4f-Ioq.js"), true ? __vite__mapDeps([12,13]) : void 0)
     },
     {
       path: "/settings",
-      name: "settings",
-      component: () => __vitePreload(() => import("./SettingsPage-BhiCQI13.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./SettingsPage-CkoDCssM.js"), true ? [] : void 0),
+      redirect: "/settings/model",
+      children: [
+        {
+          path: "prompt",
+          name: "settings-prompt",
+          component: () => __vitePreload(() => import("./SettingsPromptPage-BJZxxhlH.js"), true ? __vite__mapDeps([14,15]) : void 0)
+        },
+        {
+          path: "model",
+          name: "settings-model",
+          component: () => __vitePreload(() => import("./SettingsModelPage-DqKlgKLH.js"), true ? __vite__mapDeps([16,15]) : void 0)
+        },
+        {
+          path: "security",
+          name: "settings-security",
+          component: () => __vitePreload(() => import("./SettingsSecurityPage-BMvZDzzx.js"), true ? __vite__mapDeps([17,15]) : void 0)
+        }
+      ]
     }
   ]
 });
@@ -47793,74 +47901,78 @@ app.use(router);
 app.use(vuetify);
 app.mount("#app");
 export {
-  ref as $,
-  VSpacer as A,
-  VSwitch as B,
-  VTextField as C,
-  VTextarea as D,
-  VToolbar as E,
+  onBeforeUnmount as $,
+  VSkeletonLoader as A,
+  VSpacer as B,
+  VSwitch as C,
+  VTab as D,
+  VTabs as E,
   Fragment as F,
-  api as G,
-  computed as H,
-  createBaseVNode as I,
-  createBlock as J,
-  createCommentVNode as K,
-  createElementBlock as L,
-  createTextVNode as M,
-  createVNode as N,
-  defineComponent$1 as O,
-  defineStore as P,
-  fileApi as Q,
-  h as R,
-  inject$1 as S,
-  mergeProps as T,
-  nextTick as U,
+  VTextField as G,
+  VTextarea as H,
+  VToolbar as I,
+  api as J,
+  computed as K,
+  createBaseVNode as L,
+  createBlock as M,
+  createCommentVNode as N,
+  createElementBlock as O,
+  createTextVNode as P,
+  createVNode as Q,
+  defineComponent$1 as R,
+  defineStore as S,
+  fileApi as T,
+  h as U,
   VAlert as V,
-  normalizeClass as W,
-  onBeforeUnmount as X,
-  onMounted as Y,
-  openBlock as Z,
+  inject$1 as W,
+  mergeProps as X,
+  nextTick as Y,
+  normalizeClass as Z,
   _export_sfc as _,
-  VBreadcrumbs as a,
-  renderList as a0,
-  shallowRef as a1,
-  toDisplayString as a2,
-  toRaw as a3,
-  unref as a4,
-  useAppStore as a5,
-  useFileStore as a6,
-  useRoute as a7,
-  useRouter as a8,
-  useSessionStore as a9,
-  vShow as aa,
-  watch as ab,
-  withCtx as ac,
-  withDirectives as ad,
-  withKeys as ae,
-  withModifiers as af,
-  VBreadcrumbsItem as b,
-  VBtn as c,
-  VCard as d,
-  VCardActions as e,
-  VCardItem as f,
-  VCardSubtitle as g,
-  VCardText as h,
-  VCardTitle as i,
-  VCheckbox as j,
-  VChip as k,
-  VCol as l,
-  VDialog as m,
-  VDivider as n,
-  VExpandTransition as o,
-  VIcon as p,
-  VList as q,
-  VListGroup as r,
-  VListItem as s,
-  VListItemSubtitle as t,
-  VListItemTitle as u,
-  VMenu as v,
-  VProgressCircular as w,
-  VRow as x,
-  VSelect as y,
-  VSkeletonLoader as z
+  VAutocomplete as a,
+  onMounted as a0,
+  openBlock as a1,
+  ref as a2,
+  renderList as a3,
+  resolveComponent as a4,
+  shallowRef as a5,
+  toDisplayString as a6,
+  toRaw as a7,
+  unref as a8,
+  useAppStore as a9,
+  useFileStore as aa,
+  useRoute as ab,
+  useRouter as ac,
+  useSessionStore as ad,
+  vShow as ae,
+  watch as af,
+  withCtx as ag,
+  withDirectives as ah,
+  withKeys as ai,
+  withModifiers as aj,
+  VBreadcrumbs as b,
+  VBreadcrumbsItem as c,
+  VBtn as d,
+  VCard as e,
+  VCardActions as f,
+  VCardItem as g,
+  VCardSubtitle as h,
+  VCardText as i,
+  VCardTitle as j,
+  VCheckbox as k,
+  VChip as l,
+  VCol as m,
+  VDialog as n,
+  VDivider as o,
+  VExpandTransition as p,
+  VIcon as q,
+  VList as r,
+  VListGroup as s,
+  VListItem as t,
+  VListItemSubtitle as u,
+  VListItemTitle as v,
+  VMenu as w,
+  VProgressCircular as x,
+  VRow as y,
+  VSelect as z
 };

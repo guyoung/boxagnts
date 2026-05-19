@@ -1,6 +1,7 @@
 ---
 name: css-refactor-advisor
 description: Analyze a given style file or component directory, identify redundancy, inefficiency, and maintainability issues, and suggest optimizations.
+when_to_use: Use this skill when you need to review CSS/SCSS code for quality issues, prepare for a style system refactor, reduce technical debt in styling, or improve performance and maintainability of a component's styles. It is particularly helpful before merging large style changes, onboarding new team members to a styling codebase, or diagnosing specific problems like specificity wars, duplicate code, or scattered responsive breakpoints.
 tools: read, glob, grep
 args:
   - name: target

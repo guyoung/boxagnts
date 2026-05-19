@@ -1,157 +1,148 @@
-import { P as defineStore, $ as ref, G as api, O as defineComponent, a5 as useAppStore, Y as onMounted, L as createElementBlock, I as createBaseVNode, N as createVNode, ac as withCtx, p as VIcon, c as VBtn, x as VRow, a4 as unref, J as createBlock, K as createCommentVNode, m as VDialog, Z as openBlock, M as createTextVNode, F as Fragment, a0 as renderList, d as VCard, f as VCardItem, i as VCardTitle, a2 as toDisplayString, g as VCardSubtitle, h as VCardText, k as VChip, e as VCardActions, B as VSwitch, A as VSpacer, l as VCol, C as VTextField, y as VSelect, D as VTextarea, z as VSkeletonLoader, _ as _export_sfc } from "./index-orSBHcqs.js";
-const useAgentStore = defineStore("agents", () => {
-  const agents = ref([]);
+import { S as defineStore, a2 as ref, J as api, R as defineComponent, a9 as useAppStore, a0 as onMounted, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, d as VBtn, y as VRow, a8 as unref, M as createBlock, N as createCommentVNode, n as VDialog, a1 as openBlock, P as createTextVNode, F as Fragment, a3 as renderList, e as VCard, g as VCardItem, j as VCardTitle, a6 as toDisplayString, h as VCardSubtitle, i as VCardText, f as VCardActions, C as VSwitch, B as VSpacer, m as VCol, G as VTextField, z as VSelect, H as VTextarea, A as VSkeletonLoader, _ as _export_sfc } from "./index-CD7sFTTo.js";
+const useSkillStore = defineStore("skills", () => {
+  const skills = ref([]);
   const loading = ref(false);
-  async function fetchAgents() {
+  async function fetchSkills() {
     loading.value = true;
     try {
-      agents.value = await api.getAgents();
+      skills.value = await api.getSkills();
     } catch (e) {
-      console.error("Failed to fetch agents:", e);
-      agents.value = [];
+      console.error("Failed to fetch skills:", e);
+      skills.value = [];
     } finally {
       loading.value = false;
     }
   }
-  async function addAgent(data) {
-    const agent = await api.createAgent(data);
-    agents.value.push(agent);
-    return agent;
+  async function addSkill(data) {
+    const skill = await api.createSkill(data);
+    skills.value.push(skill);
+    return skill;
   }
-  async function updateAgent(id, data) {
-    const agent = await api.updateAgent(id, data);
-    const idx = agents.value.findIndex((a) => a.id === id);
+  async function updateSkill(id, data) {
+    const skill = await api.updateSkill(id, data);
+    const idx = skills.value.findIndex((s) => s.id === id);
     if (idx >= 0) {
-      agents.value[idx] = agent;
+      skills.value[idx] = skill;
     }
-    return agent;
+    return skill;
   }
-  async function removeAgent(id) {
-    await api.deleteAgent(id);
-    agents.value = agents.value.filter((a) => a.id !== id);
+  async function removeSkill(id) {
+    await api.deleteSkill(id);
+    skills.value = skills.value.filter((s) => s.id !== id);
   }
   return {
-    agents,
+    skills,
     loading,
-    fetchAgents,
-    addAgent,
-    updateAgent,
-    removeAgent
+    fetchSkills,
+    addSkill,
+    updateSkill,
+    removeSkill
   };
 });
 const _hoisted_1 = { class: "d-flex align-center justify-space-between mb-6" };
 const _hoisted_2 = { class: "d-flex align-center" };
 const _hoisted_3 = {
   key: 0,
-  class: "text-body-2 mb-3"
+  class: "text-body-2 mb-3 description-preview"
 };
 const _hoisted_4 = {
   key: 1,
   class: "mb-3"
 };
-const _hoisted_5 = { class: "system-prompt-preview text-caption" };
+const _hoisted_5 = { class: "config-preview text-caption" };
 const _hoisted_6 = {
-  key: 2,
-  class: "mb-2"
-};
-const _hoisted_7 = { class: "d-flex flex-wrap gap-1" };
-const _hoisted_8 = { class: "d-flex align-center gap-2 mt-2" };
-const _hoisted_9 = {
   key: 1,
   class: "text-center py-12"
 };
 const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "AgentsPage",
+  __name: "SkillsPage",
   setup(__props) {
-    const agentStore = useAgentStore();
+    const skillStore = useSkillStore();
     const appStore = useAppStore();
     const showDialog = ref(false);
-    const editingAgent = ref(null);
+    const editingSkill = ref(null);
     const saving = ref(false);
     const deleteDialog = ref(false);
     const deleteTarget = ref(null);
     const deleting = ref(false);
-    const availableModels = [
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229",
-      "claude-3-sonnet-20240229",
-      "claude-3-haiku-20240307",
-      "gpt-4o",
-      "gpt-4-turbo"
+    const availableTypes = [
+      "prompt",
+      "tool",
+      "workflow",
+      "template",
+      "custom"
     ];
     const defaultForm = () => ({
       name: "",
-      desc: "",
-      model: "claude-3-5-sonnet-20241022",
-      system_prompt: "",
-      tools: "",
+      description: "",
+      type: "prompt",
+      config: "",
       enabled: true
     });
     const form = ref(defaultForm());
     function openAddDialog() {
-      editingAgent.value = null;
+      editingSkill.value = null;
       form.value = defaultForm();
       showDialog.value = true;
     }
-    function openEditDialog(agent) {
-      editingAgent.value = agent;
+    function openEditDialog(skill) {
+      editingSkill.value = skill;
       form.value = {
-        name: agent.name,
-        desc: agent.desc,
-        model: agent.model,
-        system_prompt: agent.system_prompt,
-        tools: agent.tools,
-        enabled: agent.enabled
+        name: skill.name,
+        description: skill.description,
+        type: skill.type,
+        config: skill.config,
+        enabled: skill.enabled
       };
       showDialog.value = true;
     }
     async function handleSave() {
       saving.value = true;
       try {
-        if (editingAgent.value) {
-          await agentStore.updateAgent(editingAgent.value.id, { ...form.value });
-          appStore.showMessage("Agent updated", "success");
+        if (editingSkill.value) {
+          await skillStore.updateSkill(editingSkill.value.id, { ...form.value });
+          appStore.showMessage("Skill updated", "success");
         } else {
-          await agentStore.addAgent({ ...form.value });
-          appStore.showMessage("Agent created", "success");
+          await skillStore.addSkill({ ...form.value });
+          appStore.showMessage("Skill created", "success");
         }
         showDialog.value = false;
         form.value = defaultForm();
-        editingAgent.value = null;
+        editingSkill.value = null;
       } catch {
-        appStore.showMessage("Failed to save agent", "error");
+        appStore.showMessage("Failed to save skill", "error");
       } finally {
         saving.value = false;
       }
     }
-    function confirmRemove(agent) {
-      deleteTarget.value = agent;
+    function confirmRemove(skill) {
+      deleteTarget.value = skill;
       deleteDialog.value = true;
     }
     async function handleDelete() {
       if (!deleteTarget.value) return;
       deleting.value = true;
       try {
-        await agentStore.removeAgent(deleteTarget.value.id);
-        appStore.showMessage("Agent deleted", "success");
+        await skillStore.removeSkill(deleteTarget.value.id);
+        appStore.showMessage("Skill deleted", "success");
       } catch {
-        appStore.showMessage("Failed to delete agent", "error");
+        appStore.showMessage("Failed to delete skill", "error");
       } finally {
         deleting.value = false;
         deleteDialog.value = false;
         deleteTarget.value = null;
       }
     }
-    async function handleToggleEnabled(agent, enabled) {
+    async function handleToggleEnabled(skill, enabled) {
       try {
-        await agentStore.updateAgent(agent.id, { enabled });
-        appStore.showMessage(enabled ? "Agent enabled" : "Agent disabled", "success");
+        await skillStore.updateSkill(skill.id, { enabled });
+        appStore.showMessage(enabled ? "Skill enabled" : "Skill disabled", "success");
       } catch {
-        appStore.showMessage("Failed to update agent", "error");
+        appStore.showMessage("Failed to update skill", "error");
       }
     }
     onMounted(() => {
-      agentStore.fetchAgents();
+      skillStore.fetchSkills();
     });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", null, [
@@ -162,32 +153,32 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               color: "primary",
               class: "mr-3"
             }, {
-              default: withCtx(() => [..._cache[10] || (_cache[10] = [
-                createTextVNode("mdi-robot", -1)
+              default: withCtx(() => [..._cache[9] || (_cache[9] = [
+                createTextVNode("mdi-star", -1)
               ])]),
               _: 1
             }),
-            _cache[11] || (_cache[11] = createBaseVNode("h1", { class: "text-h4 font-weight-bold" }, "Agents", -1))
+            _cache[10] || (_cache[10] = createBaseVNode("h1", { class: "text-h4 font-weight-bold" }, "Skills", -1))
           ]),
           createVNode(VBtn, {
             color: "primary",
             "prepend-icon": "mdi-plus",
             onClick: openAddDialog
           }, {
-            default: withCtx(() => [..._cache[12] || (_cache[12] = [
-              createTextVNode(" Add Agent ", -1)
+            default: withCtx(() => [..._cache[11] || (_cache[11] = [
+              createTextVNode(" Add Skill ", -1)
             ])]),
             _: 1
           })
         ]),
         createVNode(VRow, null, {
           default: withCtx(() => [
-            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(agentStore).agents, (agent) => {
+            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(skillStore).skills, (skill) => {
               return openBlock(), createBlock(VCol, {
                 cols: "12",
                 md: "6",
                 lg: "4",
-                key: agent.id
+                key: skill.id
               }, {
                 default: withCtx(() => [
                   createVNode(VCard, { class: "fill-height" }, {
@@ -195,11 +186,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       createVNode(VCardItem, null, {
                         prepend: withCtx(() => [
                           createVNode(VIcon, {
-                            color: agent.enabled ? "primary" : "medium-emphasis",
+                            color: skill.enabled ? "primary" : "medium-emphasis",
                             size: "28"
                           }, {
-                            default: withCtx(() => [..._cache[13] || (_cache[13] = [
-                              createTextVNode(" mdi-robot ", -1)
+                            default: withCtx(() => [..._cache[12] || (_cache[12] = [
+                              createTextVNode(" mdi-star ", -1)
                             ])]),
                             _: 1
                           }, 8, ["color"])
@@ -207,13 +198,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         default: withCtx(() => [
                           createVNode(VCardTitle, null, {
                             default: withCtx(() => [
-                              createTextVNode(toDisplayString(agent.name), 1)
+                              createTextVNode(toDisplayString(skill.name), 1)
                             ]),
                             _: 2
                           }, 1024),
                           createVNode(VCardSubtitle, null, {
                             default: withCtx(() => [
-                              createTextVNode(toDisplayString(agent.model), 1)
+                              createTextVNode(toDisplayString(skill.type), 1)
                             ]),
                             _: 2
                           }, 1024)
@@ -222,61 +213,32 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }, 1024),
                       createVNode(VCardText, null, {
                         default: withCtx(() => [
-                          agent.desc ? (openBlock(), createElementBlock("div", _hoisted_3, toDisplayString(agent.desc), 1)) : createCommentVNode("", true),
-                          agent.system_prompt ? (openBlock(), createElementBlock("div", _hoisted_4, [
-                            _cache[14] || (_cache[14] = createBaseVNode("div", { class: "text-caption text-medium-emphasis mb-1" }, "System Prompt", -1)),
-                            createBaseVNode("div", _hoisted_5, toDisplayString(agent.system_prompt), 1)
-                          ])) : createCommentVNode("", true),
-                          agent.tools ? (openBlock(), createElementBlock("div", _hoisted_6, [
-                            _cache[15] || (_cache[15] = createBaseVNode("div", { class: "text-caption text-medium-emphasis mb-1" }, "Tools", -1)),
-                            createBaseVNode("div", _hoisted_7, [
-                              (openBlock(true), createElementBlock(Fragment, null, renderList(agent.tools.split(",").map((t) => t.trim()).filter(Boolean), (tool) => {
-                                return openBlock(), createBlock(VChip, {
-                                  key: tool,
-                                  size: "x-small",
-                                  variant: "tonal"
-                                }, {
-                                  default: withCtx(() => [
-                                    createTextVNode(toDisplayString(tool), 1)
-                                  ]),
-                                  _: 2
-                                }, 1024);
-                              }), 128))
-                            ])
-                          ])) : createCommentVNode("", true),
-                          createBaseVNode("div", _hoisted_8, [
-                            createVNode(VChip, {
-                              color: agent.enabled ? "success" : "medium-emphasis",
-                              size: "x-small",
-                              variant: "tonal"
-                            }, {
-                              default: withCtx(() => [
-                                createTextVNode(toDisplayString(agent.enabled ? "Active" : "Inactive"), 1)
-                              ]),
-                              _: 2
-                            }, 1032, ["color"])
-                          ])
+                          skill.description ? (openBlock(), createElementBlock("div", _hoisted_3, toDisplayString(skill.description), 1)) : createCommentVNode("", true),
+                          skill.config ? (openBlock(), createElementBlock("div", _hoisted_4, [
+                            _cache[13] || (_cache[13] = createBaseVNode("div", { class: "text-caption text-medium-emphasis mb-1" }, "Config", -1)),
+                            createBaseVNode("div", _hoisted_5, toDisplayString(skill.config), 1)
+                          ])) : createCommentVNode("", true)
                         ]),
                         _: 2
                       }, 1024),
                       createVNode(VCardActions, null, {
                         default: withCtx(() => [
                           createVNode(VSwitch, {
-                            "model-value": agent.enabled,
-                            label: agent.enabled ? "Enabled" : "Disabled",
+                            "model-value": skill.enabled,
+                            label: skill.enabled ? "Enabled" : "Disabled",
                             color: "success",
                             density: "compact",
                             "hide-details": "",
-                            "onUpdate:modelValue": (v) => handleToggleEnabled(agent, !!v)
+                            "onUpdate:modelValue": (v) => handleToggleEnabled(skill, !!v)
                           }, null, 8, ["model-value", "label", "onUpdate:modelValue"]),
                           createVNode(VSpacer),
                           createVNode(VBtn, {
                             variant: "tonal",
                             size: "small",
                             "prepend-icon": "mdi-pencil",
-                            onClick: ($event) => openEditDialog(agent)
+                            onClick: ($event) => openEditDialog(skill)
                           }, {
-                            default: withCtx(() => [..._cache[16] || (_cache[16] = [
+                            default: withCtx(() => [..._cache[14] || (_cache[14] = [
                               createTextVNode(" Edit ", -1)
                             ])]),
                             _: 1
@@ -287,7 +249,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             variant: "text",
                             size: "small",
                             color: "error",
-                            onClick: ($event) => confirmRemove(agent)
+                            onClick: ($event) => confirmRemove(skill)
                           }, null, 8, ["onClick"])
                         ]),
                         _: 2
@@ -302,35 +264,35 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }),
-        unref(agentStore).loading ? (openBlock(), createBlock(VSkeletonLoader, {
+        unref(skillStore).loading ? (openBlock(), createBlock(VSkeletonLoader, {
           key: 0,
           type: "card@3"
         })) : createCommentVNode("", true),
-        !unref(agentStore).loading && unref(agentStore).agents.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_9, [
+        !unref(skillStore).loading && unref(skillStore).skills.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_6, [
           createVNode(VIcon, {
             size: "64",
             color: "medium-emphasis"
           }, {
-            default: withCtx(() => [..._cache[17] || (_cache[17] = [
-              createTextVNode("mdi-robot-off", -1)
+            default: withCtx(() => [..._cache[15] || (_cache[15] = [
+              createTextVNode("mdi-star-off", -1)
             ])]),
             _: 1
           }),
-          _cache[19] || (_cache[19] = createBaseVNode("p", { class: "text-medium-emphasis mt-4" }, "No agents configured", -1)),
+          _cache[17] || (_cache[17] = createBaseVNode("p", { class: "text-medium-emphasis mt-4" }, "No skills configured", -1)),
           createVNode(VBtn, {
             color: "primary",
             class: "mt-4",
             onClick: openAddDialog
           }, {
-            default: withCtx(() => [..._cache[18] || (_cache[18] = [
-              createTextVNode("Add Agent", -1)
+            default: withCtx(() => [..._cache[16] || (_cache[16] = [
+              createTextVNode("Add Skill", -1)
             ])]),
             _: 1
           })
         ])) : createCommentVNode("", true),
         createVNode(VDialog, {
           modelValue: showDialog.value,
-          "onUpdate:modelValue": _cache[7] || (_cache[7] = ($event) => showDialog.value = $event),
+          "onUpdate:modelValue": _cache[6] || (_cache[6] = ($event) => showDialog.value = $event),
           "max-width": "600"
         }, {
           default: withCtx(() => [
@@ -338,7 +300,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
                   default: withCtx(() => [
-                    createTextVNode(toDisplayString(editingAgent.value ? "Edit Agent" : "Add Agent"), 1)
+                    createTextVNode(toDisplayString(editingSkill.value ? "Edit Skill" : "Add Skill"), 1)
                   ]),
                   _: 1
                 }),
@@ -356,8 +318,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => form.value.name = $event),
                               label: "Name",
                               variant: "outlined",
-                              placeholder: "code-reviewer",
-                              hint: "Unique name for the agent",
+                              placeholder: "code-review",
+                              hint: "Unique name for the skill",
                               "persistent-hint": ""
                             }, null, 8, ["modelValue"])
                           ]),
@@ -369,10 +331,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         }, {
                           default: withCtx(() => [
                             createVNode(VSelect, {
-                              modelValue: form.value.model,
-                              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => form.value.model = $event),
-                              label: "Model",
-                              items: availableModels,
+                              modelValue: form.value.type,
+                              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => form.value.type = $event),
+                              label: "Type",
+                              items: availableTypes,
                               variant: "outlined"
                             }, null, 8, ["modelValue"])
                           ]),
@@ -381,12 +343,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         createVNode(VCol, { cols: "12" }, {
                           default: withCtx(() => [
                             createVNode(VTextarea, {
-                              modelValue: form.value.desc,
-                              "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => form.value.desc = $event),
+                              modelValue: form.value.description,
+                              "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => form.value.description = $event),
                               label: "Description",
                               variant: "outlined",
                               rows: "2",
-                              placeholder: "Agent description..."
+                              placeholder: "Skill description..."
                             }, null, 8, ["modelValue"])
                           ]),
                           _: 1
@@ -394,26 +356,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         createVNode(VCol, { cols: "12" }, {
                           default: withCtx(() => [
                             createVNode(VTextarea, {
-                              modelValue: form.value.system_prompt,
-                              "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => form.value.system_prompt = $event),
-                              label: "System Prompt",
+                              modelValue: form.value.config,
+                              "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => form.value.config = $event),
+                              label: "Config",
                               variant: "outlined",
-                              rows: "4",
-                              placeholder: "You are a helpful assistant..."
-                            }, null, 8, ["modelValue"])
-                          ]),
-                          _: 1
-                        }),
-                        createVNode(VCol, { cols: "12" }, {
-                          default: withCtx(() => [
-                            createVNode(VTextField, {
-                              modelValue: form.value.tools,
-                              "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => form.value.tools = $event),
-                              label: "Tools",
-                              variant: "outlined",
-                              placeholder: "Read, Write, Bash, Grep, WebSearch",
-                              hint: "Comma-separated list of tool names",
-                              "persistent-hint": ""
+                              rows: "6",
+                              placeholder: '{"prompt": "...", "max_tokens": 1000}'
                             }, null, 8, ["modelValue"])
                           ]),
                           _: 1
@@ -422,7 +370,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           default: withCtx(() => [
                             createVNode(VSwitch, {
                               modelValue: form.value.enabled,
-                              "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => form.value.enabled = $event),
+                              "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => form.value.enabled = $event),
                               label: "Enabled",
                               color: "success",
                               "hide-details": ""
@@ -441,9 +389,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[6] || (_cache[6] = ($event) => showDialog.value = false)
+                      onClick: _cache[5] || (_cache[5] = ($event) => showDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[20] || (_cache[20] = [
+                      default: withCtx(() => [..._cache[18] || (_cache[18] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -455,7 +403,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       disabled: !form.value.name.trim()
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(toDisplayString(editingAgent.value ? "Update" : "Create"), 1)
+                        createTextVNode(toDisplayString(editingSkill.value ? "Update" : "Create"), 1)
                       ]),
                       _: 1
                     }, 8, ["loading", "disabled"])
@@ -470,15 +418,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }, 8, ["modelValue"]),
         createVNode(VDialog, {
           modelValue: deleteDialog.value,
-          "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => deleteDialog.value = $event),
+          "onUpdate:modelValue": _cache[8] || (_cache[8] = ($event) => deleteDialog.value = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[21] || (_cache[21] = [
-                    createTextVNode("Delete Agent", -1)
+                  default: withCtx(() => [..._cache[19] || (_cache[19] = [
+                    createTextVNode("Delete Skill", -1)
                   ])]),
                   _: 1
                 }),
@@ -487,11 +435,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     var _a;
                     return [
                       createBaseVNode("p", null, [
-                        _cache[22] || (_cache[22] = createTextVNode(" Are you sure you want to delete ", -1)),
+                        _cache[20] || (_cache[20] = createTextVNode(" Are you sure you want to delete ", -1)),
                         createBaseVNode("strong", null, toDisplayString((_a = deleteTarget.value) == null ? void 0 : _a.name), 1),
-                        _cache[23] || (_cache[23] = createTextVNode("? ", -1))
+                        _cache[21] || (_cache[21] = createTextVNode("? ", -1))
                       ]),
-                      _cache[24] || (_cache[24] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
+                      _cache[22] || (_cache[22] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
                     ];
                   }),
                   _: 1
@@ -501,9 +449,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[8] || (_cache[8] = ($event) => deleteDialog.value = false)
+                      onClick: _cache[7] || (_cache[7] = ($event) => deleteDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[25] || (_cache[25] = [
+                      default: withCtx(() => [..._cache[23] || (_cache[23] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -513,7 +461,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       onClick: handleDelete,
                       loading: deleting.value
                     }, {
-                      default: withCtx(() => [..._cache[26] || (_cache[26] = [
+                      default: withCtx(() => [..._cache[24] || (_cache[24] = [
                         createTextVNode("Delete", -1)
                       ])]),
                       _: 1
@@ -531,7 +479,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const AgentsPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7a761688"]]);
+const SkillsPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5c3f29e3"]]);
 export {
-  AgentsPage as default
+  SkillsPage as default
 };
