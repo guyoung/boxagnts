@@ -1,282 +1,233 @@
-<div align="center">
+# BoxAgnts
 
-<img src="boxagnts-dashboard-web/assets/boxagnts.svg" alt="Boxagnts" width="120" />
+[English](README.md) | [中文](README.zh.md)
 
-<h1>Boxagnts</h1>
-<h3><em>AI-Powered Coding Assistant with Web Dashboard</em></h3>
+BoxAgnts is an open-source AI Agent ToolBox built with Rust, dedicated to delivering an ultimate out-of-the-box experience. Leveraging WebAssembly sandbox, it provides a runtime environment that balances security and flexibility, helping users effortlessly tackle a wide range of complex tasks and thus becoming an efficient and trustworthy personal AI assistant.
 
-</div>
+## Core Architecture
 
----
+### 🎯 AI Agent Tool**Box**
 
-Boxagnts is an **AI coding assistant** designed for safe and effective software engineering. It features a **Web Dashboard** for multi-session chat management, a **WASM sandbox** for secure tool execution, **MCP protocol** integration for external tools, **multi-provider LLM support** (30+ providers), and **cron-style scheduled tasks**.
+BoxAgnts is a fully-featured AI Agent toolkit providing:
 
-Built in **Rust** for performance and safety, with a **Vue 3** frontend dashboard.
+- **Multi-model support**: Compatible with major AI model providers including OpenAI, Anthropic, Google, Azure, Bedrock
+- **Tool system**: Built-in file operations, web access, code execution, and many other tools
+- **Skill system**: Create specialized AI skills through simple configuration
 
----
+### 🛡️ WebAssembly Sand**Box**
 
-## Architecture
+Build a secure runtime environment using WebAssembly technology:
 
-```
-┌─────────────────────────────────────────────┐
-│          Vue 3 Dashboard (Web UI)            │
-│   Chat | Files | Tools | MCP | Cron | Sites  │
-└──────────────────┬──────────────────────────┘
-                   │ HTTP / WebSocket
-┌──────────────────▼──────────────────────────┐
-│           boxagnts-server (Axum)            │
-│        API Routes + Dashboard Static        │
-└──────────────────┬──────────────────────────┘
-                   │
-┌──────────────────▼──────────────────────────┐
-│           boxagnts-gateway                  │
-│   Chat | Tools | MCP | Skills | Cron | Site │
-└──────────────────┬──────────────────────────┘
-                   │
-     ┌─────────────┼─────────────┐
-     ▼             ▼             ▼
-┌─────────┐ ┌──────────┐ ┌──────────────┐
-│ LLM API │ │  Tools   │ │   Workspace  │
-│ Layer   │ │ Manager  │ │  (SQLite)    │
-│ 30+     │ │ WASM +   │ │ Config/Hist  │
-│ Provider│ │ Built-in │ │ Auth/Perms   │
-└─────────┘ └──────────┘ └──────────────┘
-```
+- **Isolated execution**: All custom tools and skills run in a WASM sandbox
+- **Security control**: Fine-grained permission management and network access control
+- **Cross-platform**: Compile once, run everywhere
+- **High performance**: Based on Wasmtime runtime, near-native performance
 
----
+### ✨ Out of the **Box**
 
-## Features
+Out-of-the-box experience:
 
-### Core Capabilities
-- **Multi-Session Chat** — Manage multiple AI coding conversations simultaneously with the Web Dashboard
-- **Agentic Loop** — Full tool-use cycle: query → response → tool dispatch → result feedback → continue
-- **Auto Compact** — Automatic context window compression when limits are reached
-- **Budget Control** — USD-based cost tracking with configurable spending limits
-- **Plan Mode** — Enter plan mode for structured reasoning before making changes
+- **Zero-configuration startup**: Download and run, no complex configuration
+- **Web interface**: Built-in beautiful Dashboard for visual management of all features
+- **Built-in extensions**: Pre-configured with commonly used tools and skills, ready to use
+- **Quick start**: Simple API and intuitive workflow
 
-### LLM Providers (30+)
-Anthropic, OpenAI, Google Gemini, Azure OpenAI, AWS Bedrock, GitHub Copilot, Cohere, MiniMax, Ollama, DeepSeek, Groq, Mistral, and many more — all through a unified abstraction layer.
+## Key Features
 
-### Tools
-| Tool | Description |
-|------|-------------|
-| **Read** | Read files with line numbers, supports images (PNG/JPG) and PDF |
-| **Write** | Create or overwrite files |
-| **Edit** | Exact string replacement with uniqueness validation |
-| **Glob** | Fast file pattern matching |
-| **Bash** | Execute shell commands |
-| **Web Fetch** | Retrieve and convert web content |
-| **BoxedJS Execute** | Execute JavaScript in a sandboxed environment |
-| **Ask User** | Interactive user prompts during agent execution |
-| **Skill** | Load and apply skill definitions for specialized tasks |
+### 🤖 AI Chat and Agents
+- Chat with multiple AI models
+- Create and manage custom Agents
+- Save and manage chat history
+- Support for streaming responses
 
-All file and execution tools run inside a **Wasmtime-based sandbox** with network access control.
+### 🔧 Tool Execution
+- File read/write and editing
+- Shell command execution
+- Web content scraping
+- Code review and analysis
 
-### MCP Integration
-Full **Model Context Protocol** (MCP) client implementation:
-- JSON-RPC 2.0 transport with stdio and HTTP/SSE
-- Tool discovery (`tools/list`) and execution (`tools/call`)
-- Resource management (`resources/list`, `resources/read`)
-- Prompt templates (`prompts/list`, `prompts/get`)
-- Connection manager with exponential-backoff reconnection
-- OAuth support for authenticated MCP servers
+### 📦 Skill System
+- Quickly create specialized skills
+- Skill combination and reuse
+- Built-in skills including code review, weather query, front-end component generation, etc.
 
-### Skills System
-Define reusable skill configurations via Markdown frontmatter:
+### ⏰ Automatic Tasks Cron
+- Create and manage scheduled tasks
+- Support for standard Cron expressions
+- Task execution logs and status tracking
+- Flexible task configuration and triggering methods
 
-```yaml
----
-name: code-review
-description: Perform an in-depth code review of changed files
-tools: read, bash, glob, grep
-args:
-  - name: target
-    description: File or directory to review
-    required: false
----
-```
+### 🌐 Web Service
+- Custom website deployment
+- Static file serving
+- API endpoint management
 
-Built-in skills: **Code Review**, **CSS Refactor Advisor**, **Frontend Component Generator**, **Weather Forecast**, **Current Weather**.
+## Quick Start
 
-### Cron Jobs
-Schedule recurring agent tasks with cron expressions — runs AI-powered workflows on a timer.
+### Download Executable
 
-### Static Sites
-Deploy and serve static sites directly from your workspace.
+Download the latest compressed package from the [Releases](https://github.com/guyoung/boxagnts/releases) page, extract and run.
 
-### Web Dashboard
-Full-featured Vue 3 SPA with Vuetify Material Design:
-- Real-time chat with streaming responses via WebSocket
-- File browser with code editor (CodeMirror) and image preview
-- Tool and skill configuration management
-- MCP server connection management
-- Usage statistics with Chart.js visualizations
-- Cron job scheduling interface
-
----
-
-## Project Structure
-
-```
-boxagnts-pub/
-├── Cargo.toml                      # Rust workspace root
-│
-├── boxagnts/                       # Rust backend crates
-│   ├── api/                        # LLM API abstraction (multi-provider)
-│   ├── core/                       # Core types, errors, constants
-│   ├── gateway/                    # API gateway, chat orchestrator, cron, sites
-│   ├── mcp/                        # MCP client (JSON-RPC, SSE, stdio)
-│   ├── query/                      # Agentic query loop core
-│   ├── server/                     # Axum web server + Dashboard APIs
-│   ├── tools/                      # Built-in tool implementations
-│   ├── tools-manager/              # Tool registry and dispatch
-│   ├── wasm-sandbox/               # Wasmtime-based sandbox runtime
-│   ├── wasm-tools/                 # WASM tool abstraction layer
-│   └── workspace/                  # Config, history, auth, permissions
-│
-├── boxagnts-dashboard-web/         # Vue 3 Frontend SPA
-│   └── src/
-│       ├── api/                    # HTTP/WebSocket API layer
-│       ├── components/             # Sidebar, CodeEditor, FileTree, ImagePreview
-│       ├── router/                 # Vue Router (10 routes)
-│       ├── stores/                 # Pinia state (10 domain stores)
-│       ├── types/                  # TypeScript type definitions
-│       └── views/                  # Page components
-│
-├── app/
-│   ├── dashboard-web/              # Built frontend (static deployment)
-│   └── extensions/                 # Runtime extensions
-│       ├── services/               # WASM service components
-│       ├── skills/                 # Skill definitions (Markdown)
-│       └── tools/                  # WASM tool components (7 tools)
-│
-└── src/lib.rs                      # Root crate
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-- **Rust** 1.82+ (edition 2024)
-- **Node.js** 18+ (for building the dashboard frontend)
-- An API key from a supported LLM provider
-
-### Quick Start
+### Start Service
 
 ```bash
-# Clone the repository
-git clone <repository-url>
+# Start service
+boxagnts
+
+# Specify workspace directory
+boxagnts --workspace-dir /path/to/workspace
+
+# Specify port
+boxagnts --workspace-dir /path/to/workspace --port 30002
+```
+
+> Suggestion: BoxAgnts supports multiple workspaces, each with its own configuration file and data directory. It is recommended not to run in the default directory, but to specify a workspace directory or workspace-dir.
+
+Command line arguments:
+
+```bash
+BoxAgnts is an open-source AI Agent ToolBox built with Rust.
+
+Usage: boxagnts [OPTIONS]
+
+Options:
+      --port <PORT>          Port to run the web server on [default: 30001]
+      --host <HOST>          Host to bind to (0.0.0.0 for all interfaces) [default: 127.0.0.1]
+      --workspace-dir <DIR>  Set workspace dir, default current dir
+      --app-dir <DIR>        Set app dir, default Boxagnts executable file dir
+      --admin-user <USERNAME>  Set admin username
+      --admin-pass <PASSWORD>  Set admin password
+  -h, --help                 Print help
+  -V, --version              Print version
+```
+
+### Access Dashboard
+
+Open your browser and visit `http://127.0.0.1:30001`
+
+### Configure Model
+
+Add AI models and API Keys in the settings page
+
+## Project Structure and Source Code Compilation
+
+This project is developed based on [claurst](https://github.com/Kuberwastaken/claurst) project code
+
+### Directory Structure
+
+```
+boxagnts/
+├── boxagnts/                 # Rust backend core code
+│   ├── api/                 # AI model API (multi-provider support)
+│   ├── core/                # Core types, constants, and basic functions
+│   ├── gateway/             # API gateway (includes Cron task scheduling)
+│   ├── mcp/                 # MCP protocol implementation (optional)
+│   ├── server/              # Web server and Dashboard interface
+│   ├── tools/               # Tool system and built-in tools
+│   ├── tools-manager/       # Tool manager
+│   ├── query/               # Query orchestration
+│   ├── wasm-sandbox/        # WebAssembly sandbox runtime
+│   ├── wasm-tools/          # WASM tool wrappers
+│   └── workspace/           # Workspace and configuration management
+├── boxagnts-dashboard-web/  # Vue 3 frontend source code
+│   ├── src/
+│   │   ├── api/            # API interface wrappers
+│   │   ├── components/     # Vue components
+│   │   ├── composables/    # Composables
+│   │   ├── stores/         # Pinia state management
+│   │   ├── views/          # Page components
+│   │   └── router/         # Router configuration
+│   └── package.json        # Frontend dependencies
+├── app/                     # Application resources
+│   ├── dashboard-web/      # Compiled web interface static assets
+│   └── extensions/         # Extensions (tools/skills)
+└── Cargo.toml              # Rust workspace configuration
+```
+
+### Backend Code Analysis
+
+The backend is developed in Rust using Tokio async runtime. The main modules are:
+
+- **api/**: Wraps APIs from multiple AI providers including OpenAI, Anthropic, Google, Azure, Bedrock, providing unified interface calling and message format conversion
+- **core/**: Defines core data types, constants, error handling, and system prompts
+- **gateway/**: API gateway layer, handles HTTP requests, includes Cron task scheduling system (cron/ subdirectory), supporting scheduled task creation, management, and execution
+- **server/**: Web server, providing Dashboard REST API and WebSocket support
+- **tools/**: Tool system, implements execution framework for built-in tools and skills
+- **wasm-sandbox/**: WebAssembly sandbox based on Wasmtime, implementing secure code execution environment
+- **workspace/**: Workspace management, handles configuration, authentication, and history storage
+
+### Frontend Code Analysis
+
+The frontend uses Vue 3 + TypeScript + Vuetify technology stack:
+
+- Uses **Pinia** for state management (stores/ directory)
+- Uses **Vue Router** for routing management (router/ directory)
+- Main pages: Chat, Agents, Cron tasks, Files, Skills, Tools, Sites, Settings, etc.
+- Supports Markdown rendering, code editor (CodeMirror), charts (Chart.js), etc.
+- Communicates with backend via REST API and WebSocket
+
+### Source Code Compilation Method
+
+#### Environment Requirements
+
+- Rust 1.75+ (Install: https://www.rust-lang.org/tools/install)
+- Node.js 18+ (Install: https://nodejs.org/)
+- npm or pnpm
+
+#### Compile Backend
+
+```bash
+# Enter project root directory
 cd boxagnts-pub
 
-# Build the frontend dashboard
+# Compile Debug version
+cargo build
+
+# Compile Release version (optimize for size and performance)
+cargo build --release
+
+# Compiled executable is located at target/release/boxagnts
+```
+
+#### Compile Frontend
+
+```bash
+# Enter frontend directory
+cd boxagnts-dashboard-web
+
+# Install dependencies
+npm install
+
+# Start development mode (hot reload)
+npm run dev
+
+# Compile production version
+npm run build
+
+# Compiled static files will be output to app/dashboard-web/
+```
+
+#### Complete Build Process
+
+```bash
+# 1. Compile frontend
 cd boxagnts-dashboard-web
 npm install
 npm run build
+
+# 2. Compile backend
 cd ..
+cargo build --release
 
-# Build and run the server
-cargo build --release --package boxagnts-server
-
-# Set your API key
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# Start the server
-./target/release/Boxagnts --port 30001
-
-# Open the dashboard
-# http://127.0.0.1:30001/dashboard
+# 3. Run
+./target/release/boxagnts
 ```
-
-### CLI Options
-
-```
-Boxagnts -- AI coding assistant web server
-
-Options:
-  --port PORT          Port to run the web server on (default: 30001)
-  --host HOST          Host to bind to (default: 127.0.0.1)
-  --workspace-dir DIR  Set workspace directory (default: current dir)
-  --app-dir DIR        Set app directory (default: executable dir)
-  --admin-user USER    Set admin username
-  --admin-pass PASS    Set admin password
-```
-
-### Build the Dashboard (Development)
-
-```bash
-cd boxagnts-dashboard-web
-npm install
-npm run dev          # Development server with HMR
-npm run build        # Production build → app/dashboard-web/
-```
-
----
-
-## Dashboard Pages
-
-| Page | Route | Description |
-|------|-------|-------------|
-| **Chat** | `/dashboard/#/` | AI conversation with streaming, session management |
-| **Usage** | `/dashboard/#/usage` | Token usage and cost statistics |
-| **MCP** | `/dashboard/#/mcp` | MCP server connection management |
-| **Files** | `/dashboard/#/files` | Workspace file browser with editor |
-| **Sites** | `/dashboard/#/sites` | Static site deployment management |
-| **Crons** | `/dashboard/#/crons` | Scheduled task configuration |
-| **Agents** | `/dashboard/#/agents` | Agent and model configuration |
-| **Skills** | `/dashboard/#/skills` | Skill definition management |
-| **Tools** | `/dashboard/#/tools` | Tool enable/disable and configuration |
-| **Settings** | `/dashboard/#/settings` | System configuration and preferences |
-
----
-
-## Key Design Decisions
-
-### Clean-Room Architecture
-The LLM API layer uses a phased abstraction design (Phases 1A–6) that progressively builds provider-agnostic interfaces, ensuring no coupling to any single provider's implementation.
-
-### WASM Sandboxing
-All file operations and command execution run through Wasmtime, providing:
-- Memory isolation and capability-based security
-- Network access whitelist/blacklist control
-- Language-agnostic tool development (any language compiling to WASM)
-
-### Agentic Loop
-The query loop implements a full autonomous agent cycle:
-1. Send messages → LLM
-2. Process streaming SSE response
-3. Detect `tool_use` blocks → dispatch tools
-4. Feed tool results back → continue until `end_turn` or limit
-
-Supports **Managed Orchestrator** mode (experimental) for Manager-Executor multi-agent patterns.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Language** | Rust (edition 2024) |
-| **Web Framework** | Axum 0.8 + Tokio |
-| **Database** | SQLite (rusqlite, bundled) |
-| **WASM Runtime** | Wasmtime |
-| **Frontend Framework** | Vue 3 + TypeScript |
-| **UI Library** | Vuetify 3 (Material Design) |
-| **State Management** | Pinia |
-| **Build Tool** | Vite 6 |
-| **Code Editor** | CodeMirror 6 |
-| **Charts** | Chart.js + vue-chartjs |
-
----
 
 ## License
 
-This project is a derivative work based on the CLAURST open-source project. See [LICENSE.md](claurst-LICENSE.md) for details.
+[MIT](LICENSE)
+
 
 ---
 
-## Acknowledgments
-
-- **CLAURST** — The open-source Claude Code reimplementation that Boxagnts is built upon
-- **Wasmtime** — Bytecode Alliance's WebAssembly runtime
-- **MCP** — Anthropic's Model Context Protocol
+**Repository**: [https://github.com/guyoung/boxagnts](https://github.com/guyoung/boxagnts)

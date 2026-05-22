@@ -414,7 +414,7 @@ pub async fn run_query_loop(
                             model_registry.get(&provider_id_str, &model_id_str)
                         })
                     {
-                        caps.image_input = model_entry.vision;
+                        caps.image_input = model_entry.vision();
                         caps.tool_calling = model_entry.tool_calling;
                         caps.thinking = model_entry.reasoning;
                     }
@@ -567,10 +567,14 @@ pub async fn run_query_loop(
                                             }
                                             boxagnts_api::StreamEvent::MessageDelta { stop_reason, usage: u } => {
                                                 stop_str = match stop_reason {
-                                                    Some(boxagnts_api::provider_types::StopReason::ToolUse) => "tool_use",
-                                                    Some(boxagnts_api::provider_types::StopReason::MaxTokens) => "max_tokens",
-                                                    _ => "end_turn",
-                                                }.to_string();
+                                                    Some(boxagnts_api::provider_types::StopReason::ToolUse) => "tool_use".to_string(),
+                                                    Some(boxagnts_api::provider_types::StopReason::MaxTokens) => "max_tokens".to_string(),
+                                                    Some(boxagnts_api::provider_types::StopReason::StopSequence) => "stop_sequence".to_string(),
+                                                    Some(boxagnts_api::provider_types::StopReason::ContentFiltered) => "content_filtered".to_string(),
+                                                    Some(boxagnts_api::provider_types::StopReason::EndTurn) => "end_turn".to_string(),
+                                                    Some(boxagnts_api::provider_types::StopReason::Other(s)) => s.clone(),
+                                                    None => "end_turn".to_string(),
+                                                };
                                                 if let Some(u) = u {
                                                     usage.output_tokens = u.output_tokens;
                                                 }
@@ -606,7 +610,7 @@ pub async fn run_query_loop(
                     let combined_thinking = thinking_chunks.join("");
                     if !combined_thinking.is_empty() {
                         content_blocks.push(ContentBlock::Thinking {
-                            thinking: combined_thinking,
+                            thinking: combined_thinking.clone(),
                             signature: String::new(),
                         });
                     }
@@ -614,7 +618,7 @@ pub async fn run_query_loop(
                     let combined_text = text_chunks.join("");
                     if !combined_text.is_empty() {
                         content_blocks.push(ContentBlock::Text {
-                            text: combined_text,
+                            text: combined_text.clone(),
                         });
                     }
 
@@ -629,7 +633,7 @@ pub async fn run_query_loop(
                         }
                     }
 
-                    let assistant_msg = Message {
+                    let mut assistant_msg = Message {
                         role: boxagnts_core::types::Role::Assistant,
                         content: boxagnts_core::types::MessageContent::Blocks(
                             content_blocks.clone(),
@@ -703,6 +707,35 @@ pub async fn run_query_loop(
                     }
 
                     // End turn — notify TUI and return.
+                    // Issue #149 follow-up: providers occasionally end the
+                    // turn after a tool round without emitting any text or
+                    // tool calls, which left the user staring at a blank
+                    // screen ("agent randomly stops"). Surface a placeholder
+                    // so the user always sees *some* assistant output and
+                    // knows the turn really ended.
+                    if combined_text.is_empty() && combined_thinking.is_empty() {
+                        let placeholder = format!(
+                            "(no response — model ended the turn with stop_reason \"{}\")",
+                            stop_str
+                        );
+                        if let Some(ref tx) = event_tx {
+                            let _ = tx.send(crate::QueryEvent::Stream(
+                                AnthropicStreamEvent::ContentBlockDelta {
+                                    index: 0,
+                                    delta: boxagnts_api::streaming::ContentDelta::TextDelta { text: placeholder.clone() },
+                                },
+                            ));
+                        }
+                        if let boxagnts_core::types::MessageContent::Blocks(ref mut blocks) =
+                            assistant_msg.content
+                        {
+                            blocks.push(ContentBlock::Text { text: placeholder.clone() });
+                        }
+                        if let Some(last) = messages.last_mut() {
+                            *last = assistant_msg.clone();
+                        }
+                    }
+
                     if let Some(ref tx) = event_tx {
                         let _ = tx.send(crate::QueryEvent::TurnComplete {
                             stop_reason: stop_str.clone(),
@@ -865,7 +898,19 @@ pub async fn run_query_loop(
         // Append assistant message to conversation
         messages.push(assistant_msg.clone());
 
-        let stop = stop_reason.as_deref().unwrap_or("end_turn");
+        // If the provider returned an unknown stop reason but the assistant
+        // message contains tool_use blocks, treat it as tool_use so we don't
+        // silently end the turn (issue #149: agent stops after tool call for
+        // providers that emit non-standard finish reasons).
+        let raw_stop = stop_reason.as_deref().unwrap_or("end_turn");
+        let stop = match raw_stop {
+            "end_turn" | "tool_use" | "max_tokens" | "stop_sequence" | "content_filtered" => raw_stop,
+            _ if !assistant_msg.get_tool_use_blocks().is_empty() => {
+                warn!(stop_reason = raw_stop, "Unknown stop reason with tool_use blocks present; treating as tool_use");
+                "tool_use"
+            }
+            _ => raw_stop,
+        };
 
         // Emit token warning events when approaching context limits.
         // Thresholds mirror TypeScript autoCompact.ts: 80% → Warning, 95% → Critical.

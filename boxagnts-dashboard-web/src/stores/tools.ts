@@ -1,49 +1,24 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import { api, type Tool } from '@/api'
+import { useCrudOperations } from './baseCrud'
 
 export const useToolStore = defineStore('tools', () => {
-  const tools = ref<Tool[]>([])
-  const loading = ref(false)
-
-  async function fetchTools() {
-    loading.value = true
-    try {
-      tools.value = await api.getTools()
-    } catch (e) {
-      console.error('Failed to fetch tools:', e)
-      tools.value = []
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function addTool(data: Omit<Tool, 'id'>): Promise<Tool> {
-    const tool = await api.createTool(data)
-    tools.value.push(tool)
-    return tool
-  }
-
-  async function updateTool(id: string, data: Partial<Omit<Tool, 'id'>>): Promise<Tool> {
-    const tool = await api.updateTool(id, data)
-    const idx = tools.value.findIndex(t => t.id === id)
-    if (idx >= 0) {
-      tools.value[idx] = tool
-    }
-    return tool
-  }
-
-  async function removeTool(id: string) {
-    await api.deleteTool(id)
-    tools.value = tools.value.filter(t => t.id !== id)
-  }
+  const crud = useCrudOperations<Tool, Omit<Tool, 'id'>, Partial<Omit<Tool, 'id'>>>(
+    {
+      fetchAll: () => api.getTools(),
+      create: (data) => api.createTool(data),
+      update: (id, data) => api.updateTool(id, data),
+      remove: (id) => api.deleteTool(id),
+    },
+    'tools'
+  )
 
   return {
-    tools,
-    loading,
-    fetchTools,
-    addTool,
-    updateTool,
-    removeTool,
+    tools: crud.items,
+    loading: crud.loading,
+    fetchTools: crud.fetch,
+    addTool: crud.add,
+    updateTool: crud.update,
+    removeTool: crud.remove,
   }
 })

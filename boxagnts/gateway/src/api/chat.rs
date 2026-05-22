@@ -53,19 +53,28 @@ where
     let settings = Settings::load().await?;
     let mut config = settings.config.clone();
 
-    if let Some(ref model) = model {
-        config.model = Some(model.clone());
-    }
-    
-    if config.model.is_none() && config.provider_configs.len() > 0 {
-        let providers: Vec<boxagnts_workspace::config::ProviderConfig> = config.provider_configs.values().cloned().collect();
-        
-        let models = providers[0].models.clone();
-        
-        if models.len() > 0 {
-            config.model = Some(models[0].id.clone());
+    let available_models = {
+        let mut models: Vec<String> = Vec::new();
+        for provider in settings.config.provider_configs.values() {
+            if provider.enabled {
+                for model in provider.models.iter() {
+                    models.push(model.id.clone())
+                }
+            }
         }
-        
+
+        models
+    };
+
+    if let Some(ref model) = model {
+        if available_models.contains(model) {
+            config.model = Some(model.clone());
+        }
+    }
+
+
+    if config.model.is_none() && available_models.len() > 0{
+        config.model = Some(available_models[0].clone());
     }
     
     config.verbose = false;

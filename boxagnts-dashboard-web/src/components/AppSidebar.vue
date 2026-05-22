@@ -8,25 +8,27 @@
       </div>
     </div>
 
-    <div class="px-1 mt-1 text-center" v-if="appStore.sidebarCollapsed">
+    <div v-if="appStore.sidebarCollapsed" class="text-center py-1">
       <v-btn icon="mdi-chat-plus" variant="text" size="small" color="primary" @click="newSession" />
     </div>
 
-    <div class="px-2 mt-1 mr-1" v-if="!appStore.sidebarCollapsed">
-      <v-btn color="primary" variant="flat" block size="small" prepend-icon="mdi-plus" @click="newSession"
-        class="mx-2 mr-4">
+    <div v-if="!appStore.sidebarCollapsed" class="px-3 pb-2">
+      <v-btn color="primary" variant="flat" block prepend-icon="mdi-plus" @click="newSession" class="new-session-btn">
         New Session
       </v-btn>
     </div>
 
-    <v-divider class="mx-4 mt-3 mb-1" />
+    <v-divider class="mx-4 mb-1" />
 
     <!-- Sessions &amp; Files panels -->
     <div class="panel-area" v-if="!appStore.sidebarCollapsed">
       <!-- Sessions list -->
       <div class="panel-section" :class="expandedPanel === 'sessions' ? 'panel-expanded' : 'panel-collapsed'">
-        <div class="d-flex align-center px-3 pt-2 pb-1">
-          <span class="text-caption font-weight-bold text-medium-emphasis">SESSIONS</span>
+        <div class="panel-header d-flex align-center px-3 pt-2 pb-1">
+          <span class="text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1">
+            <v-icon size="12" color="medium-emphasis">mdi-message-text</v-icon>
+            SESSIONS
+          </span>
           <v-spacer />
           <v-btn icon="mdi-refresh" variant="text" size="x-small" color="medium-emphasis"
             @click="sessionStore.fetchSessions()" :loading="sessionStore.loading" />
@@ -44,6 +46,7 @@
             <v-list v-else density="compact" nav class="px-1">
               <v-list-item v-for="s in sessionStore.sessions" :key="s.id"
                 :active="sessionStore.currentSessionId === s.id" rounded="lg" class="mb-1 session-item"
+                :class="{ 'session-item--active': sessionStore.currentSessionId === s.id }"
                 @click="selectSession(s.id)">
                 <template #prepend>
                   <v-icon size="16" color="medium-emphasis">mdi-message-text</v-icon>
@@ -67,7 +70,8 @@
                 </template>
               </v-list-item>
 
-              <div v-if="sessionStore.sessions.length === 0" class="text-center pa-4">
+              <div v-if="sessionStore.sessions.length === 0" class="text-center pa-6">
+                <v-icon size="40" color="medium-emphasis" class="mb-2">mdi-message-text-outline</v-icon>
                 <p class="text-caption text-medium-emphasis">No sessions yet</p>
               </div>
             </v-list>
@@ -78,8 +82,11 @@
       <!-- Files tree -->
       <div class="files-panel panel-section" :class="expandedPanel === 'files' ? 'panel-expanded' : 'panel-collapsed'">
         <v-divider class="mx-4 mb-2" />
-        <div class="d-flex align-center px-3 pt-1 pb-1">
-          <span class="text-caption font-weight-bold text-medium-emphasis">FILES</span>
+        <div class="panel-header d-flex align-center px-3 pt-1 pb-1">
+          <span class="text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1">
+            <v-icon size="12" color="medium-emphasis">mdi-folder-outline</v-icon>
+            FILES
+          </span>
           <v-spacer />
           <v-btn icon="mdi-arrow-expand-all" variant="text" size="x-small" color="medium-emphasis"
             @click="fileStore.expandAll()" title="Expand All" />
@@ -102,7 +109,8 @@
                 :current-path="currentFilePath" :selected-file-path="selectedFilePath" @navigate="goToFilePath"
                 @select-file="handleSelectFile" />
 
-              <div v-if="fileStore.treeRoots.length === 0" class="text-center pa-4">
+              <div v-if="fileStore.treeRoots.length === 0" class="text-center pa-6">
+                <v-icon size="40" color="medium-emphasis" class="mb-2">mdi-folder-open-outline</v-icon>
                 <p class="text-caption text-medium-emphasis">No files</p>
               </div>
             </v-list>
@@ -116,52 +124,69 @@
     <template #append>
       <v-divider class="mx-4" />
 
-      <div v-if="appStore.sidebarCollapsed" class="pa-2 d-flex flex-column align-center">
-        <v-btn icon="mdi-chart-bar" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/usage')"
-          title="Usage Analytics" />
-        <v-btn icon="mdi-server-network" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/mcp')"
-          title="MCP Servers" />
-        <v-btn icon="mdi-web" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/sites')"
-          title="Sites" />
-        <v-btn icon="mdi-clock-outline" variant="text" size="small" color="medium-emphasis"
-          @click="navigateTo('/crons')" title="Crons" />
-        <v-btn icon="mdi-robot" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/agents')"
-          title="Agents" />
-        <v-btn icon="mdi-star" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/skills')"
-          title="Skills" />
-        <v-btn icon="mdi-hammer-wrench" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/tools')"
-          title="Tools" />
-        <v-btn icon="mdi-cog" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/settings')"
-          title="Settings" />
+      <div v-if="appStore.sidebarCollapsed" class="nav-rail-group pa-2 d-flex flex-column align-center">
+        <div class="nav-rail-section">
+          <v-btn icon="mdi-chart-bar" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/usage')"
+            title="Usage Analytics" />
+          <v-btn icon="mdi-server-network" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/mcp')"
+            title="MCP Servers" />
+          <v-btn icon="mdi-web" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/sites')"
+            title="Sites" />
+          <v-btn icon="mdi-clock-outline" variant="text" size="small" color="medium-emphasis"
+            @click="navigateTo('/crons')" title="Crons" />
+        </div>
+        <v-divider class="nav-rail-divider" />
+        <div class="nav-rail-section">
+          <v-btn icon="mdi-robot" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/agents')"
+            title="Agents" />
+          <v-btn icon="mdi-star" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/skills')"
+            title="Skills" />
+          <v-btn icon="mdi-hammer-wrench" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/tools')"
+            title="Tools" />
+          <v-btn icon="mdi-cog" variant="text" size="small" color="medium-emphasis" @click="navigateTo('/settings')"
+            title="Settings" />
+        </div>
+        <v-divider class="nav-rail-divider" />
+        <div class="nav-rail-section">
+          <v-btn icon="mdi-home" variant="text" size="small" color="medium-emphasis" @click="openExternal('/index.html')"
+            title="Site Navigation" />
+          <v-btn icon="mdi-github" variant="text" size="small" color="medium-emphasis"
+            @click="openExternal('https://github.com/guyoung/boxagnts')" title="GitHub" />
+        </div>
       </div>
 
       <template v-if="!appStore.sidebarCollapsed">
-        <v-menu location="top end" :close-on-content-click="true">
-          <template #activator="{ props: menuProps }">
-            <div class="d-flex justify-center py-2">
-              <v-btn icon="mdi-dots-grid" variant="text" size="small" color="medium-emphasis" v-bind="menuProps" />
-            </div>
-          </template>
-          <v-list density="compact" min-width="180">
-            <v-list-item prepend-icon="mdi-web" title="Sites" @click="navigateTo('/sites')" />
-            <v-list-item prepend-icon="mdi-clock-outline" title="Crons" @click="navigateTo('/crons')" />
-            <v-divider />
-<!--            <v-list-item prepend-icon="mdi-robot" title="Agents" @click="navigateTo('/agents')" />-->
-            <v-list-item prepend-icon="mdi-star" title="Skills" @click="navigateTo('/skills')" />
-            <v-list-item prepend-icon="mdi-hammer-wrench" title="Tools" @click="navigateTo('/tools')" />
-<!--            <v-list-item prepend-icon="mdi-server-network" title="MCP Servers" @click="navigateTo('/mcp')" />-->
-            <v-divider />
-<!--            <v-list-item prepend-icon="mdi-chart-bar" title="Usage Analytics" @click="navigateTo('/usage')" />-->
-            <v-list-item prepend-icon="mdi-cog" title="Settings" @click="navigateTo('/settings')" />
-          </v-list>
-        </v-menu>
+        <div class="d-flex justify-center align-center ga-1 py-1 pb-2">
+           <v-btn icon="mdi-home" variant="text" size="small" color="medium-emphasis" @click="openExternal('/index.html')"
+            title="Site Navigation" class="footer-link-btn" />
+          <v-btn icon="mdi-github" variant="text" size="small" color="medium-emphasis"
+            @click="openExternal('https://github.com/guyoung/boxagnts')" title="GitHub" class="footer-link-btn" />
+          <v-menu location="top end" :close-on-content-click="true" offset="8">
+            <template #activator="{ props: menuProps }">
+              <v-btn icon="mdi-dots-grid" variant="text" size="small" color="medium-emphasis"
+                class="menu-trigger-btn" v-bind="menuProps" />
+            </template>
+            <v-list density="compact" min-width="180" class="menu-list" elevation="8" rounded="lg">
+              <v-list-item prepend-icon="mdi-web" title="Sites" @click="navigateTo('/sites')" rounded="lg" class="mb-0" />
+              <v-list-item prepend-icon="mdi-clock-outline" title="Crons" @click="navigateTo('/crons')" rounded="lg" class="mb-0" />
+              <v-divider class="my-0" />
+              <v-list-item prepend-icon="mdi-star" title="Skills" @click="navigateTo('/skills')" rounded="lg" class="mb-0" />
+              <v-list-item prepend-icon="mdi-hammer-wrench" title="Tools" @click="navigateTo('/tools')" rounded="lg" class="mb-0" />
+              <v-divider class="my-0" />
+              <v-list-item prepend-icon="mdi-cog" title="Settings" @click="navigateTo('/settings')" rounded="lg" class="mb-0" />
+            </v-list>
+          </v-menu>
+         
+        </div>
+
+        <v-divider class="mx-4 mb-1" />
       </template>
 
-      <div class="pa-2">
+      <div class="bottom-toggles pa-2 pt-0">
         <v-btn :icon="appStore.sidebarCollapsed ? 'mdi-chevron-right' : 'mdi-chevron-left'" variant="text" size="small"
-          block @click="appStore.toggleSidebar()" />
+          block @click="appStore.toggleSidebar()" class="toggle-btn" />
         <v-btn :icon="appStore.isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" variant="text" size="small" block
-          @click="appStore.toggleTheme()" />
+          @click="appStore.toggleTheme()" class="toggle-btn" />
       </div>
     </template>
   </v-navigation-drawer>
@@ -279,6 +304,10 @@ function navigateTo(path: string) {
   router.push(path)
 }
 
+function openExternal(url: string) {
+  window.open(url, '_blank')
+}
+
 function confirmDelete(s: Session) {
   deleteTarget.value = s
   deleteDialog.value = true
@@ -378,6 +407,19 @@ function handleSelectFile(filePath: string) {
   flex-direction: column;
 }
 
+.sidebar-header {
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+}
+
+.new-session-btn {
+  transition: all 0.2s ease;
+  box-shadow: none !important;
+}
+
+.new-session-btn:hover {
+  filter: brightness(1.08);
+}
+
 .panel-area {
   flex: 1;
   display: flex;
@@ -391,6 +433,14 @@ function handleSelectFile(filePath: string) {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+
+.panel-header {
+  user-select: none;
+}
+
+.panel-header:hover {
+  background: rgba(var(--v-theme-on-surface), 0.04);
 }
 
 .panel-section :deep(.v-expand-transition) {
@@ -419,21 +469,23 @@ function handleSelectFile(filePath: string) {
   height: 100%;
 }
 
-.session-list-wrapper::-webkit-scrollbar,
-.file-tree-wrapper::-webkit-scrollbar {
-  width: 6px;
+.session-item {
+  margin: 0 4px;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
 }
 
-.session-list-wrapper::-webkit-scrollbar-track,
-.file-tree-wrapper::-webkit-scrollbar-track {
-  background: rgba(var(--v-theme-on-surface), 0.05);
-  border-radius: 4px;
+.session-item :deep(.v-list-item__overlay) {
+  border-radius: 8px;
 }
 
-.session-list-wrapper::-webkit-scrollbar-thumb,
-.file-tree-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(var(--v-theme-on-surface), 0.12);
-  border-radius: 4px;
+.session-item--active {
+  border-left-color: rgb(var(--v-theme-primary));
+}
+
+.session-item--active :deep(.v-list-item__overlay) {
+  background: rgba(var(--v-theme-primary), 0.12);
+  opacity: 1;
 }
 
 .session-item :deep(.v-list-item-title) {
@@ -450,6 +502,70 @@ function handleSelectFile(filePath: string) {
   margin-inline-end: 2px;
 }
 
+.nav-rail-group {
+  gap: 2px;
+}
+
+.nav-rail-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.nav-rail-divider {
+  width: 60%;
+  opacity: 0.3;
+  margin: 3px 0;
+}
+
+.nav-rail-group :deep(.v-btn) {
+  transition: all 0.15s ease;
+}
+
+.nav-rail-group :deep(.v-btn:hover) {
+  background: rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.menu-trigger-btn {
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.menu-trigger-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  transform: scale(1.05);
+}
+
+.menu-list {
+  backdrop-filter: blur(8px);
+}
+
+.footer-link-btn {
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.footer-link-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  color: rgb(var(--v-theme-primary));
+}
+
+.bottom-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.toggle-btn {
+  transition: all 0.2s ease;
+  border-radius: 10px;
+}
+
+.toggle-btn:hover {
+  background: rgba(var(--v-theme-on-surface), 0.08);
+}
+
 .resize-handle {
   position: absolute;
   top: 0;
@@ -458,6 +574,7 @@ function handleSelectFile(filePath: string) {
   width: 4px;
   cursor: col-resize;
   z-index: 10;
+  transition: background 0.15s ease;
 }
 
 .resize-handle:hover {

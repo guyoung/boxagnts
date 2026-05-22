@@ -48,55 +48,53 @@ pub async fn create_provider(
     Json(req): Json<CreateProviderReq>,
 ) -> Result<Json<ProviderConfig>, Response> {
     {
-        {
-            let settings = state.read().await;
+        let settings = state.read().await;
 
-            if settings.config.provider_configs.contains_key(&req.id) {
-                return Err((
-                    StatusCode::CONFLICT,
-                    Json(json!({ "error": "provider id already exists" })),
-                )
-                    .into_response());
-            }
+        if settings.config.provider_configs.contains_key(&req.id) {
+            return Err((
+                StatusCode::CONFLICT,
+                Json(json!({ "error": "provider id already exists" })),
+            )
+                .into_response());
+        }
+    }
+
+    let provider_cfg = ProviderConfig {
+        id: req.id,
+        name: req.name,
+        api_base: req.api_base,
+        enabled: req.enabled,
+        models: Vec::new(),
+        options: HashMap::new(),
+    };
+    {
+        let mut settings = state.write().await;
+
+        settings
+            .config
+            .provider_configs
+            .insert(provider_cfg.id.clone(), provider_cfg.clone());
+
+        if let Err(e) = settings.save().await {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": format!("{}", e) })),
+            )
+                .into_response());
         }
 
-        let provider_cfg = ProviderConfig {
-            id: req.id,
-            name: req.name,
-            api_base: req.api_base,
-            enabled: req.enabled,
-            models: Vec::new(),
-            options: HashMap::new(),
-        };
-        {
-            let mut settings = state.write().await;
-
-            settings
-                .config
-                .provider_configs
-                .insert(provider_cfg.id.clone(), provider_cfg.clone());
-
-            if let Err(e) = settings.save().await {
+        if let Some(api_key) = req.api_key {
+            if let Err(e) = set_api_key(&provider_cfg.id, &api_key).await {
                 return Err((
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({ "error": format!("{}", e) })),
                 )
                     .into_response());
             }
-
-            if let Some(api_key) = req.api_key {
-                if let Err(e) = set_api_key(&provider_cfg.id, &api_key).await {
-                    return Err((
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        Json(json!({ "error": format!("{}", e) })),
-                    )
-                        .into_response());
-                }
-            }
         }
-
-        Ok(Json(provider_cfg))
     }
+
+    Ok(Json(provider_cfg))
 }
 
 pub async fn update_provider(
@@ -216,68 +214,66 @@ pub async fn create_provider_model(
     Json(req): Json<CreateModelReq>,
 ) -> Result<Json<ModelConfig>, Response> {
     {
-        {
-            let settings = state.read().await;
+        let settings = state.read().await;
 
-            if !settings.config.provider_configs.contains_key(&provider_id) {
-                return Err((
-                    StatusCode::NOT_FOUND,
-                    Json(json!({ "error": "provider not found" })),
-                )
-                    .into_response());
-            }
-
-            let provider = settings
-                .config
-                .provider_configs
-                .get(&provider_id)
-                .clone()
-                .unwrap();
-            let models = provider.models.clone();
-
-            if let Some(_m) = models.iter().find(|m| m.id == req.id) {
-                return Err((
-                    StatusCode::CONFLICT,
-                    Json(json!({ "error": "provider id already exists" })),
-                )
-                    .into_response());
-            }
+        if !settings.config.provider_configs.contains_key(&provider_id) {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(json!({ "error": "provider not found" })),
+            )
+                .into_response());
         }
 
-        let model_cfg = ModelConfig {
-            id: req.id,
-            name: req.name,
-            context_window: 4096,
-            max_tokens: 2048,
-            temperature: 0.7,
-        };
-        {
-            let mut settings = state.write().await;
+        let provider = settings
+            .config
+            .provider_configs
+            .get(&provider_id)
+            .clone()
+            .unwrap();
+        let models = provider.models.clone();
 
-            let mut new_provider = settings
-                .config
-                .provider_configs
-                .get(&provider_id)
-                .unwrap()
-                .clone();
-            new_provider.models.push(model_cfg.clone());
-
-            settings
-                .config
-                .provider_configs
-                .insert(provider_id.clone(), new_provider.clone());
-
-            if let Err(e) = settings.save().await {
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({ "error": format!("{}", e) })),
-                )
-                    .into_response());
-            }
+        if let Some(_m) = models.iter().find(|m| m.id == req.id) {
+            return Err((
+                StatusCode::CONFLICT,
+                Json(json!({ "error": "provider id already exists" })),
+            )
+                .into_response());
         }
-
-        Ok(Json(model_cfg))
     }
+
+    let model_cfg = ModelConfig {
+        id: req.id,
+        name: req.name,
+        context_window: 4096,
+        max_tokens: 2048,
+        temperature: 0.7,
+    };
+    {
+        let mut settings = state.write().await;
+
+        let mut new_provider = settings
+            .config
+            .provider_configs
+            .get(&provider_id)
+            .unwrap()
+            .clone();
+        new_provider.models.push(model_cfg.clone());
+
+        settings
+            .config
+            .provider_configs
+            .insert(provider_id.clone(), new_provider.clone());
+
+        if let Err(e) = settings.save().await {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": format!("{}", e) })),
+            )
+                .into_response());
+        }
+    }
+
+    Ok(Json(model_cfg))
 }
 
 pub async fn update_provider_model(
@@ -285,72 +281,70 @@ pub async fn update_provider_model(
     Path((provider_id, model_id)): Path<(String, String)>,
     Json(req): Json<UpdateModelReq>,
 ) -> Result<Json<ModelConfig>, Response> {
-    {
-        let old_model = {
-            let settings = state.read().await;
+    let old_model = {
+        let settings = state.read().await;
 
-            if !settings.config.provider_configs.contains_key(&provider_id) {
-                return Err((
-                    StatusCode::NOT_FOUND,
-                    Json(json!({ "error": "provider not found" })),
-                )
-                    .into_response());
-            }
-
-            let provider = settings
-                .config
-                .provider_configs
-                .get(&provider_id)
-                .clone()
-                .unwrap();
-            let models = provider.models.clone();
-
-            if let Some(m) = models.iter().find(|m| m.id == model_id.clone()) {
-                m.clone()
-            } else {
-                return Err((
-                    StatusCode::NOT_FOUND,
-                    Json(json!({ "error": "model not found" })),
-                )
-                    .into_response());
-            }
-        };
-
-        let mut new_model = old_model.clone();
-
-        if let Some(name) = req.name {
-            new_model.name = name;
+        if !settings.config.provider_configs.contains_key(&provider_id) {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(json!({ "error": "provider not found" })),
+            )
+                .into_response());
         }
 
-        {
-            let mut settings = state.write().await;
+        let provider = settings
+            .config
+            .provider_configs
+            .get(&provider_id)
+            .clone()
+            .unwrap();
+        let models = provider.models.clone();
 
-            let mut new_provider = settings
-                .config
-                .provider_configs
-                .get(&provider_id)
-                .unwrap()
-                .clone();
-            for model in new_provider.models.iter_mut() {
-                *model = new_model.clone();
-            }
-
-            settings
-                .config
-                .provider_configs
-                .insert(provider_id.clone(), new_provider.clone());
-
-            if let Err(e) = settings.save().await {
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({ "error": format!("{}", e) })),
-                )
-                    .into_response());
-            }
+        if let Some(m) = models.iter().find(|m| m.id == model_id.clone()) {
+            m.clone()
+        } else {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(json!({ "error": "model not found" })),
+            )
+                .into_response());
         }
+    };
 
-        Ok(Json(new_model))
+    let mut new_model = old_model.clone();
+
+    if let Some(name) = req.name {
+        new_model.name = name;
     }
+
+    {
+        let mut settings = state.write().await;
+
+        let mut new_provider = settings
+            .config
+            .provider_configs
+            .get(&provider_id)
+            .unwrap()
+            .clone();
+        for model in new_provider.models.iter_mut() {
+            *model = new_model.clone();
+        }
+
+        settings
+            .config
+            .provider_configs
+            .insert(provider_id.clone(), new_provider.clone());
+
+        if let Err(e) = settings.save().await {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": format!("{}", e) })),
+            )
+                .into_response());
+        }
+    }
+
+    Ok(Json(new_model))
 }
 
 pub async fn delete_provider_model(
@@ -358,67 +352,71 @@ pub async fn delete_provider_model(
     Path((provider_id, model_id)): Path<(String, String)>,
 ) -> Result<Json<Value>, Response> {
     {
-        {
-            let settings = state.read().await;
+        let settings = state.read().await;
 
-            if !settings.config.provider_configs.contains_key(&provider_id) {
-                return Err((
-                    StatusCode::NOT_FOUND,
-                    Json(json!({ "error": "provider not found" })),
-                )
-                    .into_response());
-            }
+        if !settings.config.provider_configs.contains_key(&provider_id) {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(json!({ "error": "provider not found" })),
+            )
+                .into_response());
+        }
 
-            let provider = settings
-                .config
-                .provider_configs
-                .get(&provider_id)
-                .clone()
-                .unwrap();
-            let models = provider.models.clone();
+        let provider = settings
+            .config
+            .provider_configs
+            .get(&provider_id)
+            .clone()
+            .unwrap();
+        let models = provider.models.clone();
 
-            if let Some(m) = models.iter().find(|m| m.id == model_id.clone()) {
-                m.clone()
-            } else {
-                return Err((
-                    StatusCode::NOT_FOUND,
-                    Json(json!({ "error": "model not found" })),
-                )
-                    .into_response());
-            }
-        };
+        if let Some(m) = models.iter().find(|m| m.id == model_id.clone()) {
+            m.clone()
+        } else {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(json!({ "error": "model not found" })),
+            )
+                .into_response());
+        }
+    };
 
-        {
-            let mut settings = state.write().await;
+    {
+        let mut settings = state.write().await;
 
-            let mut new_provider = settings
-                .config
-                .provider_configs
-                .get(&provider_id)
-                .unwrap()
-                .clone();
-            let mut models = new_provider.models.clone();
-            models.retain(|m| m.id != model_id);
-            new_provider.models = models;
+        let mut new_provider = settings
+            .config
+            .provider_configs
+            .get(&provider_id)
+            .unwrap()
+            .clone();
+        let mut models = new_provider.models.clone();
+        models.retain(|m| m.id != model_id);
+        new_provider.models = models;
 
-            settings
-                .config
-                .provider_configs
-                .insert(provider_id.clone(), new_provider.clone());
+        settings
+            .config
+            .provider_configs
+            .insert(provider_id.clone(), new_provider.clone());
 
-            if let Err(e) = settings.save().await {
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({ "error": format!("{}", e) })),
-                )
-                    .into_response());
+        if let Some(config_model) = settings.config.model.as_deref() {
+            if config_model == model_id.as_str() {
+                settings.config.model = None;
             }
         }
 
-        Ok(Json(json!({
-            "message": "deleted"
-        })))
+        if let Err(e) = settings.save().await {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": format!("{}", e) })),
+            )
+                .into_response());
+        }
     }
+
+    Ok(Json(json!({
+        "message": "deleted"
+    })))
 }
 
 pub async fn update_default_model(
@@ -426,48 +424,42 @@ pub async fn update_default_model(
     Json(req): Json<UpdateDefaultModelReq>,
 ) -> Result<Json<Value>, Response> {
     {
-        {
-            let mut settings = state.write().await;
+        let mut settings = state.write().await;
 
-            settings.config.model = Some(req.id.clone());
+        settings.config.model = Some(req.id.clone());
 
-            if let Err(e) = settings.save().await {
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({ "error": format!("{}", e) })),
-                )
-                    .into_response());
-            }
+        if let Err(e) = settings.save().await {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "error": format!("{}", e) })),
+            )
+                .into_response());
         }
-
-        Ok(Json(json!({
-            "message": "deleted"
-        })))
     }
+
+    Ok(Json(json!({
+        "message": "updated"
+    })))
 }
 
-pub async fn get_models(
-    State(state): State<AppState>,
+pub async fn get_models(State(state): State<AppState>) -> Result<Json<Vec<Value>>, Response> {
+    let models = {
+        let mut models: Vec<Value> = Vec::new();
 
-) -> Result<Json<Vec<Value>>, Response> {
-    {
-        let models = {
-            let mut models: Vec<Value> = Vec::new();
+        let settings = state.read().await;
 
-            let settings = state.read().await;
-
-            for provider in settings.config.provider_configs.values() {
+        for provider in settings.config.provider_configs.values() {
+            if provider.enabled {
                 for model in provider.models.iter() {
                     models.push(model.id.clone().into())
                 }
             }
+        }
 
-            models
+        models
+    };
 
-        };
-
-        Ok(Json(models))
-    }
+    Ok(Json(models))
 }
 
 async fn set_api_key(provider_id: &str, api_key: &str) -> anyhow::Result<()> {

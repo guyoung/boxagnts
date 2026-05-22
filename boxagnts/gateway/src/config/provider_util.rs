@@ -4,6 +4,7 @@ use serde_json::{ json, Value };
 
 pub fn get_provider_options() -> Vec<Value> {
     vec![
+        json!({ "id": "free", "title": "Free Mode", "description": "OpenCode Zen → OpenRouter free fallback (no spend)", "category": "Popular", "badge": Some("FREE") }),
         json!({ "id": "openai", "title": "OpenAI", "description": "(API key)", "category": "Popular", "badge": null }),
         json!({ "id": "openai-codex", "title": "OpenAI Codex", "description": "(ChatGPT Plus/Pro — browser login)", "category": "Popular", "badge": null }),
         json!({ "id": "github-copilot", "title": "GitHub Copilot", "description": "(GitHub subscription or token)", "category": "Popular", "badge": null }),
@@ -13,9 +14,13 @@ pub fn get_provider_options() -> Vec<Value> {
         json!({ "id": "openrouter", "title": "OpenRouter", "description": "100+ models with one key", "category": "Popular", "badge": null }),
         json!({ "id": "vercel", "title": "Vercel AI Gateway", "description": "Gateway for AI SDK models", "category": "Popular", "badge": null }),
         json!({ "id": "groq", "title": "Groq", "description": "Fast hosted inference", "category": "Popular", "badge": Some("FREE") }),
-        json!({ "id": "ollama", "title": "Ollama", "description": "Run models locally", "category": "Popular", "badge": Some("LOCAL") }),
+        json!({ "id": "ollama", "title": "Ollama", "description": "Local inference + cloud models", "category": "Popular", "badge": Some("LOCAL") }),
         json!({ "id": "zai", "title": "Z.AI", "description": "GLM-5.1 / GLM-5 / GLM-4.7 Coding Plan", "category": "Popular", "badge": null }),
         json!({ "id": "opencode-go", "title": "OpenCode Go", "description": "$10/mo flat-rate · Kimi · DeepSeek · GLM · MiniMax", "category": "Popular", "badge": null }),
+        json!({ "id": "opencode-zen", "title": "OpenCode Zen", "description": "Free models + paid · Nemotron · Ring · MiniMax · DeepSeek", "category": "Popular", "badge": Some("FREE") }),
+        json!({ "id": "synthetic", "title": "Synthetic.dev", "description": "Hosted open weights", "category": "Popular", "badge": null }),
+        json!({ "id": "routing", "title": "routing.run", "description": "Hosted open weights · DeepSeek · Llama · Mixtral · Qwen", "category": "Popular", "badge": null }),
+        json!({ "id": "neuralwatt", "title": "NeuralWatt", "description": "Hosted open weights - energy-efficient", "category": "Popular", "badge": null }),
         json!({ "id": "cerebras", "title": "Cerebras", "description": "Fast hosted inference", "category": "Other", "badge": Some("FREE") }),
         json!({ "id": "sambanova", "title": "SambaNova", "description": "Fast hosted inference", "category": "Other", "badge": Some("FREE") }),
         json!({ "id": "lmstudio", "title": "LM Studio", "description": "Local model server", "category": "Other", "badge": Some("LOCAL") }),
@@ -79,212 +84,146 @@ fn model_entry(id: &str, name: &str, desc: &str) -> ModelEntry {
 
 /// Get models for a provider from the model registry (models.dev data).
 ///
-/// Falls back to the hardcoded `models_for_provider()` list when the registry
-/// has no entries for this provider.  This makes models.dev the single source
-/// of truth once the background fetch completes, while still providing a good
-/// experience before the fetch finishes.
+/// Builds picker entries from the bundled / network-refreshed registry.
+/// The registry is always populated (the embedded models.dev snapshot
+/// contains ~118 providers / ~4500 models), so the only time the result
+/// is empty is when the caller passed a truly unknown provider id — in
+/// which case we synthesize a single `"default"` placeholder so the
+/// picker isn't blank.
 pub fn models_for_provider_from_registry(
     provider_id: &str,
     registry: &boxagnts_api::ModelRegistry,
 ) -> Vec<ModelEntry> {
-    let entries = registry.list_by_provider(provider_id);
-    if !entries.is_empty() {
-        entries
-            .iter()
-            .map(|e| {
-                let cost_str = match (e.cost_input, e.cost_output) {
-                    (Some(ci), Some(co)) => format!("{} | ${:.2}/${:.2} per M", format_context_window(e.info.context_window), ci, co),
-                    _ => format_context_window(e.info.context_window),
-                };
-                ModelEntry {
-                    id: e.info.id.to_string(),
-                    display_name: e.info.name.clone(),
-                    description: cost_str,
-                    is_current: false,
-                }
-            })
-            .collect()
+    // "free" is the composite Zen → OpenRouter provider; the upstream
+    // models.dev catalog has nothing under this id, so serve a curated list
+    // directly.  `free/auto` is the default routing entry; the rest pin a
+    // specific upstream model for users who care.
+    if provider_id == "free" {
+        return free_provider_models();
+    }
+    // Codex (ChatGPT-authenticated OpenAI) is not in the models.dev catalog —
+    // serve the curated CODEX_MODELS list so the picker isn't empty.
+    if provider_id == "codex" {
+        return codex_provider_models();
+    }
+
+    let mut entries = registry.list_visible_by_provider(provider_id);
+
+    // Fall back to all entries (including alpha/deprecated) if the visible
+    // filter wiped the list — better to show something than nothing.
+    if entries.is_empty() {
+        entries = registry.list_by_provider(provider_id);
+    }
+
+    if entries.is_empty() {
+        // Truly unknown provider — keep the picker non-empty so /model still
+        // works against e.g. self-hosted endpoints.
+        return vec![model_entry(
+            "default",
+            "Default model",
+            "no catalog entry for this provider",
+        )];
+    }
+
+    // Sort: most recently released first, then alphabetical by id.
+    entries.sort_by(|a, b| {
+        let rd_a = a.release_date.as_deref().unwrap_or("");
+        let rd_b = b.release_date.as_deref().unwrap_or("");
+        rd_b.cmp(rd_a).then_with(|| (*a.info.id).cmp(&*b.info.id))
+    });
+
+    entries
+        .iter()
+        .map(|e| {
+            let cost_str = match (e.cost_input, e.cost_output) {
+                (Some(ci), Some(co)) => format!(
+                    "{} | ${:.2}/${:.2} per M",
+                    format_context_window(e.info.context_window),
+                    ci,
+                    co
+                ),
+                _ => format_context_window(e.info.context_window),
+            };
+            ModelEntry {
+                id: e.info.id.to_string(),
+                display_name: e.info.name.clone(),
+                description: cost_str,
+                is_current: false,
+            }
+        })
+        .collect()
+}
+
+/// Curated free-mode model list used by `models_for_provider_from_registry`.
+/// Always shows `free/auto` first; one pin entry per catalog upstream so the
+/// user can target a specific provider when they need to.
+fn free_provider_models() -> Vec<ModelEntry> {
+    let mut entries = vec![ModelEntry {
+        id: "free/auto".to_string(),
+        display_name: "Auto (round-robin across configured providers)".to_string(),
+        description: "stacks every free-tier key you've added · $0.00 per M".to_string(),
+        is_current: false,
+    }];
+
+    for upstream in boxagnts_api::FREE_CATALOG {
+        entries.push(ModelEntry {
+            id: format!("{}/{}", upstream.id, upstream.default_model),
+            display_name: format!("{} \u{2014} {}", upstream.title, upstream.default_model),
+            description: format!("{} · $0.00 per M", upstream.note),
+            is_current: false,
+        });
+    }
+
+    entries
+}
+
+/// Curated Codex (ChatGPT-authenticated OpenAI) model list used by
+/// `models_for_provider_from_registry` because models.dev does not catalog
+/// these endpoints.
+fn codex_provider_models() -> Vec<ModelEntry> {
+    boxagnts_workspace::codex_oauth::CODEX_MODELS
+        .iter()
+        .map(|(id, name)| {
+            let ctx = match *id {
+                "gpt-5.4" | "gpt-5.2" | "gpt-5.2-codex" | "gpt-5.1-codex"
+                | "gpt-5.1-codex-mini" | "gpt-5.1-codex-max" => "400K ctx",
+                _ => "128K ctx",
+            };
+            ModelEntry {
+                id: id.to_string(),
+                display_name: name.to_string(),
+                description: format!("{} | ChatGPT-authenticated", ctx),
+                is_current: false,
+            }
+        })
+        .collect()
+}
+
+/// Return the provider-prefixed default model name for a given provider,
+/// consulting the registry first and falling back to a `provider/default`
+/// placeholder for unknown providers.
+///
+/// **Anthropic exception** — anthropic models are emitted bare (no
+/// `anthropic/` prefix) for backward-compatibility with config files that
+/// pre-date the multi-provider era.
+///
+/// **Free exception** — the composite Zen → OpenRouter provider ships with
+/// a synthetic `free/auto` default that the wrapper translates per upstream.
+pub fn default_model_for_provider(
+    provider_id: &str,
+    registry: &boxagnts_api::ModelRegistry,
+) -> String {
+    if provider_id == "free" {
+        return "free/auto".to_string();
+    }
+    if let Some(best) = registry.best_model_for_provider(provider_id) {
+        if provider_id == "anthropic" {
+            best
+        } else {
+            format!("{}/{}", provider_id, best)
+        }
     } else {
-        // Fall back to hardcoded
-        models_for_provider(provider_id)
-    }
-}
-
-
-/// Build the model list for a given provider.
-///
-/// Returns a curated set of well-known models for major providers so the
-/// `/model` picker shows relevant choices regardless of whether the API
-/// returned a live model list.
-pub fn models_for_provider(provider_id: &str) -> Vec<ModelEntry> {
-    match provider_id {
-        "anthropic" => vec![
-            model_entry("claude-opus-4-6", "Claude Opus 4.6", "Most capable — best for complex reasoning and analysis"),
-            model_entry("claude-sonnet-4-6", "Claude Sonnet 4.6", "Balanced performance and speed — great for coding tasks"),
-            model_entry("claude-haiku-4-5-20251001", "Claude Haiku 4.5", "Fast and efficient — ideal for quick completions"),
-        ],
-        "openai" => vec![
-            model_entry("gpt-4o", "GPT-4o", "128K context"),
-            model_entry("gpt-4o-mini", "GPT-4o mini", "128K context"),
-            model_entry("gpt-4.1", "GPT-4.1", "1M context"),
-            model_entry("gpt-4.1-mini", "GPT-4.1 mini", "1M context"),
-            model_entry("gpt-4.1-nano", "GPT-4.1 nano", "1M context"),
-            model_entry("o3", "o3", "200K context"),
-            model_entry("o3-mini", "o3 mini", "200K context"),
-            model_entry("o4-mini", "o4 mini", "200K context"),
-            model_entry("gpt-4-turbo", "GPT-4 Turbo", "128K context"),
-        ],
-        "google" => vec![
-            model_entry("gemini-2.5-pro", "Gemini 2.5 Pro", "1M context"),
-            model_entry("gemini-2.5-flash", "Gemini 2.5 Flash", "1M context"),
-            model_entry("gemini-2.0-flash", "Gemini 2.0 Flash", "1M context"),
-        ],
-        "minimax" => vec![
-            model_entry("MiniMax-M2.7", "MiniMax M2.7", "Anthropic-compatible (128K context)"),
-        ],
-        "groq" => vec![
-            model_entry("llama-3.3-70b-versatile", "Llama 3.3 70B", "128K context"),
-            model_entry("llama-3.1-8b-instant", "Llama 3.1 8B", "128K context"),
-            model_entry("mixtral-8x7b-32768", "Mixtral 8x7B", "32K context"),
-            model_entry("gemma2-9b-it", "Gemma 2 9B", "8K context"),
-        ],
-        "cerebras" => vec![
-            model_entry("llama-3.3-70b", "Llama 3.3 70B", "128K context"),
-            model_entry("llama-3.1-8b", "Llama 3.1 8B", "128K context"),
-        ],
-        "deepseek" => vec![
-            model_entry(
-                "deepseek-v4-pro",
-                "DeepSeek V4 Pro",
-                "1M context, 384K output",
-            ),
-            model_entry(
-                "deepseek-v4-flash",
-                "DeepSeek V4 Flash",
-                "1M context, 384K output",
-            ),
-        ],
-        "mistral" => vec![
-            model_entry("mistral-large-latest", "Mistral Large", "128K context"),
-            model_entry("mistral-small-latest", "Mistral Small", "128K context"),
-            model_entry("codestral-latest", "Codestral", "32K context"),
-        ],
-        "xai" => vec![
-            model_entry("grok-2", "Grok 2", "128K context"),
-            model_entry("grok-3", "Grok 3", "128K context"),
-            model_entry("grok-3-mini", "Grok 3 mini", "128K context"),
-        ],
-        "openrouter" => vec![
-            model_entry("anthropic/claude-sonnet-4", "Claude Sonnet 4", "via OpenRouter"),
-            model_entry("openai/gpt-4o", "GPT-4o", "via OpenRouter"),
-            model_entry("google/gemini-2.5-pro", "Gemini 2.5 Pro", "via OpenRouter"),
-            model_entry("meta-llama/llama-3.3-70b-instruct", "Llama 3.3 70B", "via OpenRouter"),
-        ],
-        "codex" | "openai-codex" => vec![
-            model_entry("gpt-5.2-codex", "GPT-5.2 Codex", "OAuth-backed Codex default"),
-            model_entry("gpt-5.1-codex", "GPT-5.1 Codex", "Previous Codex generation"),
-            model_entry("gpt-5.1-codex-mini", "GPT-5.1 Codex Mini", "Smaller Codex model"),
-            model_entry("gpt-5.1-codex-max", "GPT-5.1 Codex Max", "Larger Codex model"),
-            model_entry("gpt-5.4", "GPT-5.4", "General frontier model via Codex auth"),
-            model_entry("gpt-5.2", "GPT-5.2", "General model via Codex auth"),
-        ],
-        "github-copilot" => vec![
-            model_entry("claude-sonnet-4.6", "Claude Sonnet 4.6", "via Copilot"),
-            model_entry("claude-sonnet-4.5", "Claude Sonnet 4.5", "via Copilot"),
-            model_entry("claude-haiku-4.5", "Claude Haiku 4.5", "via Copilot"),
-            model_entry("gpt-4.1", "GPT-4.1", "via Copilot"),
-            model_entry("gpt-4o", "GPT-4o", "via Copilot"),
-            model_entry("gpt-4o-mini", "GPT-4o mini", "via Copilot"),
-            model_entry("gpt-5.4", "GPT-5.4", "via Copilot"),
-            model_entry("gpt-5-mini", "GPT-5 mini", "via Copilot"),
-            model_entry("o3-mini", "o3 mini", "via Copilot"),
-            model_entry("o4-mini", "o4 mini", "via Copilot"),
-            model_entry("gemini-3-flash-preview", "Gemini 3 Flash", "via Copilot"),
-        ],
-        "cohere" => vec![
-            model_entry("command-r-plus", "Command R+", "128K context"),
-            model_entry("command-r", "Command R", "128K context"),
-        ],
-        "perplexity" => vec![
-            model_entry("sonar-pro", "Sonar Pro", "search-augmented"),
-            model_entry("sonar", "Sonar", "search-augmented"),
-        ],
-        "togetherai" | "together-ai" => vec![
-            model_entry("meta-llama/Llama-3.3-70B-Instruct-Turbo", "Llama 3.3 70B Turbo", "128K context"),
-            model_entry("meta-llama/Llama-3.1-8B-Instruct-Turbo", "Llama 3.1 8B Turbo", "128K context"),
-            model_entry("Qwen/Qwen2.5-72B-Instruct-Turbo", "Qwen 2.5 72B Turbo", "128K context"),
-        ],
-        "deepinfra" => vec![
-            model_entry("meta-llama/Llama-3.3-70B-Instruct", "Llama 3.3 70B", "128K context"),
-            model_entry("meta-llama/Llama-3.1-8B-Instruct", "Llama 3.1 8B", "128K context"),
-        ],
-        "venice" => vec![
-            model_entry("llama-3.3-70b", "Llama 3.3 70B", "128K context"),
-        ],
-        "ollama" => vec![
-            model_entry("qwen2.5-coder", "Qwen 2.5 Coder", "local — best for coding tasks"),
-            model_entry("deepseek-coder-v2", "DeepSeek Coder V2", "local — coding model"),
-            model_entry("codellama", "Code Llama", "local — coding model"),
-            model_entry("llama3.2", "Llama 3.2", "local — general purpose"),
-            model_entry("mistral", "Mistral", "local — general purpose"),
-            model_entry("gemma2", "Gemma 2", "local — general purpose"),
-            model_entry("phi3", "Phi-3", "local — general purpose"),
-            model_entry("qwen2.5", "Qwen 2.5", "local — general purpose"),
-        ],
-        "azure" => vec![
-            model_entry("gpt-4o", "GPT-4o (Azure)", "128K context"),
-            model_entry("gpt-4o-mini", "GPT-4o mini (Azure)", "128K context"),
-        ],
-        "custom-openai" => vec![
-            model_entry("default", "Default model", "OpenAI-compatible endpoint"),
-        ],
-        "amazon-bedrock" => vec![
-            model_entry("anthropic.claude-sonnet-4-6-v1", "Claude Sonnet 4.6 (Bedrock)", "200K context"),
-            model_entry("anthropic.claude-haiku-4-5-20251001-v1", "Claude Haiku 4.5 (Bedrock)", "200K context"),
-        ],
-        "lmstudio" => vec![
-            model_entry("default", "Default model", "local"),
-        ],
-        "llamacpp" => vec![
-            model_entry("default", "Default model", "local"),
-        ],
-        _ => vec![
-            model_entry("default", "Default model", ""),
-        ],
-    }
-}
-
-
-// Return the provider-prefixed default model name for a given provider.
-///
-/// This is used when connecting to a new provider so the status bar
-/// immediately shows the right model.
-pub fn default_model_for_provider(provider_id: &str) -> String {
-    match provider_id {
-        "anthropic" => "claude-opus-4-6".to_string(),
-        "openai" => "openai/gpt-4o".to_string(),
-        "google" => "google/gemini-2.5-flash".to_string(),
-        "minimax" => "minimax/MiniMax-M2.7".to_string(),
-        "groq" => "groq/llama-3.3-70b-versatile".to_string(),
-        "cerebras" => "cerebras/llama-3.3-70b".to_string(),
-        "deepseek" => "deepseek/deepseek-v4-pro".to_string(),
-        "mistral" => "mistral/mistral-large-latest".to_string(),
-        "xai" => "xai/grok-2".to_string(),
-        "openrouter" => "openrouter/anthropic/claude-sonnet-4".to_string(),
-        "github-copilot" => "github-copilot/gpt-4o".to_string(),
-        "codex" => "codex/gpt-5.2-codex".to_string(),
-        "openai-codex" => "openai-codex/gpt-5.2-codex".to_string(),
-        "cohere" => "cohere/command-r-plus".to_string(),
-        "perplexity" => "perplexity/sonar-pro".to_string(),
-        "togetherai" | "together-ai" => "togetherai/meta-llama/Llama-3.3-70B-Instruct-Turbo".to_string(),
-        "deepinfra" => "deepinfra/meta-llama/Llama-3.3-70B-Instruct".to_string(),
-        "venice" => "venice/llama-3.3-70b".to_string(),
-        "ollama" => "ollama/llama3.2".to_string(),
-        "lmstudio" => "lmstudio/default".to_string(),
-        "llamacpp" => "llamacpp/default".to_string(),
-        "azure" => "azure/gpt-4o".to_string(),
-        "amazon-bedrock" => "amazon-bedrock/anthropic.claude-sonnet-4-6-v1".to_string(),
-        other => format!("{}/default", other),
+        format!("{}/default", provider_id)
     }
 }
 
@@ -301,7 +240,34 @@ pub fn format_context_window(context_window: u32) -> String {
     }
 }
 
+/// Format a model display line with optional context window and cost info.
+///
+/// Example: `"gpt-4o  128K ctx  $5.00/M"`
+pub fn format_model_line(model_str: &str, context_window: Option<u32>, cost_per_1m: Option<f64>) -> String {
+    let mut parts = vec![model_str.to_string()];
+    if let Some(ctx) = context_window {
+        parts.push(format_context_window(ctx).replace(" context", " ctx"));
+    }
+    if let Some(cost) = cost_per_1m {
+        if cost == 0.0 {
+            parts.push("free".to_string());
+        } else {
+            parts.push(format!("${:.2}/M", cost));
+        }
+    }
+    parts.join("  ")
+}
+
 fn infer_provider_from_model(model: &str) -> Option<String> {
+    // Free-mode synthetic IDs always route back through the "free"
+    // composite provider so the Zen → OpenRouter fallback kicks in.
+    if model == "free/auto"
+        || model.starts_with("free/")
+        || model.starts_with("zen/")
+        || model.starts_with("opencode-zen/")
+    {
+        return Some("free".to_string());
+    }
     if let Some((provider, _)) = model.split_once('/') {
         let known = [
             "anthropic",
@@ -327,6 +293,8 @@ fn infer_provider_from_model(model: &str) -> Option<String> {
             "llamacpp",
             "azure",
             "amazon-bedrock",
+            "free",
+            "opencode-zen",
         ];
         if known.contains(&provider) {
             return Some(provider.to_string());
@@ -345,5 +313,83 @@ fn infer_provider_from_model(model: &str) -> Option<String> {
         Some("google".to_string())
     } else {
         None
+    }
+}
+
+
+/// Return the environment variable name for a given provider ID.
+fn get_env_var_for_provider(id: &str) -> &'static str {
+    match id {
+        "anthropic" => "ANTHROPIC_API_KEY",
+        "openai" => "OPENAI_API_KEY",
+        "google" | "google-vertex" => "GOOGLE_API_KEY",
+        "github-copilot" => "GITHUB_TOKEN",
+        "groq" => "GROQ_API_KEY",
+        "cerebras" => "CEREBRAS_API_KEY",
+        "sambanova" => "SAMBANOVA_API_KEY",
+        "deepseek" => "DEEPSEEK_API_KEY",
+        "mistral" => "MISTRAL_API_KEY",
+        "openrouter" => "OPENROUTER_API_KEY",
+        "togetherai" => "TOGETHER_API_KEY",
+        "perplexity" => "PERPLEXITY_API_KEY",
+        "cohere" => "COHERE_API_KEY",
+        "xai" => "XAI_API_KEY",
+        "deepinfra" => "DEEPINFRA_API_KEY",
+        "azure" => "AZURE_API_KEY",
+        "amazon-bedrock" => "AWS_ACCESS_KEY_ID",
+        "sap-ai-core" => "AICORE_SERVICE_KEY",
+        "gitlab" => "GITLAB_TOKEN",
+        "cloudflare-ai-gateway" | "cloudflare-workers-ai" => "CLOUDFLARE_API_TOKEN",
+        "vercel" => "AI_GATEWAY_API_KEY",
+        "helicone" => "HELICONE_API_KEY",
+        "huggingface" => "HF_TOKEN",
+        "nvidia" => "NVIDIA_API_KEY",
+        "alibaba" => "DASHSCOPE_API_KEY",
+        "venice" => "VENICE_API_KEY",
+        "moonshotai" => "MOONSHOT_API_KEY",
+        "zhipuai" => "ZHIPU_API_KEY",
+        "zai" => "ZAI_API_KEY",
+        "siliconflow" => "SILICONFLOW_API_KEY",
+        "nebius" => "NEBIUS_API_KEY",
+        "novita" => "NOVITA_API_KEY",
+        "minimax" => "MINIMAX_API_KEY",
+        "ovhcloud" => "OVHCLOUD_API_KEY",
+        "scaleway" => "SCALEWAY_API_KEY",
+        "vultr" => "VULTR_API_KEY",
+        "baseten" => "BASETEN_API_KEY",
+        "friendli" => "FRIENDLI_TOKEN",
+        "upstage" => "UPSTAGE_API_KEY",
+        "stepfun" => "STEPFUN_API_KEY",
+        "fireworks" => "FIREWORKS_API_KEY",
+        _ => "API_KEY",
+    }
+}
+
+/// Return a URL hint for obtaining an API key from a given provider.
+fn get_url_for_provider(id: &str) -> &'static str {
+    match id {
+        "anthropic" => "console.anthropic.com",
+        "openai" => "platform.openai.com/api-keys",
+        "google" => "aistudio.google.com/apikey",
+        "github-copilot" => "github.com/settings/tokens",
+        "groq" => "console.groq.com/keys",
+        "cerebras" => "cloud.cerebras.ai",
+        "sambanova" => "cloud.sambanova.ai",
+        "deepseek" => "platform.deepseek.com/api_keys",
+        "mistral" => "console.mistral.ai/api-keys",
+        "openrouter" => "openrouter.ai/keys",
+        "togetherai" => "api.together.xyz/settings/api-keys",
+        "perplexity" => "perplexity.ai/settings/api",
+        "cohere" => "dashboard.cohere.com/api-keys",
+        "xai" => "console.x.ai",
+        "deepinfra" => "deepinfra.com/dash/api_keys",
+        "azure" => "portal.azure.com",
+        "amazon-bedrock" => "console.aws.amazon.com/bedrock",
+        "minimax" => "platform.minimaxi.com",
+        "huggingface" => "huggingface.co/settings/tokens",
+        "nvidia" => "build.nvidia.com",
+        "venice" => "venice.ai/settings/api",
+        "zai" => "z.ai/manage-apikey/apikey-list",
+        _ => "the provider's website",
     }
 }

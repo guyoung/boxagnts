@@ -1,42 +1,22 @@
-import { S as defineStore, a2 as ref, J as api, R as defineComponent, a9 as useAppStore, a0 as onMounted, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, d as VBtn, y as VRow, a8 as unref, M as createBlock, N as createCommentVNode, n as VDialog, a1 as openBlock, P as createTextVNode, F as Fragment, a3 as renderList, e as VCard, g as VCardItem, j as VCardTitle, a6 as toDisplayString, h as VCardSubtitle, i as VCardText, l as VChip, f as VCardActions, C as VSwitch, B as VSpacer, m as VCol, G as VTextField, z as VSelect, H as VTextarea, A as VSkeletonLoader, _ as _export_sfc } from "./index-CD7sFTTo.js";
+import { T as defineStore, K as api, S as defineComponent, ab as useAppStore, a1 as onMounted, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, e as VBtn, z as VRow, aa as unref, N as createBlock, O as createCommentVNode, o as VDialog, a4 as ref, a2 as openBlock, Q as createTextVNode, F as Fragment, a5 as renderList, f as VCard, h as VCardItem, k as VCardTitle, a8 as toDisplayString, i as VCardSubtitle, j as VCardText, m as VChip, g as VCardActions, D as VSwitch, C as VSpacer, n as VCol, H as VTextField, A as VSelect, I as VTextarea, B as VSkeletonLoader, _ as _export_sfc } from "./main-BSD2YpbL.js";
+import { u as useCrudOperations } from "./baseCrud-dWOHLWHe.js";
 const useAgentStore = defineStore("agents", () => {
-  const agents = ref([]);
-  const loading = ref(false);
-  async function fetchAgents() {
-    loading.value = true;
-    try {
-      agents.value = await api.getAgents();
-    } catch (e) {
-      console.error("Failed to fetch agents:", e);
-      agents.value = [];
-    } finally {
-      loading.value = false;
-    }
-  }
-  async function addAgent(data) {
-    const agent = await api.createAgent(data);
-    agents.value.push(agent);
-    return agent;
-  }
-  async function updateAgent(id, data) {
-    const agent = await api.updateAgent(id, data);
-    const idx = agents.value.findIndex((a) => a.id === id);
-    if (idx >= 0) {
-      agents.value[idx] = agent;
-    }
-    return agent;
-  }
-  async function removeAgent(id) {
-    await api.deleteAgent(id);
-    agents.value = agents.value.filter((a) => a.id !== id);
-  }
+  const crud = useCrudOperations(
+    {
+      fetchAll: () => api.getAgents(),
+      create: (data) => api.createAgent(data),
+      update: (id, data) => api.updateAgent(id, data),
+      remove: (id) => api.deleteAgent(id)
+    },
+    "agents"
+  );
   return {
-    agents,
-    loading,
-    fetchAgents,
-    addAgent,
-    updateAgent,
-    removeAgent
+    agents: crud.items,
+    loading: crud.loading,
+    fetchAgents: crud.fetch,
+    addAgent: crud.add,
+    updateAgent: crud.update,
+    removeAgent: crud.remove
   };
 });
 const _hoisted_1 = { class: "d-flex align-center justify-space-between mb-6" };

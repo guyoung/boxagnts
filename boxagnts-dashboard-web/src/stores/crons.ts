@@ -1,54 +1,29 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import { api, type CronJob, type CronLog } from '@/api'
+import { useCrudOperations } from './baseCrud'
 
 export const useCronStore = defineStore('crons', () => {
-  const crons = ref<CronJob[]>([])
-  const loading = ref(false)
-
-  async function fetchCrons() {
-    loading.value = true
-    try {
-      crons.value = await api.getCrons()
-    } catch (e) {
-      console.error('Failed to fetch crons:', e)
-      crons.value = []
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function addCron(data: Omit<CronJob, 'id' | 'last_run_at' | 'last_run_success'>): Promise<CronJob> {
-    const cron = await api.createCron(data)
-    crons.value.push(cron)
-    return cron
-  }
-
-  async function updateCron(id: string, data: Partial<Omit<CronJob, 'id'>>): Promise<CronJob> {
-    const cron = await api.updateCron(id, data)
-    const idx = crons.value.findIndex(c => c.id === id)
-    if (idx >= 0) {
-      crons.value[idx] = cron
-    }
-    return cron
-  }
-
-  async function removeCron(id: string) {
-    await api.deleteCron(id)
-    crons.value = crons.value.filter(c => c.id !== id)
-  }
+  const crud = useCrudOperations<CronJob, Omit<CronJob, 'id' | 'last_run_at' | 'last_run_success'>, Partial<Omit<CronJob, 'id'>>>(
+    {
+      fetchAll: () => api.getCrons(),
+      create: (data) => api.createCron(data),
+      update: (id, data) => api.updateCron(id, data),
+      remove: (id) => api.deleteCron(id),
+    },
+    'crons'
+  )
 
   async function fetchCronLogs(jobId: string): Promise<CronLog[]> {
     return api.getCronLogs(jobId)
   }
 
   return {
-    crons,
-    loading,
-    fetchCrons,
-    addCron,
-    updateCron,
-    removeCron,
+    crons: crud.items,
+    loading: crud.loading,
+    fetchCrons: crud.fetch,
+    addCron: crud.add,
+    updateCron: crud.update,
+    removeCron: crud.remove,
     fetchCronLogs,
   }
 })

@@ -69,11 +69,13 @@ pub async fn schedule_job(state: AppState, job_cfg: JobConfig) -> Result<(), Cro
     let job_name = job_cfg.name.clone();    
     let cron_expr = job_cfg.cron.clone();
     let job_timeout = job_cfg.timeout.unwrap_or(180);
+    let model = job_cfg.model.clone();
     let prompt = job_cfg.prompt.clone();
     
     let cron_job = Job::new_async(cron_expr.as_str(), move |_uuid, _lock| {
         let job_id = job_id.clone();
         let job_name = job_name.clone();
+        let model = model.clone();
         let prompt = prompt.clone();
 
         Box::pin(async move {
@@ -82,7 +84,7 @@ pub async fn schedule_job(state: AppState, job_cfg: JobConfig) -> Result<(), Cro
                 job_id, job_name, prompt
             );
 
-            let handle = super::job::execute(prompt, None).await;
+            let handle = super::job::execute(prompt, model).await;
 
             match handle {
                 Ok(handle) => {

@@ -54,9 +54,9 @@ const router = createRouter({
       redirect: '/settings/model',
       children: [
         {
-          path: 'prompt',
-          name: 'settings-prompt',
-          component: () => import('@/views/SettingsPromptPage.vue'),
+          path: 'agents-md',
+          name: 'settings-agents-md',
+          component: () => import('@/views/SettingsAgentsMdPage.vue'),
         },
         {
           path: 'model',

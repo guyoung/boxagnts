@@ -27,7 +27,7 @@ pub struct MinimaxProvider {
 }
 
 impl MinimaxProvider {
-    pub fn new(api_base: Option<String>, api_key: String) -> Self {        
+    pub fn new(api_base: Option<String>, api_key: String) -> Self {
         let api_base = if let Some(api_base) = api_base {
             api_base
         } else {
@@ -41,7 +41,7 @@ impl MinimaxProvider {
             use_bearer_auth: true,
             ..Default::default()
         })
-        .expect("MinimaxProvider: failed to create AnthropicClient");
+            .expect("MinimaxProvider: failed to create AnthropicClient");
 
         Self {
             client: Arc::new(client),
@@ -49,7 +49,7 @@ impl MinimaxProvider {
         }
     }
 
- 
+
 
     fn build_request(request: &ProviderRequest) -> CreateMessageRequest {
         let normalized_messages = normalize_anthropic_messages(&request.messages);
@@ -277,7 +277,7 @@ impl LlmProvider for MinimaxProvider {
         request: ProviderRequest,
     ) -> Result<Pin<Box<dyn Stream<Item = Result<StreamEvent, ProviderError>> + Send>>, ProviderError>
     {
-        println!("Minimax create_message_stream {} {}", self.id, "MiniMax" );
+        // println!("Minimax create_message_stream {} {}", self.id, "MiniMax" );
 
         let api_request = Self::build_request(&request);
         let handler = Arc::new(NullStreamHandler);

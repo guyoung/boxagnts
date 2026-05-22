@@ -1,42 +1,22 @@
-import { S as defineStore, a2 as ref, J as api, R as defineComponent, a9 as useAppStore, a0 as onMounted, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, d as VBtn, y as VRow, a8 as unref, M as createBlock, N as createCommentVNode, n as VDialog, a1 as openBlock, P as createTextVNode, F as Fragment, a3 as renderList, e as VCard, g as VCardItem, j as VCardTitle, a6 as toDisplayString, h as VCardSubtitle, i as VCardText, f as VCardActions, C as VSwitch, B as VSpacer, m as VCol, G as VTextField, z as VSelect, H as VTextarea, A as VSkeletonLoader, _ as _export_sfc } from "./index-CD7sFTTo.js";
+import { T as defineStore, K as api, S as defineComponent, ab as useAppStore, a1 as onMounted, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, e as VBtn, z as VRow, aa as unref, N as createBlock, O as createCommentVNode, o as VDialog, a4 as ref, a2 as openBlock, Q as createTextVNode, F as Fragment, a5 as renderList, f as VCard, h as VCardItem, k as VCardTitle, a8 as toDisplayString, i as VCardSubtitle, j as VCardText, g as VCardActions, D as VSwitch, C as VSpacer, n as VCol, H as VTextField, A as VSelect, I as VTextarea, B as VSkeletonLoader, _ as _export_sfc } from "./main-BSD2YpbL.js";
+import { u as useCrudOperations } from "./baseCrud-dWOHLWHe.js";
 const useSkillStore = defineStore("skills", () => {
-  const skills = ref([]);
-  const loading = ref(false);
-  async function fetchSkills() {
-    loading.value = true;
-    try {
-      skills.value = await api.getSkills();
-    } catch (e) {
-      console.error("Failed to fetch skills:", e);
-      skills.value = [];
-    } finally {
-      loading.value = false;
-    }
-  }
-  async function addSkill(data) {
-    const skill = await api.createSkill(data);
-    skills.value.push(skill);
-    return skill;
-  }
-  async function updateSkill(id, data) {
-    const skill = await api.updateSkill(id, data);
-    const idx = skills.value.findIndex((s) => s.id === id);
-    if (idx >= 0) {
-      skills.value[idx] = skill;
-    }
-    return skill;
-  }
-  async function removeSkill(id) {
-    await api.deleteSkill(id);
-    skills.value = skills.value.filter((s) => s.id !== id);
-  }
+  const crud = useCrudOperations(
+    {
+      fetchAll: () => api.getSkills(),
+      create: (data) => api.createSkill(data),
+      update: (id, data) => api.updateSkill(id, data),
+      remove: (id) => api.deleteSkill(id)
+    },
+    "skills"
+  );
   return {
-    skills,
-    loading,
-    fetchSkills,
-    addSkill,
-    updateSkill,
-    removeSkill
+    skills: crud.items,
+    loading: crud.loading,
+    fetchSkills: crud.fetch,
+    addSkill: crud.add,
+    updateSkill: crud.update,
+    removeSkill: crud.remove
   };
 });
 const _hoisted_1 = { class: "d-flex align-center justify-space-between mb-6" };

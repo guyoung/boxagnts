@@ -82,6 +82,14 @@ pub struct UpdateSiteReq {
     pub enabled: Option<bool>,
 }
 
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct SiteNavItem {
+    pub id: String,
+    pub title: String,
+    pub url: String,
+    pub description: String,
+}
+
 fn default_id() -> String {
     uuid::Uuid::new_v4().to_string()
 }

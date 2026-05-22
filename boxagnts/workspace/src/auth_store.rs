@@ -72,6 +72,7 @@ impl AuthStore {
     /// Persist the store to disk (best-effort).
     pub async fn save(&self)-> anyhow::Result<()> {
         let path = Self::path().await;
+        
         if let Some(parent) = path.parent() {
             tokio::fs::create_dir_all(parent).await?;
         }
@@ -125,7 +126,14 @@ impl AuthStore {
                 _ => {}
             }
         }
-        // Fall back to environment variable
+        // Fall back to environment variable.
+        //
+        // These mappings must match the env var each provider's adapter
+        // actually reads in `crates/api/src/providers/openai_compat_providers.rs`
+        // (and the bespoke adapters next to it). When they drift, keys that
+        // were exported via env vars look "configured" to the dialog but
+        // resolve to empty at request time. If you add a provider there,
+        // mirror its env var here.
         let env_var = match provider_id {
             "anthropic" => "ANTHROPIC_API_KEY",
             "openai" => "OPENAI_API_KEY",
@@ -146,9 +154,40 @@ impl AuthStore {
             "huggingface" => "HF_TOKEN",
             "nvidia" => "NVIDIA_API_KEY",
             "zai" => "ZAI_API_KEY",
+            "opencode-zen" | "opencode-go" => "OPENCODE_API_KEY",
+            "crof" => "CROF_API_KEY",
+            "sambanova" => "SAMBANOVA_API_KEY",
+            // qwen adapter reads DASHSCOPE_API_KEY (Alibaba's DashScope is the
+            // backing service), not QWEN_API_KEY.
+            "qwen" | "alibaba" => "DASHSCOPE_API_KEY",
+            "moonshot" | "moonshotai" => "MOONSHOT_API_KEY",
+            "zhipu" | "zhipuai" => "ZHIPU_API_KEY",
+            "siliconflow" => "SILICONFLOW_API_KEY",
+            "nebius" => "NEBIUS_API_KEY",
+            "novita" => "NOVITA_API_KEY",
+            "ovhcloud" => "OVHCLOUD_API_KEY",
+            "scaleway" => "SCALEWAY_API_KEY",
+            "vultr" | "vultr-ai" => "VULTR_API_KEY",
+            "baseten" => "BASETEN_API_KEY",
+            // friendli adapter reads FRIENDLI_TOKEN (Friendli's docs use that
+            // name), not FRIENDLI_API_KEY.
+            "friendli" => "FRIENDLI_TOKEN",
+            "upstage" => "UPSTAGE_API_KEY",
+            "stepfun" => "STEPFUN_API_KEY",
+            "fireworks" => "FIREWORKS_API_KEY",
+            "minimax" => "MINIMAX_API_KEY",
+            "synthetic" => "SYNTHETIC_API_KEY",
+            "routing" => "ROUTING_API_KEY",
+            "neuralwatt" => "NEURALWATT_API_KEY",
+            "custom-openai" => "CUSTOM_OPENAI_API_KEY",
+            "ollama" | "lm-studio" | "llama-cpp" => "", // No API key required
             _ => return None,
         };
-        std::env::var(env_var).ok().filter(|k| !k.is_empty())
+        if env_var.is_empty() {
+            None
+        } else {
+            std::env::var(env_var).ok().filter(|k| !k.is_empty())
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-import { R as defineComponent, af as watch, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, E as VTabs, a2 as ref, a1 as openBlock, P as createTextVNode, D as VTab, ac as useRouter, ab as useRoute, a4 as resolveComponent } from "./index-CD7sFTTo.js";
+import { S as defineComponent, ah as watch, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, G as VTabs, a4 as ref, a2 as openBlock, Q as createTextVNode, E as VTab, ae as useRouter, ad as useRoute, a6 as resolveComponent } from "./main-BSD2YpbL.js";
 const _hoisted_1 = { class: "d-flex align-center mb-6" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "SettingsPage",
@@ -8,7 +8,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const activeTab = ref("model");
     function getTabFromPath(path) {
       if (path.includes("/settings/security")) return "security";
-      if (path.includes("/settings/prompt")) return "prompt";
+      if (path.includes("/settings/agents-md")) return "agents-md";
       return "model";
     }
     watch(() => route.path, (val) => {
@@ -51,12 +51,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               _: 1
             }),
             createVNode(VTab, {
-              value: "prompt",
+              value: "agents-md",
               "prepend-icon": "mdi-text",
-              onClick: _cache[1] || (_cache[1] = ($event) => navigateTo("prompt"))
+              onClick: _cache[1] || (_cache[1] = ($event) => navigateTo("agents-md"))
             }, {
               default: withCtx(() => [..._cache[7] || (_cache[7] = [
-                createTextVNode(" System Prompt ", -1)
+                createTextVNode(" AGENTS.md ", -1)
               ])]),
               _: 1
             }),

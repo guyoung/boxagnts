@@ -44,6 +44,7 @@ pub async fn list_jobs(
         j.description = job.description.clone();
         j.cron = job.cron.clone();
         j.enabled = job.enabled;
+        j.model = job.model.clone();
 
         if let Some(log) = log {
             j.last_run_at = Some(log.executed_at);
@@ -86,6 +87,7 @@ pub async fn create_job(
         cron: req.cron,
         enabled: req.enabled,
         timeout: req.timeout,
+        model: req.model,
         prompt: req.prompt,
     };
 
@@ -134,6 +136,8 @@ pub async fn update_job(
     }
 
     new_job.timeout = req.timeout;
+    
+    new_job.model = req.model;
 
     if let Some(prompt) = req.prompt {
         new_job.prompt = prompt;

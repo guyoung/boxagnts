@@ -264,7 +264,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-api"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -290,7 +290,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-core"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "once_cell",
@@ -304,7 +304,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-gateway"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -333,7 +333,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-mcp"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -361,7 +361,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-query"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "boxagnts-api",
  "boxagnts-core",
@@ -377,10 +377,11 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-server"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "axum",
+ "base64",
  "boxagnts-gateway",
  "boxagnts-wasm-sandbox",
  "boxagnts-workspace",
@@ -402,7 +403,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-tools"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "async-trait",
  "boxagnts-core",
@@ -420,7 +421,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-tools-manager"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "boxagnts-tools",
  "boxagnts-wasm-tools",
@@ -429,7 +430,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-wasm-sandbox"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -476,7 +477,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-wasm-tools"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "async-trait",
  "boxagnts-tools",
@@ -488,7 +489,7 @@ dependencies = [
 
 [[package]]
 name = "boxagnts-workspace"
-version = "0.2.0"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "base64",

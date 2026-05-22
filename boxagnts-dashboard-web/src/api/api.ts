@@ -192,6 +192,7 @@ export interface CronJob {
   enabled: boolean
   timeout: number | null
   prompt: string | null
+  model: string | null
   last_run_at: string | null
   last_run_success: boolean | null
 }
@@ -266,65 +267,11 @@ export const api = {
   },
 
   async updateSessionTitle(sessionId: string, title: string): Promise<any> {
-    let url = `/dashboard/api/update_session_title/${sessionId}`;
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: title
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'API call failed');
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error(`REST API call failed for ${url}:`, error);
-      throw error;
-    }
+    return apiCall('update_session_title', { sessionId }, 'POST', { title })
   },
 
   async deleteSessionMessages(sessionId: string, message_uuids: string[]): Promise<any> {
-    let url = `/dashboard/api/delete_session_messages/${sessionId}`;
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: message_uuids
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'API call failed');
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error(`REST API call failed for ${url}:`, error);
-      throw error;
-    }
+    return apiCall('delete_session_messages', { sessionId }, 'POST', { messages: message_uuids })
   },
 
   async clearSessionMessages(sessionId: string): Promise<any> {
@@ -368,115 +315,72 @@ export const api = {
 
   // --- Update Default Model API ---
   async updateDefaultModel(id: string): Promise<void> {
-    const response = await fetch('/dashboard/api/config/update_default_model', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    })
-    if (!response.ok) throw new Error('Failed to update default model')
+    return apiCall('update_default_model', {}, 'POST', { id })
   },
 
   // --- Get Available Models API ---
   async getModels(): Promise<string[]> {
-    const response = await fetch('/dashboard/api/config/get_models', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!response.ok) throw new Error('Failed to fetch models')
-    return await response.json()
+    return apiCall<string[]>('get_models')
+  },
+
+  // --- Allowed Outbound Hosts APIs ---
+  async getAllowedOutboundHosts(): Promise<string[]> {
+    const data = await apiCall<{ allowed_outbound_hosts?: string[] }>('get_allowed_outbound_hosts')
+    return data.allowed_outbound_hosts || []
+  },
+  async updateAllowedOutboundHosts(hosts: string[]): Promise<void> {
+    return apiCall('update_allowed_outbound_hosts', {}, 'POST', { allowed_outbound_hosts: hosts })
   },
 
   // --- Config Providers APIs ---
   async getConfigProviders(): Promise<ConfigProvider[]> {
-    const response = await fetch('/dashboard/api/config/providers', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!response.ok) throw new Error('Failed to fetch providers')
-    return await response.json()
+    return apiCall<ConfigProvider[]>('get_config_providers')
   },
   async getConfigProvider(id: string): Promise<ConfigProvider | null> {
-    const response = await fetch(`/dashboard/api/config/providers/${id}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!response.ok) throw new Error('Failed to fetch provider')
-    return await response.json()
+    return apiCall<ConfigProvider | null>('get_config_provider', { id })
   },
   async createConfigProvider(data: { id: string; name: string; api_base: string; api_key: string; enabled: boolean }): Promise<ConfigProvider> {
-    const response = await fetch('/dashboard/api/config/providers/create_provider', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) throw new Error('Failed to create provider')
-    return await response.json()
+    return apiCall<ConfigProvider>('create_config_provider', {}, 'POST', data)
   },
   async updateConfigProvider(id: string, data: { name: string; api_base: string; api_key: string; enabled: boolean }): Promise<ConfigProvider> {
-    const response = await fetch(`/dashboard/api/config/providers/update_provider/${id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) throw new Error('Failed to update provider')
-    return await response.json()
+    return apiCall<ConfigProvider>('update_config_provider', { id }, 'POST', data)
   },
   async deleteConfigProvider(id: string): Promise<void> {
-    const response = await fetch(`/dashboard/api/config/providers/delete_provider/${id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!response.ok) throw new Error('Failed to delete provider')
+    return apiCall('delete_config_provider', { id }, 'POST')
   },
   async getProviderOptions(): Promise<ProviderOption[]> {
-    const response = await fetch('/dashboard/api/config/provider_options', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!response.ok) throw new Error('Failed to fetch provider options')
-    return await response.json()
+    return apiCall<ProviderOption[]>('get_provider_options')
   },
 
   // --- Provider Model APIs ---
   async createProviderModel(providerId: string, data: { id: string; name: string }): Promise<ProviderModel> {
-    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/create_model`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) throw new Error('Failed to create model')
-    return await response.json()
+    return apiCall<ProviderModel>('create_provider_model', { providerId }, 'POST', data)
   },
   async updateProviderModel(providerId: string, modelId: string, data: { name: string }): Promise<ProviderModel> {
-    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/update_model/${encodeURIComponent(modelId)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) throw new Error('Failed to update model')
-    return await response.json()
+    return apiCall<ProviderModel>('update_provider_model', { providerId, modelId }, 'POST', data)
   },
   async deleteProviderModel(providerId: string, modelId: string): Promise<void> {
-    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/delete_model/${encodeURIComponent(modelId)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!response.ok) throw new Error('Failed to delete model')
+    return apiCall('delete_provider_model', { providerId, modelId }, 'POST')
+  },
+
+  // --- Agents.md APIs ---
+  async getAgentsMd(): Promise<string> {
+    const result = await apiCall<{ content?: string }>('get_agents_md')
+    return result.content || ''
+  },
+  async updateAgentsMd(content: string): Promise<void> {
+    return apiCall('update_agents_md', {}, 'POST', { content })
   },
 
   // --- File/Folder APIs ---
   async getRootSubFolders(): Promise<FolderItem[]> {
     await delay(200)
     try {
-      const response = await fetch('/dashboard/api/files/root_sub_folders', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch folders')
-      const result: FolderListResponse = await response.json()
-      return result.data.folders
+      const res = await apiCall<FolderListResponse>('get_root_sub_folders')
+      if (res && res.data && Array.isArray(res.data.folders)) {
+        return res.data.folders
+      }
+      return []
     } catch {
       return []
     }
@@ -486,15 +390,7 @@ export const api = {
   async getSites(): Promise<Site[]> {
     await delay(200)
     try {
-      const response = await fetch('/dashboard/api/site/sites', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch sites')
-      const result = await response.json()
-      return result.success && result.data ? result.data : result
+      return await apiCall<Site[]>('get_sites')
     } catch {
       const raw = localStorage.getItem('boxagnts_sites')
       return raw ? JSON.parse(raw) : []
@@ -503,15 +399,7 @@ export const api = {
   async getSite(id: string): Promise<Site | null> {
     await delay(100)
     try {
-      const response = await fetch(`/dashboard/api/site/sites/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch site')
-      const result = await response.json()
-      return result.success && result.data ? result.data : null
+      return await apiCall<Site | null>('get_site', { id })
     } catch {
       const sites = await this.getSites()
       return sites.find(s => s.id === id) || null
@@ -520,16 +408,7 @@ export const api = {
   async createSite(data: Omit<Site, 'id'>): Promise<Site> {
     await delay(300)
     try {
-      const response = await fetch('/dashboard/api/site/sites/create_site', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) throw new Error('Failed to create site')
-      const result = await response.json()
-      if (result.success && result.data) return result.data
+      return await apiCall<Site>('create_site', {}, 'POST', data)
     } catch {
       const sites = await this.getSites()
       const site: Site = {
@@ -540,21 +419,11 @@ export const api = {
       localStorage.setItem('boxagnts_sites', JSON.stringify(sites))
       return site
     }
-    throw new Error('Failed to create site')
   },
   async updateSite(id: string, data: Partial<Omit<Site, 'id'>>): Promise<Site> {
     await delay(300)
     try {
-      const response = await fetch(`/dashboard/api/site/sites/update_site/${id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) throw new Error('Failed to update site')
-      const result = await response.json()
-      if (result.success && result.data) return result.data
+      return await apiCall<Site>('update_site', { id }, 'POST', data)
     } catch {
       const sites = await this.getSites()
       const idx = sites.findIndex(s => s.id === id)
@@ -563,18 +432,11 @@ export const api = {
       localStorage.setItem('boxagnts_sites', JSON.stringify(sites))
       return sites[idx]
     }
-    throw new Error('Failed to update site')
   },
   async deleteSite(id: string): Promise<void> {
     await delay(200)
     try {
-      const response = await fetch(`/dashboard/api/site/sites/delete_site/${id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to delete site')
+      return await apiCall('delete_site', { id }, 'POST')
     } catch {
       const sites = await this.getSites()
       const filtered = sites.filter(s => s.id !== id)
@@ -586,14 +448,7 @@ export const api = {
   async getCrons(): Promise<CronJob[]> {
     await delay(200)
     try {
-      const response = await fetch('/dashboard/api/cron/jobs', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch crons')
-      return await response.json()
+      return await apiCall<CronJob[]>('get_crons')
     } catch {
       return []
     }
@@ -601,65 +456,29 @@ export const api = {
   async getCron(id: string): Promise<CronJob | null> {
     await delay(100)
     try {
-      const response = await fetch(`/dashboard/api/cron/jobs/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch cron')
-      return await response.json()
+      return await apiCall<CronJob | null>('get_cron', { id })
     } catch {
       return null
     }
   },
   async createCron(data: Omit<CronJob, 'id' | 'last_run_at' | 'last_run_success'>): Promise<CronJob> {
     await delay(300)
-    const response = await fetch('/dashboard/api/cron/jobs/create_job', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) throw new Error('Failed to create cron')
-    return await response.json()
+    return apiCall<CronJob>('create_cron', {}, 'POST', data)
   },
   async updateCron(id: string, data: Partial<Omit<CronJob, 'id'>>): Promise<CronJob> {
     await delay(300)
-    const response = await fetch(`/dashboard/api/cron/jobs/update_job/${id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) throw new Error('Failed to update cron')
-    return await response.json()
+    return apiCall<CronJob>('update_cron', { id }, 'POST', data)
   },
   async deleteCron(id: string): Promise<void> {
     await delay(200)
-    const response = await fetch(`/dashboard/api/cron/jobs/delete_job/${id}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    if (!response.ok) throw new Error('Failed to delete cron')
+    return apiCall('delete_cron', { id }, 'POST')
   },
 
   // --- Cron Logs APIs ---
   async getCronLogs(jobId: string): Promise<CronLog[]> {
     await delay(150)
     try {
-      const response = await fetch(`/dashboard/api/cron/jobs/${jobId}/logs`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch cron logs')
-      return await response.json()
+      return await apiCall<CronLog[]>('get_cron_logs', { jobId })
     } catch {
       return []
     }
@@ -703,15 +522,7 @@ export const api = {
   async getSkills(): Promise<Skill[]> {
     await delay(200)
     try {
-      const response = await fetch('/dashboard/api/skills', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch skills')
-      const result = await response.json()
-      return result.success && result.data ? result.data : []
+      return await apiCall<Skill[]>('get_skills')
     } catch {
       const raw = localStorage.getItem('boxagnts_skills')
       return raw ? JSON.parse(raw) : []
@@ -720,16 +531,7 @@ export const api = {
   async createSkill(data: Omit<Skill, 'id'>): Promise<Skill> {
     await delay(300)
     try {
-      const response = await fetch('/dashboard/api/skills', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) throw new Error('Failed to create skill')
-      const result = await response.json()
-      if (result.success && result.data) return result.data
+      return await apiCall<Skill>('create_skill', {}, 'POST', data)
     } catch {
       const skills = await this.getSkills()
       const now = Date.now()
@@ -741,21 +543,11 @@ export const api = {
       localStorage.setItem('boxagnts_skills', JSON.stringify(skills))
       return skill
     }
-    throw new Error('Failed to create skill')
   },
   async updateSkill(id: string, data: Partial<Omit<Skill, 'id'>>): Promise<Skill> {
     await delay(300)
     try {
-      const response = await fetch(`/dashboard/api/skills/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) throw new Error('Failed to update skill')
-      const result = await response.json()
-      if (result.success && result.data) return result.data
+      return await apiCall<Skill>('update_skill', { id }, 'PUT', data)
     } catch {
       const skills = await this.getSkills()
       const idx = skills.findIndex(s => s.id === id)
@@ -764,18 +556,11 @@ export const api = {
       localStorage.setItem('boxagnts_skills', JSON.stringify(skills))
       return skills[idx]
     }
-    throw new Error('Failed to update skill')
   },
   async deleteSkill(id: string): Promise<void> {
     await delay(200)
     try {
-      const response = await fetch(`/dashboard/api/skills/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to delete skill')
+      return await apiCall('delete_skill', { id }, 'DELETE')
     } catch {
       const skills = await this.getSkills()
       const filtered = skills.filter(s => s.id !== id)
@@ -787,15 +572,7 @@ export const api = {
   async getTools(): Promise<Tool[]> {
     await delay(200)
     try {
-      const response = await fetch('/dashboard/api/tools', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to fetch tools')
-      const result = await response.json()
-      return result.success && result.data ? result.data : []
+      return await apiCall<Tool[]>('get_tools')
     } catch {
       const raw = localStorage.getItem('boxagnts_tools')
       return raw ? JSON.parse(raw) : []
@@ -804,16 +581,7 @@ export const api = {
   async createTool(data: Omit<Tool, 'id'>): Promise<Tool> {
     await delay(300)
     try {
-      const response = await fetch('/dashboard/api/tools', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) throw new Error('Failed to create tool')
-      const result = await response.json()
-      if (result.success && result.data) return result.data
+      return await apiCall<Tool>('create_tool', {}, 'POST', data)
     } catch {
       const tools = await this.getTools()
       const now = Date.now()
@@ -825,21 +593,11 @@ export const api = {
       localStorage.setItem('boxagnts_tools', JSON.stringify(tools))
       return tool
     }
-    throw new Error('Failed to create tool')
   },
   async updateTool(id: string, data: Partial<Omit<Tool, 'id'>>): Promise<Tool> {
     await delay(300)
     try {
-      const response = await fetch(`/dashboard/api/tools/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) throw new Error('Failed to update tool')
-      const result = await response.json()
-      if (result.success && result.data) return result.data
+      return await apiCall<Tool>('update_tool', { id }, 'PUT', data)
     } catch {
       const tools = await this.getTools()
       const idx = tools.findIndex(t => t.id === id)
@@ -848,18 +606,11 @@ export const api = {
       localStorage.setItem('boxagnts_tools', JSON.stringify(tools))
       return tools[idx]
     }
-    throw new Error('Failed to update tool')
   },
   async deleteTool(id: string): Promise<void> {
     await delay(200)
     try {
-      const response = await fetch(`/dashboard/api/tools/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      if (!response.ok) throw new Error('Failed to delete tool')
+      return await apiCall('delete_tool', { id }, 'DELETE')
     } catch {
       const tools = await this.getTools()
       const filtered = tools.filter(t => t.id !== id)

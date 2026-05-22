@@ -31,5 +31,11 @@ export default defineConfig({
     outDir: '../app/dashboard-web',
     emptyOutDir: true,
     minify: false,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        'site-nav': resolve(__dirname, 'site-nav.html'),
+      },
+    },
   },
 })

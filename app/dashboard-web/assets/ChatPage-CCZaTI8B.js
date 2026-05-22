@@ -2,7 +2,7 @@ var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var _a;
-import { R as defineComponent, a9 as useAppStore, ad as useSessionStore, af as watch, a0 as onMounted, J as api, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, a6 as toDisplayString, N as createCommentVNode, d as VBtn, F as Fragment, a3 as renderList, e as VCard, n as VDialog, a2 as ref, ac as useRouter, a1 as openBlock, P as createTextVNode, l as VChip, ai as withKeys, aj as withModifiers, H as VTextarea, M as createBlock, Z as normalizeClass, B as VSpacer, p as VExpandTransition, ah as withDirectives, o as VDivider, ae as vShow, i as VCardText, z as VSelect, j as VCardTitle, f as VCardActions, Y as nextTick, _ as _export_sfc } from "./index-CD7sFTTo.js";
+import { Z as nextTick, a4 as ref, ab as useAppStore, af as useSessionStore, K as api, ah as watch, a1 as onMounted, S as defineComponent, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, a8 as toDisplayString, O as createCommentVNode, e as VBtn, F as Fragment, a5 as renderList, f as VCard, o as VDialog, a3 as reactive, ae as useRouter, a2 as openBlock, Q as createTextVNode, aa as unref, m as VChip, ak as withKeys, al as withModifiers, I as VTextarea, N as createBlock, $ as normalizeClass, C as VSpacer, q as VExpandTransition, aj as withDirectives, p as VDivider, ag as vShow, j as VCardText, A as VSelect, k as VCardTitle, g as VCardActions, _ as _export_sfc } from "./main-BSD2YpbL.js";
 function _getDefaults() {
   return {
     async: false,
@@ -3224,6 +3224,454 @@ function createDOMPurify() {
   return DOMPurify;
 }
 var purify = createDOMPurify();
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function useMarkdownRender() {
+  const cache = /* @__PURE__ */ new Map();
+  function renderMarkdown(uuid, text2) {
+    if (!text2) return "";
+    const entry = cache.get(uuid);
+    if (entry && entry.text === text2) {
+      return entry.html;
+    }
+    try {
+      const html2 = purify.sanitize(marked.parse(text2, { async: false }) || "");
+      cache.set(uuid, { text: text2, html: html2 });
+      return html2;
+    } catch {
+      const fallback = escapeHtml(text2);
+      cache.set(uuid, { text: text2, html: fallback });
+      return fallback;
+    }
+  }
+  return { renderMarkdown };
+}
+function useChatScroll() {
+  const scrollContainer = ref(null);
+  const messagesEnd = ref(null);
+  function scrollToBottom() {
+    nextTick(() => {
+      var _a2;
+      if (scrollContainer.value) {
+        scrollContainer.value.scrollTop = scrollContainer.value.scrollHeight;
+      }
+      (_a2 = messagesEnd.value) == null ? void 0 : _a2.scrollIntoView({ behavior: "smooth" });
+    });
+  }
+  return { scrollContainer, messagesEnd, scrollToBottom };
+}
+function generateUuid() {
+  return crypto.randomUUID();
+}
+async function loadSessionHistory(sid) {
+  const result = await api.loadSessionHistory(sid);
+  if (!result) return [];
+  const msgs = Array.isArray(result) ? result : result.messages || [];
+  const items = [];
+  for (const msg of msgs) {
+    if (!msg) continue;
+    if (msg.role === "user") {
+      if (typeof msg.content === "string") {
+        if (msg.content.trim()) {
+          items.push({
+            kind: "user",
+            text: msg.content,
+            timestamp: "",
+            uuid: msg.uuid || generateUuid(),
+            editing: false
+          });
+        }
+      } else if (Array.isArray(msg.content)) {
+        for (const block2 of msg.content) {
+          if (block2.type === "tool_result") {
+            items.push({
+              kind: "tool",
+              tool: block2.tool_use_id || "tool",
+              toolType: "tool_end",
+              content: block2.content || "",
+              inputParams: "",
+              isError: !!block2.is_error,
+              expanded: false,
+              timestamp: "",
+              uuid: `${msg.uuid || generateUuid()}_tool_${block2.tool_use_id || ""}`
+            });
+          }
+        }
+      }
+    } else if (msg.role === "assistant") {
+      if (typeof msg.content === "string") {
+        if (msg.content.trim()) {
+          items.push({
+            kind: "assistant",
+            text: msg.content,
+            timestamp: "",
+            isLoading: false,
+            uuid: msg.uuid || generateUuid()
+          });
+        }
+      } else if (Array.isArray(msg.content)) {
+        for (const block2 of msg.content) {
+          if (block2.type === "text") {
+            items.push({
+              kind: "assistant",
+              text: block2.text,
+              timestamp: "",
+              isLoading: false,
+              uuid: msg.uuid || generateUuid()
+            });
+          } else if (block2.type === "tool_use") {
+            const toolUuid = block2.id || generateUuid();
+            items.push({
+              kind: "tool",
+              tool: block2.name,
+              toolType: "tool_start",
+              content: "",
+              inputParams: JSON.stringify(block2.input || {}, null, 2),
+              isError: false,
+              expanded: false,
+              timestamp: "",
+              uuid: toolUuid
+            });
+          }
+        }
+      }
+    }
+  }
+  return items;
+}
+function parseContentObject(content) {
+  if (!content) return null;
+  if (typeof content === "string") {
+    return content.trim() ? { type: "text", text: content, uuid: "" } : null;
+  }
+  if (typeof content !== "object") return null;
+  if (content.type === "text_delta" && typeof content.text === "string") {
+    return { type: "text", text: content.text, uuid: content.uuid };
+  }
+  if (content.type === "tool_start" && content.tool) {
+    return { type: "tool_start", tool: content.tool, inputJson: content.input_json, uuid: content.uuid };
+  }
+  if (content.type === "tool_end" && content.tool) {
+    return { type: "tool_end", tool: content.tool, isError: !!content.is_error, uuid: content.uuid };
+  }
+  return null;
+}
+function formatToolInput(inputJson) {
+  try {
+    return JSON.stringify(JSON.parse(inputJson), null, 2);
+  } catch {
+    return inputJson;
+  }
+}
+function useChatMessages(options) {
+  const { messages, prompt, sessionId, currentProject, uiState, scrollToBottom } = options;
+  const appStore = useAppStore();
+  const sessionStore = useSessionStore();
+  const stream = {
+    activeUserIdx: -1,
+    activeAsstIdx: -1,
+    pendingText: "",
+    toolIdx: -1,
+    activeCleanup: null
+  };
+  function flushText() {
+    if (!stream.pendingText.trim()) {
+      stream.toolIdx = -1;
+      return;
+    }
+    if (stream.activeAsstIdx < 0) return;
+    const m = messages.value[stream.activeAsstIdx];
+    if (m.text) {
+      m.text += stream.pendingText;
+    } else {
+      m.text = stream.pendingText;
+      m.isLoading = false;
+    }
+    stream.pendingText = "";
+    stream.toolIdx = -1;
+  }
+  function handleOutputEvent(content) {
+    const result = parseContentObject(content);
+    if (!result) return;
+    if (result.type === "tool_start") {
+      flushText();
+      const item = {
+        kind: "tool",
+        tool: result.tool,
+        toolType: "tool_start",
+        content: "",
+        inputParams: result.inputJson ? formatToolInput(result.inputJson) : "",
+        isError: false,
+        expanded: true,
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        uuid: result.uuid
+      };
+      messages.value.splice(stream.activeAsstIdx, 0, item);
+      stream.activeAsstIdx++;
+      stream.toolIdx = stream.activeAsstIdx - 1;
+    } else if (result.type === "tool_end") {
+      if (stream.toolIdx >= 0) {
+        const t = messages.value[stream.toolIdx];
+        t.toolType = "tool_end";
+        t.isError = result.isError ?? false;
+        t.expanded = false;
+      }
+      stream.toolIdx = -1;
+    } else if (result.type === "text") {
+      if (result.uuid) {
+        messages.value[stream.activeAsstIdx].uuid = result.uuid;
+      }
+      stream.pendingText += result.text;
+    }
+    scrollToBottom();
+  }
+  function startChatStream(text2, isNewSession) {
+    var _a2;
+    uiState.isRunning = true;
+    scrollToBottom();
+    (_a2 = stream.activeCleanup) == null ? void 0 : _a2.call(stream);
+    stream.activeCleanup = null;
+    let cleanupCalled = false;
+    function onOutput(e) {
+      if (cleanupCalled) return;
+      const detail = e.detail;
+      if (isNewSession && detail.session_id && !sessionId.value) {
+        sessionId.value = detail.session_id;
+        setTimeout(() => {
+          sessionStore.fetchSessions();
+          sessionStore.selectSession(sessionId.value);
+        }, 1e3);
+      }
+      handleOutputEvent(detail.content);
+    }
+    function onComplete(e) {
+      var _a3;
+      if (cleanupCalled) return;
+      cleanup();
+      flushText();
+      const detail = e.detail;
+      if ((_a3 = detail == null ? void 0 : detail.result) == null ? void 0 : _a3.user_message_uuid) {
+        messages.value[stream.activeUserIdx].uuid = detail.result.user_message_uuid;
+      }
+      const m = messages.value[stream.activeAsstIdx];
+      if (!m.text) m.text = "_(no response)_";
+      m.isLoading = false;
+      uiState.isRunning = false;
+      scrollToBottom();
+    }
+    function onError(e) {
+      if (cleanupCalled) return;
+      cleanup();
+      flushText();
+      const m = messages.value[stream.activeAsstIdx];
+      const errDetail = e.detail;
+      const errMsg = typeof errDetail === "string" ? errDetail : "Unknown error";
+      m.text = `**Error:** ${errMsg}`;
+      m.isLoading = false;
+      uiState.isRunning = false;
+      scrollToBottom();
+    }
+    function cleanup() {
+      if (cleanupCalled) return;
+      cleanupCalled = true;
+      window.removeEventListener("chat-output", onOutput);
+      window.removeEventListener("chat-complete", onComplete);
+      window.removeEventListener("chat-error", onError);
+      stream.activeCleanup = null;
+    }
+    stream.activeCleanup = cleanup;
+    window.addEventListener("chat-output", onOutput);
+    window.addEventListener("chat-complete", onComplete);
+    window.addEventListener("chat-error", onError);
+    api.chatExecute(currentProject.value.path, text2, uiState.selectedModel, sessionId.value).catch((err) => {
+      cleanup();
+      flushText();
+      const m = messages.value[stream.activeAsstIdx];
+      if (!m.text) {
+        if (err instanceof TypeError && (err.message.includes("WebSocket") || err.message.includes("fetch"))) {
+          m.text = "_(network error: unable to connect)_";
+        } else if (err instanceof Error) {
+          m.text = `_(connection failed: ${err.message})_`;
+        } else {
+          m.text = "_(connection failed)_";
+        }
+      }
+      m.isLoading = false;
+      uiState.isRunning = false;
+      scrollToBottom();
+    });
+  }
+  function cleanupActiveStream() {
+    var _a2;
+    (_a2 = stream.activeCleanup) == null ? void 0 : _a2.call(stream);
+    stream.activeCleanup = null;
+    uiState.isRunning = false;
+    const m = messages.value[stream.activeAsstIdx];
+    if ((m == null ? void 0 : m.kind) === "assistant") {
+      m.isLoading = false;
+      if (!m.text) m.text = "_(cancelled)_";
+    }
+  }
+  function sendMessage() {
+    const text2 = prompt.value.trim();
+    if (!text2 || uiState.isRunning || !currentProject.value) return;
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    messages.value.push({
+      kind: "user",
+      text: text2,
+      timestamp: now,
+      uuid: generateUuid(),
+      editing: false
+    });
+    stream.activeUserIdx = messages.value.length - 1;
+    stream.activeAsstIdx = messages.value.length;
+    messages.value.push({
+      kind: "assistant",
+      text: "",
+      timestamp: now,
+      isLoading: true,
+      uuid: generateUuid()
+    });
+    stream.pendingText = "";
+    stream.toolIdx = -1;
+    prompt.value = "";
+    startChatStream(text2, true);
+  }
+  async function resubmitMessage(idx, text2) {
+    var _a2;
+    if (uiState.isRunning || !currentProject.value) return;
+    const uuids = [];
+    while (idx + 1 < messages.value.length && ((_a2 = messages.value[idx + 1]) == null ? void 0 : _a2.kind) !== "user") {
+      uuids.push(messages.value[idx + 1].uuid);
+      messages.value.splice(idx + 1, 1);
+    }
+    uuids.push(messages.value[idx].uuid);
+    messages.value.splice(idx, 1);
+    try {
+      if (sessionId.value) {
+        await api.deleteSessionMessages(sessionId.value, uuids);
+      }
+    } catch {
+    }
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    messages.value.push({ kind: "user", text: text2, timestamp: now, uuid: generateUuid(), editing: false });
+    stream.activeUserIdx = messages.value.length - 1;
+    stream.activeAsstIdx = messages.value.length;
+    messages.value.push({ kind: "assistant", text: "", timestamp: now, isLoading: true, uuid: generateUuid() });
+    stream.pendingText = "";
+    stream.toolIdx = -1;
+    startChatStream(text2, false);
+  }
+  async function confirmEdit(idx) {
+    const item = messages.value[idx];
+    if (item.kind !== "user" || uiState.isRunning || !currentProject.value) return;
+    const newText = uiState.editText.trim();
+    if (!newText) return;
+    await resubmitMessage(idx, newText);
+    uiState.editText = "";
+  }
+  async function handleDeleteMsg() {
+    var _a2;
+    if (uiState.deleteMsgIdx < 0 || uiState.deleteMsgIdx >= messages.value.length) return;
+    const item = messages.value[uiState.deleteMsgIdx];
+    uiState.deletingMsg = true;
+    const uuids = [];
+    uuids.push(item.uuid);
+    if (item.kind === "user") {
+      for (let i = uiState.deleteMsgIdx + 1; i < messages.value.length; i++) {
+        const next = messages.value[i];
+        if (next.kind === "user") break;
+        if (next.uuid) uuids.push(next.uuid);
+      }
+    }
+    try {
+      if (sessionId.value) {
+        await api.deleteSessionMessages(sessionId.value, uuids);
+      }
+      if (item.kind === "user") {
+        while (uiState.deleteMsgIdx + 1 < messages.value.length && ((_a2 = messages.value[uiState.deleteMsgIdx + 1]) == null ? void 0 : _a2.kind) !== "user") {
+          messages.value.splice(uiState.deleteMsgIdx + 1, 1);
+        }
+      }
+      messages.value.splice(uiState.deleteMsgIdx, 1);
+      appStore.showMessage("Message deleted", "success");
+    } catch {
+      appStore.showMessage("Failed to delete message", "error");
+    } finally {
+      uiState.deletingMsg = false;
+      uiState.deleteMsgDialog = false;
+      uiState.deleteMsgIdx = -1;
+    }
+  }
+  return {
+    sendMessage,
+    resubmitMessage,
+    confirmEdit,
+    handleDeleteMsg,
+    cleanupActiveStream
+  };
+}
+function useChatSession(options) {
+  const { sessionId, currentProject, availableModels, messages, uiState, scrollToBottom, cleanupActiveStream } = options;
+  const appStore = useAppStore();
+  const sessionStore = useSessionStore();
+  async function loadAndSetHistory(sid) {
+    messages.value = [];
+    try {
+      const items = await loadSessionHistory(sid);
+      messages.value = items;
+      scrollToBottom();
+    } catch {
+      appStore.showMessage("Failed to load session history", "error");
+    }
+  }
+  watch(() => sessionStore.currentSessionId, (newId) => {
+    if (newId === sessionId.value) return;
+    cleanupActiveStream();
+    uiState.isRunning = false;
+    messages.value = [];
+    if (newId) {
+      sessionId.value = newId;
+      loadAndSetHistory(newId);
+    } else {
+      sessionId.value = null;
+    }
+  }, { immediate: true });
+  onMounted(async () => {
+    try {
+      currentProject.value = await api.getCurrentProject();
+    } catch {
+      appStore.showMessage("Could not detect current project", "warning");
+    }
+    try {
+      const models = await api.getModels();
+      availableModels.value = models;
+      const savedModel = localStorage.getItem("boxagnts_selected_model");
+      if (savedModel && models.includes(savedModel)) {
+        uiState.selectedModel = savedModel;
+      } else if (models.length > 0) {
+        uiState.selectedModel = models[0];
+      }
+    } catch {
+      availableModels.value = [];
+    }
+    sessionStore.fetchSessions();
+  });
+  watch(() => uiState.selectedModel, (val) => {
+    if (val) {
+      localStorage.setItem("boxagnts_selected_model", val);
+    }
+  });
+  function cancelExecution() {
+    cleanupActiveStream();
+    if (sessionId.value) {
+      api.chatExecuteCancel(sessionId.value).catch(() => {
+      });
+    }
+  }
+  return { cancelExecution };
+}
 const _hoisted_1 = { class: "chat-layout" };
 const _hoisted_2 = {
   key: 0,
@@ -3271,25 +3719,27 @@ const _hoisted_23 = {
   key: 0,
   class: "mb-3"
 };
-const _hoisted_24 = { class: "tool-detail-text" };
-const _hoisted_25 = { key: 1 };
-const _hoisted_26 = { class: "tool-detail-text" };
-const _hoisted_27 = {
+const _hoisted_24 = { class: "d-flex align-center mb-1" };
+const _hoisted_25 = { class: "tool-detail-text" };
+const _hoisted_26 = { key: 1 };
+const _hoisted_27 = { class: "d-flex align-center mb-1" };
+const _hoisted_28 = { class: "tool-detail-text" };
+const _hoisted_29 = {
   key: 2,
   class: "message-row justify-start"
 };
-const _hoisted_28 = { class: "message-bubble assistant" };
-const _hoisted_29 = ["innerHTML"];
-const _hoisted_30 = {
+const _hoisted_30 = { class: "message-bubble assistant" };
+const _hoisted_31 = ["innerHTML"];
+const _hoisted_32 = {
   key: 1,
   class: "loading-indicator"
 };
-const _hoisted_31 = { class: "d-flex justify-end mt-1" };
-const _hoisted_32 = { class: "d-flex" };
-const _hoisted_33 = { class: "d-flex align-end gap-3" };
-const _hoisted_34 = { class: "d-flex flex-column gap-2" };
-const _hoisted_35 = { class: "d-flex align-center mt-2" };
-const _hoisted_36 = {
+const _hoisted_33 = { class: "d-flex justify-end mt-1" };
+const _hoisted_34 = { class: "d-flex" };
+const _hoisted_35 = { class: "d-flex align-end gap-3" };
+const _hoisted_36 = { class: "d-flex flex-column gap-2" };
+const _hoisted_37 = { class: "d-flex align-center mt-2" };
+const _hoisted_38 = {
   key: 0,
   class: "text-caption text-medium-emphasis mt-2"
 };
@@ -3297,42 +3747,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ChatPage",
   setup(__props) {
     const router = useRouter();
-    const availableModels = ref([]);
-    const quickPrompts = [
-      "Explain this codebase",
-      "Find bugs and suggest fixes",
-      "Refactor for better readability",
-      "Add unit tests",
-      "Write documentation"
-    ];
     const appStore = useAppStore();
-    const sessionStore = useSessionStore();
-    const currentProject = ref(null);
-    const prompt = ref("");
-    const messages = ref([]);
-    const isRunning = ref(false);
-    const sessionId = ref(null);
-    const selectedModel = ref("");
+    const { renderMarkdown } = useMarkdownRender();
+    const quickPrompts = [
+      "Write JavaScript code and run it",
+      "Develop website",
+      "Develop HTML5 game",
+      "Run Linux Shell commands",
+      "Get today's weather"
+    ];
     function goToModelSettings() {
       router.push("/settings/model");
-    }
-    const messagesEnd = ref(null);
-    const scrollContainer = ref(null);
-    let activeUserIdx = -1;
-    let activeAsstIdx = -1;
-    let pendingText = "";
-    let toolIdx = -1;
-    let deleteMsgIdx = -1;
-    let activeCleanup = null;
-    function renderMarkdown(text2) {
-      try {
-        return purify.sanitize(marked.parse(text2, { async: false }) || "");
-      } catch {
-        return escapeHtml(text2);
-      }
-    }
-    function escapeHtml(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
     async function copyText(text2) {
       try {
@@ -3342,304 +3767,56 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         appStore.showMessage("Failed to copy", "error");
       }
     }
-    function scrollToBottom() {
-      nextTick(() => {
-        var _a2;
-        if (scrollContainer.value) scrollContainer.value.scrollTop = scrollContainer.value.scrollHeight;
-        (_a2 = messagesEnd.value) == null ? void 0 : _a2.scrollIntoView({ behavior: "smooth" });
-      });
-    }
-    watch(() => messages.value.length, () => scrollToBottom());
-    watch(() => {
-      const last = messages.value[messages.value.length - 1];
-      if ((last == null ? void 0 : last.kind) === "assistant") return last.text;
-      return null;
-    }, () => scrollToBottom());
-    watch(() => sessionStore.currentSessionId, (newId) => {
-      activeCleanup == null ? void 0 : activeCleanup();
-      activeCleanup = null;
-      isRunning.value = false;
-      if (newId) {
-        sessionId.value = newId;
-        if (activeUserIdx === -1) {
-          console.log("loadSessionHistory", activeUserIdx);
-          loadSessionHistory(newId);
-        }
-      } else {
-        sessionId.value = null;
-        messages.value = [];
-        activeUserIdx = -1;
-        activeAsstIdx = -1;
-        pendingText = "";
-        toolIdx = -1;
-      }
-    }, { immediate: true });
-    async function loadSessionHistory(sid) {
-      messages.value = [];
-      try {
-        const result = await api.loadSessionHistory(sid);
-        if (!result) return;
-        const msgs = Array.isArray(result) ? result : result.messages || [];
-        const items = [];
-        for (const msg of msgs) {
-          if (!msg) continue;
-          if (msg.role === "user") {
-            if (typeof msg.content === "string") {
-              if (msg.content.trim()) {
-                items.push({
-                  kind: "user",
-                  text: msg.content,
-                  timestamp: "",
-                  uuid: msg.uuid || "",
-                  editing: false
-                });
-              }
-            } else if (Array.isArray(msg.content)) {
-              for (const block2 of msg.content) {
-                if (block2.type === "tool_result") {
-                  items.push({
-                    kind: "tool",
-                    tool: block2.tool_use_id || "tool",
-                    toolType: "tool_end",
-                    content: block2.content || "",
-                    inputParams: "",
-                    isError: !!block2.is_error,
-                    expanded: false,
-                    timestamp: "",
-                    uuid: msg.uuid || ""
-                  });
-                }
-              }
-            }
-          } else if (msg.role === "assistant") {
-            if (typeof msg.content === "string") {
-              if (msg.content.trim()) {
-                items.push({
-                  kind: "assistant",
-                  text: msg.content,
-                  timestamp: "",
-                  isLoading: false,
-                  uuid: msg.uuid || ""
-                });
-              }
-            } else if (Array.isArray(msg.content)) {
-              for (const block2 of msg.content) {
-                if (block2.type === "text") {
-                  items.push({
-                    kind: "assistant",
-                    text: block2.text,
-                    timestamp: "",
-                    isLoading: false,
-                    uuid: msg.uuid || ""
-                  });
-                } else if (block2.type === "tool_use") {
-                  items.push({
-                    kind: "tool",
-                    tool: block2.name,
-                    toolType: "tool_start",
-                    content: "",
-                    inputParams: JSON.stringify(block2.input || {}, null, 2),
-                    isError: false,
-                    expanded: false,
-                    timestamp: "",
-                    uuid: msg.uuid || ""
-                  });
-                }
-              }
-            }
-          }
-        }
-        messages.value = items;
-        scrollToBottom();
-      } catch {
-        appStore.showMessage("Failed to load session history", "error");
-      }
-    }
-    function parseContentObject(content) {
-      if (!content) return null;
-      if (typeof content === "string") return content.trim() ? {
-        type: "text",
-        text: content,
-        uuid: ""
-      } : null;
-      if (typeof content !== "object") return null;
-      if (content.type === "text_delta" && typeof content.text === "string") return {
-        type: "text",
-        text: content.text,
-        uuid: content.uuid
-      };
-      if (content.type === "tool_start" && content.tool) return {
-        type: "tool_start",
-        tool: content.tool,
-        inputJson: content.input_json,
-        uuid: content.uuid
-      };
-      if (content.type === "tool_end" && content.tool) return {
-        type: "tool_end",
-        tool: content.tool,
-        isError: !!content.is_error,
-        uuid: content.uuid
-      };
-      return null;
-    }
-    function flushText() {
-      if (!pendingText.trim()) {
-        toolIdx = -1;
-        return;
-      }
-      if (activeAsstIdx < 0) return;
-      const m = messages.value[activeAsstIdx];
-      if (m.text) m.text += pendingText;
-      else {
-        m.text = pendingText;
-        m.isLoading = false;
-      }
-      pendingText = "";
-      toolIdx = -1;
-    }
-    function formatToolInput(inputJson) {
-      try {
-        return JSON.stringify(JSON.parse(inputJson), null, 2);
-      } catch {
-        return inputJson;
-      }
-    }
-    function handleOutputEvent(content) {
-      const result = parseContentObject(content);
-      if (!result) return;
-      if (result.type === "tool_start") {
-        flushText();
-        const item = {
-          kind: "tool",
-          tool: result.tool,
-          toolType: "tool_start",
-          content: "",
-          inputParams: result.inputJson ? formatToolInput(result.inputJson) : "",
-          isError: false,
-          expanded: true,
-          timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-          uuid: result.uuid
-        };
-        messages.value.splice(activeAsstIdx, 0, item);
-        activeAsstIdx++;
-        toolIdx = activeAsstIdx - 1;
-      } else if (result.type === "tool_end") {
-        if (toolIdx >= 0) {
-          const t = messages.value[toolIdx];
-          t.toolType = "tool_end";
-          t.isError = result.isError ?? false;
-          t.expanded = false;
-        }
-        toolIdx = -1;
-      } else if (result.type === "text") {
-        if (!messages.value[activeAsstIdx].uuid) messages.value[activeAsstIdx].uuid = result.uuid;
-        pendingText += result.text;
-      }
-      scrollToBottom();
-    }
-    function sendMessage() {
-      const text2 = prompt.value.trim();
-      if (!text2 || isRunning.value || !currentProject.value) return;
-      const now = (/* @__PURE__ */ new Date()).toISOString();
-      messages.value.push({
-        kind: "user",
-        text: text2,
-        timestamp: now,
-        uuid: "",
-        editing: false
-      });
-      activeUserIdx = messages.value.length - 1;
-      activeAsstIdx = messages.value.length;
-      messages.value.push({
-        kind: "assistant",
-        text: "",
-        timestamp: now,
-        isLoading: true,
-        uuid: ""
-      });
-      pendingText = "";
-      toolIdx = -1;
-      prompt.value = "";
-      isRunning.value = true;
-      scrollToBottom();
-      activeCleanup == null ? void 0 : activeCleanup();
-      activeCleanup = null;
-      function onOutput(e) {
-        const detail = e.detail;
-        if (detail.session_id && !sessionId.value) {
-          sessionId.value = detail.session_id;
-          setTimeout(() => {
-            sessionStore.fetchSessions();
-            sessionStore.selectSession(sessionId.value);
-          }, 1e3);
-        }
-        handleOutputEvent(detail.content);
-      }
-      function onComplete(e) {
-        cleanup();
-        flushText();
-        const detail = e.detail;
-        if (detail.result && detail.result.user_message_uuid) {
-          const m1 = messages.value[activeUserIdx];
-          if (!m1.uuid) m1.uuid = detail.result.user_message_uuid;
-        }
-        const m2 = messages.value[activeAsstIdx];
-        if (!m2.text) m2.text = "_(no response)_";
-        m2.isLoading = false;
-        isRunning.value = false;
-        scrollToBottom();
-      }
-      function onError(e) {
-        cleanup();
-        flushText();
-        const m = messages.value[activeAsstIdx];
-        m.text = `**Error:** ${e.detail || "Unknown error"}`;
-        m.isLoading = false;
-        isRunning.value = false;
-        scrollToBottom();
-      }
-      function cleanup() {
-        window.removeEventListener("chat-output", onOutput);
-        window.removeEventListener("chat-complete", onComplete);
-        window.removeEventListener("chat-error", onError);
-        activeCleanup = null;
-      }
-      activeCleanup = cleanup;
-      window.addEventListener("chat-output", onOutput);
-      window.addEventListener("chat-complete", onComplete);
-      window.addEventListener("chat-error", onError);
-      api.chatExecute(currentProject.value.path, text2, selectedModel.value, sessionId.value).catch(() => {
-        cleanup();
-        const m = messages.value[activeAsstIdx];
-        if (!m.text) m.text = "_(connection failed)_";
-        m.isLoading = false;
-        isRunning.value = false;
-      });
-    }
-    function cancelExecution() {
-      activeCleanup == null ? void 0 : activeCleanup();
-      activeCleanup = null;
-      isRunning.value = false;
-      const m = messages.value[activeAsstIdx];
-      if ((m == null ? void 0 : m.kind) === "assistant") {
-        m.isLoading = false;
-        if (!m.text) m.text = "_(cancelled)_";
-      }
-      if (sessionId.value) {
-        api.chatExecuteCancel(sessionId.value).catch(() => {
-        });
-      }
-    }
-    const deleteMsgDialog = ref(false);
-    const deleteMsgIsUser = ref(false);
-    const deletingMsg = ref(false);
-    const editText = ref("");
-    function confirmDeleteMsg(idx) {
-      if (isRunning.value) return;
-      deleteMsgIdx = idx;
+    const messages = ref([]);
+    const prompt = ref("");
+    const { scrollContainer, messagesEnd, scrollToBottom } = useChatScroll();
+    const sessionId = ref(null);
+    const currentProject = ref(null);
+    const availableModels = ref([]);
+    const uiState = reactive({
+      isRunning: false,
+      selectedModel: "",
+      deleteMsgIdx: -1,
+      deleteMsgDialog: false,
+      deleteMsgIsUser: false,
+      deletingMsg: false,
+      editText: ""
+    });
+    const {
+      sendMessage,
+      resubmitMessage: doResubmit,
+      confirmEdit,
+      handleDeleteMsg,
+      cleanupActiveStream
+    } = useChatMessages({
+      messages,
+      prompt,
+      sessionId,
+      currentProject,
+      uiState,
+      scrollToBottom
+    });
+    const { cancelExecution } = useChatSession({
+      sessionId,
+      currentProject,
+      availableModels,
+      messages,
+      uiState,
+      scrollToBottom,
+      cleanupActiveStream
+    });
+    function resubmitMessage(idx) {
       const item = messages.value[idx];
-      deleteMsgIsUser.value = (item == null ? void 0 : item.kind) === "user";
-      deleteMsgDialog.value = true;
+      if ((item == null ? void 0 : item.kind) === "user") {
+        doResubmit(idx, item.text);
+      }
+    }
+    function confirmDeleteMsg(idx) {
+      if (uiState.isRunning) return;
+      uiState.deleteMsgIdx = idx;
+      const item = messages.value[idx];
+      uiState.deleteMsgIsUser = (item == null ? void 0 : item.kind) === "user";
+      uiState.deleteMsgDialog = true;
     }
     function isLastUserMessage(idx) {
       for (let i = idx + 1; i < messages.value.length; i++) {
@@ -3648,207 +3825,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       return true;
     }
     function editMessage(idx) {
-      if (isRunning.value) return;
+      if (uiState.isRunning) return;
       const item = messages.value[idx];
       if (item.kind !== "user") return;
       item.editing = true;
-      editText.value = item.text;
+      uiState.editText = item.text;
       nextTick(() => {
         const input = document.querySelector(".edit-wrap textarea");
         input == null ? void 0 : input.focus();
       });
     }
-    async function confirmEdit(idx) {
-      var _a2;
-      const item = messages.value[idx];
-      if (item.kind !== "user" || isRunning.value || !currentProject.value) return;
-      const newText = editText.value.trim();
-      if (!newText) return;
-      const uuids = [];
-      while (idx + 1 < messages.value.length && ((_a2 = messages.value[idx + 1]) == null ? void 0 : _a2.kind) !== "user") {
-        uuids.push(messages.value[idx + 1].uuid);
-        messages.value.splice(idx + 1, 1);
-      }
-      uuids.push(messages.value[idx].uuid);
-      messages.value.splice(idx, 1);
-      editText.value = "";
-      try {
-        if (sessionId.value) {
-          await api.deleteSessionMessages(sessionId.value, uuids);
-        }
-      } catch {
-      }
-      const now = (/* @__PURE__ */ new Date()).toISOString();
-      messages.value.push({ kind: "user", text: newText, timestamp: now, uuid: "", editing: false });
-      activeUserIdx = messages.value.length - 1;
-      activeAsstIdx = messages.value.length;
-      messages.value.push({ kind: "assistant", text: "", timestamp: now, isLoading: true, uuid: "" });
-      pendingText = "";
-      toolIdx = -1;
-      isRunning.value = true;
-      scrollToBottom();
-      activeCleanup == null ? void 0 : activeCleanup();
-      activeCleanup = null;
-      function onOutput(e) {
-        const detail = e.detail;
-        handleOutputEvent(detail.content);
-      }
-      function onComplete(e) {
-        cleanup();
-        flushText();
-        const m = messages.value[activeAsstIdx];
-        if (!m.text) m.text = "_(no response)_";
-        m.isLoading = false;
-        isRunning.value = false;
-        scrollToBottom();
-      }
-      function onError(e) {
-        cleanup();
-        flushText();
-        const m = messages.value[activeAsstIdx];
-        m.text = `**Error:** ${e.detail || "Unknown error"}`;
-        m.isLoading = false;
-        isRunning.value = false;
-        scrollToBottom();
-      }
-      function cleanup() {
-        window.removeEventListener("chat-output", onOutput);
-        window.removeEventListener("chat-complete", onComplete);
-        window.removeEventListener("chat-error", onError);
-        activeCleanup = null;
-      }
-      activeCleanup = cleanup;
-      window.addEventListener("chat-output", onOutput);
-      window.addEventListener("chat-complete", onComplete);
-      window.addEventListener("chat-error", onError);
-      api.chatExecute(currentProject.value.path, newText, selectedModel.value, sessionId.value).catch(() => {
-        cleanup();
-        const m = messages.value[activeAsstIdx];
-        if (!m.text) m.text = "_(connection failed)_";
-        m.isLoading = false;
-        isRunning.value = false;
-      });
-    }
-    async function resubmitMessage(idx) {
-      var _a2;
-      if (isRunning.value || !currentProject.value) return;
-      const item = messages.value[idx];
-      if (item.kind !== "user") return;
-      const uuids = [];
-      while (idx + 1 < messages.value.length && ((_a2 = messages.value[idx + 1]) == null ? void 0 : _a2.kind) !== "user") {
-        uuids.push(messages.value[idx + 1].uuid);
-        messages.value.splice(idx + 1, 1);
-      }
-      const text2 = item.text;
-      uuids.push(messages.value[idx].uuid);
-      messages.value.splice(idx, 1);
-      try {
-        if (sessionId.value) {
-          await api.deleteSessionMessages(sessionId.value, uuids);
-        }
-      } catch {
-      }
-      const now = (/* @__PURE__ */ new Date()).toISOString();
-      messages.value.push({ kind: "user", text: text2, timestamp: now, uuid: "", editing: false });
-      activeUserIdx = messages.value.length - 1;
-      activeAsstIdx = messages.value.length;
-      messages.value.push({ kind: "assistant", text: "", timestamp: now, isLoading: true, uuid: "" });
-      pendingText = "";
-      toolIdx = -1;
-      isRunning.value = true;
-      scrollToBottom();
-      activeCleanup == null ? void 0 : activeCleanup();
-      activeCleanup = null;
-      function onOutput(e) {
-        const detail = e.detail;
-        handleOutputEvent(detail.content);
-      }
-      function onComplete() {
-        cleanup();
-        flushText();
-        const m = messages.value[activeAsstIdx];
-        if (!m.text) m.text = "_(no response)_";
-        m.isLoading = false;
-        isRunning.value = false;
-        scrollToBottom();
-      }
-      function onError(e) {
-        cleanup();
-        flushText();
-        const m = messages.value[activeAsstIdx];
-        m.text = `**Error:** ${e.detail || "Unknown error"}`;
-        m.isLoading = false;
-        isRunning.value = false;
-        scrollToBottom();
-      }
-      function cleanup() {
-        window.removeEventListener("chat-output", onOutput);
-        window.removeEventListener("chat-complete", onComplete);
-        window.removeEventListener("chat-error", onError);
-        activeCleanup = null;
-      }
-      activeCleanup = cleanup;
-      window.addEventListener("chat-output", onOutput);
-      window.addEventListener("chat-complete", onComplete);
-      window.addEventListener("chat-error", onError);
-      api.chatExecute(currentProject.value.path, text2, selectedModel.value, sessionId.value).catch(() => {
-        cleanup();
-        const m = messages.value[activeAsstIdx];
-        if (!m.text) m.text = "_(connection failed)_";
-        m.isLoading = false;
-        isRunning.value = false;
-      });
-    }
-    async function handleDeleteMsg() {
-      var _a2;
-      if (deleteMsgIdx < 0 || deleteMsgIdx >= messages.value.length) return;
-      const item = messages.value[deleteMsgIdx];
-      deletingMsg.value = true;
-      const uuids = [];
-      uuids.push(item.uuid);
-      if (item.kind === "user") {
-        for (let i = deleteMsgIdx + 1; i < messages.value.length; i++) {
-          const next = messages.value[i];
-          if (next.kind === "user") break;
-          if (next.uuid) uuids.push(next.uuid);
-        }
-      }
-      try {
-        if (sessionId.value) {
-          await api.deleteSessionMessages(sessionId.value, uuids);
-        }
-        if (item.kind === "user") {
-          while (deleteMsgIdx + 1 < messages.value.length && ((_a2 = messages.value[deleteMsgIdx + 1]) == null ? void 0 : _a2.kind) !== "user") {
-            messages.value.splice(deleteMsgIdx + 1, 1);
-          }
-        }
-        messages.value.splice(deleteMsgIdx, 1);
-        appStore.showMessage("Message deleted", "success");
-      } catch {
-        appStore.showMessage("Failed to delete message", "error");
-      } finally {
-        deletingMsg.value = false;
-        deleteMsgDialog.value = false;
-        deleteMsgIdx = -1;
-      }
-    }
-    onMounted(async () => {
-      try {
-        currentProject.value = await api.getCurrentProject();
-      } catch {
-        appStore.showMessage("Could not detect current project", "warning");
-      }
-      try {
-        const models = await api.getModels();
-        availableModels.value = models;
-        if (models.length > 0) {
-          selectedModel.value = models[0];
-        }
-      } catch {
-        availableModels.value = [];
-      }
-      sessionStore.fetchSessions();
-    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
         createBaseVNode("div", _hoisted_1, [
@@ -3869,7 +3855,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ref: scrollContainer,
             class: "messages-container mb-4"
           }, [
-            messages.value.length === 0 && !isRunning.value && availableModels.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_4, [
+            messages.value.length === 0 && !uiState.isRunning && availableModels.value.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_4, [
               createVNode(VIcon, {
                 size: "80",
                 color: "warning",
@@ -3894,7 +3880,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 ])]),
                 _: 1
               })
-            ])) : messages.value.length === 0 && !isRunning.value ? (openBlock(), createElementBlock("div", _hoisted_5, [
+            ])) : messages.value.length === 0 && !uiState.isRunning ? (openBlock(), createElementBlock("div", _hoisted_5, [
               createVNode(VIcon, {
                 size: "80",
                 color: "medium-emphasis",
@@ -3915,7 +3901,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     size: "small",
                     onClick: ($event) => {
                       prompt.value = suggestion;
-                      sendMessage();
+                      unref(sendMessage)();
                     }
                   }, {
                     default: withCtx(() => [
@@ -3927,19 +3913,21 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               ])
             ])) : createCommentVNode("", true),
             (openBlock(true), createElementBlock(Fragment, null, renderList(messages.value, (item, idx) => {
-              return openBlock(), createElementBlock(Fragment, { key: idx }, [
+              return openBlock(), createElementBlock(Fragment, {
+                key: item.uuid
+              }, [
                 item.kind === "user" ? (openBlock(), createElementBlock("div", _hoisted_7, [
                   createBaseVNode("div", _hoisted_8, [
                     item.editing ? (openBlock(), createElementBlock("div", _hoisted_9, [
                       createVNode(VTextarea, {
-                        modelValue: editText.value,
-                        "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => editText.value = $event),
+                        modelValue: uiState.editText,
+                        "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => uiState.editText = $event),
                         variant: "plain",
                         rows: "1",
                         "auto-grow": "",
                         "hide-details": "",
                         class: "edit-textarea",
-                        onKeydown: withKeys(withModifiers(($event) => confirmEdit(idx), ["exact", "prevent"]), ["enter"])
+                        onKeydown: withKeys(withModifiers(($event) => unref(confirmEdit)(idx), ["exact", "prevent"]), ["enter"])
                       }, null, 8, ["modelValue", "onKeydown"]),
                       createBaseVNode("div", _hoisted_10, [
                         createVNode(VBtn, {
@@ -3955,7 +3943,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           variant: "text",
                           size: "x-small",
                           color: "medium-emphasis",
-                          onClick: ($event) => confirmEdit(idx),
+                          onClick: ($event) => unref(confirmEdit)(idx),
                           title: "Submit"
                         }, null, 8, ["onClick"])
                       ])
@@ -3963,7 +3951,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       createBaseVNode("div", _hoisted_11, toDisplayString(item.text), 1),
                       createBaseVNode("div", _hoisted_12, [
                         createBaseVNode("div", _hoisted_13, [
-                          isLastUserMessage(idx) && !isRunning.value ? (openBlock(), createBlock(VBtn, {
+                          isLastUserMessage(idx) && !uiState.isRunning ? (openBlock(), createBlock(VBtn, {
                             key: 0,
                             icon: "mdi-pencil",
                             variant: "text",
@@ -3972,7 +3960,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             onClick: ($event) => editMessage(idx),
                             title: "Edit"
                           }, null, 8, ["onClick"])) : createCommentVNode("", true),
-                          isLastUserMessage(idx) && !isRunning.value ? (openBlock(), createBlock(VBtn, {
+                          isLastUserMessage(idx) && !uiState.isRunning ? (openBlock(), createBlock(VBtn, {
                             key: 1,
                             icon: "mdi-refresh",
                             variant: "text",
@@ -3981,7 +3969,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             onClick: ($event) => resubmitMessage(idx),
                             title: "Resubmit"
                           }, null, 8, ["onClick"])) : createCommentVNode("", true),
-                          !isRunning.value ? (openBlock(), createBlock(VBtn, {
+                          !uiState.isRunning ? (openBlock(), createBlock(VBtn, {
                             key: 2,
                             icon: "mdi-delete",
                             variant: "text",
@@ -4043,12 +4031,34 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             createVNode(VDivider),
                             createBaseVNode("div", _hoisted_22, [
                               item.inputParams ? (openBlock(), createElementBlock("div", _hoisted_23, [
-                                _cache[14] || (_cache[14] = createBaseVNode("div", { class: "text-caption font-weight-bold text-medium-emphasis mb-1" }, "Input Parameters", -1)),
-                                createBaseVNode("pre", _hoisted_24, toDisplayString(item.inputParams), 1)
+                                createBaseVNode("div", _hoisted_24, [
+                                  _cache[14] || (_cache[14] = createBaseVNode("span", { class: "text-caption font-weight-bold text-medium-emphasis" }, "Input Parameters", -1)),
+                                  createVNode(VSpacer),
+                                  createVNode(VBtn, {
+                                    icon: "mdi-content-copy",
+                                    variant: "text",
+                                    size: "x-small",
+                                    color: "medium-emphasis",
+                                    onClick: withModifiers(($event) => copyText(item.inputParams), ["stop"]),
+                                    title: "Copy"
+                                  }, null, 8, ["onClick"])
+                                ]),
+                                createBaseVNode("pre", _hoisted_25, toDisplayString(item.inputParams), 1)
                               ])) : createCommentVNode("", true),
-                              item.toolType === "tool_end" ? (openBlock(), createElementBlock("div", _hoisted_25, [
-                                _cache[15] || (_cache[15] = createBaseVNode("div", { class: "text-caption font-weight-bold text-medium-emphasis mb-1" }, "Result", -1)),
-                                createBaseVNode("pre", _hoisted_26, toDisplayString(item.content || "(empty)"), 1)
+                              item.toolType === "tool_end" ? (openBlock(), createElementBlock("div", _hoisted_26, [
+                                createBaseVNode("div", _hoisted_27, [
+                                  _cache[15] || (_cache[15] = createBaseVNode("span", { class: "text-caption font-weight-bold text-medium-emphasis" }, "Result", -1)),
+                                  createVNode(VSpacer),
+                                  createVNode(VBtn, {
+                                    icon: "mdi-content-copy",
+                                    variant: "text",
+                                    size: "x-small",
+                                    color: "medium-emphasis",
+                                    onClick: withModifiers(($event) => copyText(item.content || ""), ["stop"]),
+                                    title: "Copy"
+                                  }, null, 8, ["onClick"])
+                                ]),
+                                createBaseVNode("pre", _hoisted_28, toDisplayString(item.content || "(empty)"), 1)
                               ])) : createCommentVNode("", true)
                             ])
                           ], 512), [
@@ -4060,19 +4070,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     ]),
                     _: 2
                   }, 1024)
-                ])) : item.kind === "assistant" ? (openBlock(), createElementBlock("div", _hoisted_27, [
-                  createBaseVNode("div", _hoisted_28, [
+                ])) : item.kind === "assistant" ? (openBlock(), createElementBlock("div", _hoisted_29, [
+                  createBaseVNode("div", _hoisted_30, [
                     item.text ? (openBlock(), createElementBlock("div", {
                       key: 0,
                       class: "message-text markdown-body",
-                      innerHTML: renderMarkdown(item.text)
-                    }, null, 8, _hoisted_29)) : item.isLoading ? (openBlock(), createElementBlock("div", _hoisted_30, [..._cache[16] || (_cache[16] = [
+                      innerHTML: unref(renderMarkdown)(item.uuid, item.text)
+                    }, null, 8, _hoisted_31)) : item.isLoading ? (openBlock(), createElementBlock("div", _hoisted_32, [..._cache[16] || (_cache[16] = [
                       createBaseVNode("span", { class: "dot" }, null, -1),
                       createBaseVNode("span", { class: "dot" }, null, -1),
                       createBaseVNode("span", { class: "dot" }, null, -1)
                     ])])) : createCommentVNode("", true),
-                    createBaseVNode("div", _hoisted_31, [
-                      createBaseVNode("div", _hoisted_32, [
+                    createBaseVNode("div", _hoisted_33, [
+                      createBaseVNode("div", _hoisted_34, [
                         item.text ? (openBlock(), createBlock(VBtn, {
                           key: 0,
                           icon: "mdi-content-copy",
@@ -4082,7 +4092,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           onClick: ($event) => copyText(item.text),
                           title: "Copy response"
                         }, null, 8, ["onClick"])) : createCommentVNode("", true),
-                        item.text && !item.isLoading && !isRunning.value ? (openBlock(), createBlock(VBtn, {
+                        item.text && !item.isLoading && !uiState.isRunning ? (openBlock(), createBlock(VBtn, {
                           key: 1,
                           icon: "mdi-delete",
                           variant: "text",
@@ -4111,7 +4121,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(VCardText, { class: "pa-3" }, {
                 default: withCtx(() => [
-                  createBaseVNode("div", _hoisted_33, [
+                  createBaseVNode("div", _hoisted_35, [
                     createVNode(VTextarea, {
                       modelValue: prompt.value,
                       "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => prompt.value = $event),
@@ -4121,33 +4131,33 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       "auto-grow": "",
                       "hide-details": "",
                       onKeydown: [
-                        withKeys(withModifiers(sendMessage, ["exact", "prevent"]), ["enter"]),
+                        withKeys(withModifiers(unref(sendMessage), ["exact", "prevent"]), ["enter"]),
                         _cache[2] || (_cache[2] = withKeys(withModifiers(($event) => prompt.value += "\n", ["shift"]), ["enter"]))
                       ],
-                      disabled: isRunning.value,
+                      disabled: uiState.isRunning,
                       class: "chat-input"
                     }, null, 8, ["modelValue", "onKeydown", "disabled"]),
-                    createBaseVNode("div", _hoisted_34, [
+                    createBaseVNode("div", _hoisted_36, [
                       createVNode(VBtn, {
                         icon: "mdi-send",
                         color: "primary",
                         variant: "tonal",
-                        onClick: sendMessage,
-                        disabled: !prompt.value.trim() || isRunning.value,
-                        loading: isRunning.value,
+                        onClick: unref(sendMessage),
+                        disabled: !prompt.value.trim() || uiState.isRunning,
+                        loading: uiState.isRunning,
                         size: "small"
-                      }, null, 8, ["disabled", "loading"]),
-                      isRunning.value ? (openBlock(), createBlock(VBtn, {
+                      }, null, 8, ["onClick", "disabled", "loading"]),
+                      uiState.isRunning ? (openBlock(), createBlock(VBtn, {
                         key: 0,
                         icon: "mdi-stop",
                         color: "error",
                         variant: "tonal",
                         size: "small",
-                        onClick: cancelExecution
-                      })) : createCommentVNode("", true)
+                        onClick: unref(cancelExecution)
+                      }, null, 8, ["onClick"])) : createCommentVNode("", true)
                     ])
                   ]),
-                  createBaseVNode("div", _hoisted_35, [
+                  createBaseVNode("div", _hoisted_37, [
                     createVNode(VIcon, {
                       size: "small",
                       class: "mr-1",
@@ -4159,8 +4169,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       _: 1
                     }),
                     createVNode(VSelect, {
-                      modelValue: selectedModel.value,
-                      "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => selectedModel.value = $event),
+                      modelValue: uiState.selectedModel,
+                      "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => uiState.selectedModel = $event),
                       items: availableModels.value,
                       density: "compact",
                       variant: "solo-filled",
@@ -4177,8 +4187,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           })
         ]),
         createVNode(VDialog, {
-          modelValue: deleteMsgDialog.value,
-          "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => deleteMsgDialog.value = $event),
+          modelValue: uiState.deleteMsgDialog,
+          "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => uiState.deleteMsgDialog = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
@@ -4193,7 +4203,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 createVNode(VCardText, null, {
                   default: withCtx(() => [
                     _cache[19] || (_cache[19] = createBaseVNode("p", null, "Delete this message?", -1)),
-                    deleteMsgIsUser.value ? (openBlock(), createElementBlock("p", _hoisted_36, " This will also delete the assistant's response below it. ")) : createCommentVNode("", true)
+                    uiState.deleteMsgIsUser ? (openBlock(), createElementBlock("p", _hoisted_38, " This will also delete the assistant's response below it. ")) : createCommentVNode("", true)
                   ]),
                   _: 1
                 }),
@@ -4202,7 +4212,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[4] || (_cache[4] = ($event) => deleteMsgDialog.value = false)
+                      onClick: _cache[4] || (_cache[4] = ($event) => uiState.deleteMsgDialog = false)
                     }, {
                       default: withCtx(() => [..._cache[20] || (_cache[20] = [
                         createTextVNode("Cancel", -1)
@@ -4211,14 +4221,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     }),
                     createVNode(VBtn, {
                       color: "error",
-                      onClick: handleDeleteMsg,
-                      loading: deletingMsg.value
+                      onClick: unref(handleDeleteMsg),
+                      loading: uiState.deletingMsg
                     }, {
                       default: withCtx(() => [..._cache[21] || (_cache[21] = [
                         createTextVNode("Delete", -1)
                       ])]),
                       _: 1
-                    }, 8, ["loading"])
+                    }, 8, ["onClick", "loading"])
                   ]),
                   _: 1
                 })
@@ -4232,7 +4242,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ChatPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-23ca6f19"]]);
+const ChatPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5f92434c"]]);
 export {
   ChatPage as default
 };

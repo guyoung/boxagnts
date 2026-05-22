@@ -78,7 +78,10 @@ pub use providers::MinimaxProvider;
 pub use providers::OpenAiProvider;
 
 // Phase 3 re-exports — model registry.
-pub use model_registry::{ModelEntry, ModelRegistry};
+pub use model_registry::{
+    CostBreakdown, ExperimentalMode, InterleavedReasoning, Modality, ModelEntry, ModelRegistry,
+    ModelStatus, ProviderEntry, ProviderOverride,
+};
 
 // Phase 6 re-exports — provider-aware error handling.
 pub use error_handling::{is_context_overflow, parse_error_response, RetryConfig};
@@ -91,8 +94,13 @@ pub use providers::CopilotProvider;
 // Phase 2B re-exports — OpenAI-compatible generic adapter + common factories.
 pub use providers::{
     OpenAiCompatProvider,
-    ollama, lm_studio, deepseek, groq, xai, openrouter, mistral,
+    ollama, lm_studio, deepseek, groq, xai, openrouter, mistral,opencode_zen,
 };
+
+// Composite "Free" provider — stacks many free-tier upstreams behind one
+// `free/auto` model id.
+pub use providers::{FreeEntry, FreeProvider, FreeUpstream, FREE_CATALOG};
+
 
 // Phase 2D re-exports — Cohere native provider.
 pub use providers::CohereProvider;

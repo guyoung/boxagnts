@@ -83,6 +83,7 @@ log = "0.4"
 env_logger = "0.11"
 
 
+
 ## Text processing
 similar = "2"
 syntect = { version = "5", default-features = false, features = ["default-syntaxes", "default-themes", "html"] }

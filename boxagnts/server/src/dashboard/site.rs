@@ -35,11 +35,11 @@ pub async fn get_site(
     State(state): State<AppState>,
 ) -> Result<Json<SiteConfig>, Response> {
     let sites = state.sites.read().await;
-    let job = sites
+    let site = sites
         .get(&id)
         .cloned()
-        .ok_or_else(|| error_into_response(SiteError::NotFound("job not found".to_string())))?;
-    Ok(Json(job))
+        .ok_or_else(|| error_into_response(SiteError::NotFound("site not found".to_string())))?;
+    Ok(Json(site))
 }
 
 pub async fn create_site(
@@ -49,7 +49,7 @@ pub async fn create_site(
     {
         let sites = state.sites.read().await;
         if sites.contains_key(&req.id) {
-            return Err(error_into_response(SiteError::Conflict("job id already exists".to_string())));
+            return Err(error_into_response(SiteError::Conflict("site id already exists".to_string())));
         }
     }
 
@@ -90,7 +90,7 @@ pub async fn update_site(
         let sites = state.sites.read().await;
         sites.get(&id)
             .cloned()
-            .ok_or_else(|| error_into_response(SiteError::NotFound("job not found".to_string())))?
+            .ok_or_else(|| error_into_response(SiteError::NotFound("site not found".to_string())))?
     };
 
     let mut new_site = old_site.clone();
@@ -138,7 +138,7 @@ pub async fn delete_site(
     {
         let sites = state.sites.read().await;
         if !sites.contains_key(&id) {
-            return Err(error_into_response(SiteError::NotFound("job not found".to_string())));
+            return Err(error_into_response(SiteError::NotFound("site not found".to_string())));
         }
     }
 

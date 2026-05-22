@@ -1,4 +1,4 @@
-import { S as defineStore, a2 as ref } from "./index-CD7sFTTo.js";
+import { T as defineStore, a4 as ref } from "./main-BSD2YpbL.js";
 const useSettingsStore = defineStore("settings", () => {
   const settings = ref({
     system_prompt: "",

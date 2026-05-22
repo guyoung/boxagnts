@@ -6,7 +6,7 @@ pub mod auth_store;
 pub mod codex_oauth;
 pub mod oauth_config;
 pub mod output_styles;
-
+pub mod agents_md;
 
 pub mod path {
     use std::path::{Path, PathBuf};
@@ -86,4 +86,12 @@ pub mod path {
 
         cache_dir
     }
+}
+
+pub async fn init() -> anyhow::Result<()> {
+    config::Settings::init().await?;
+    auth_store::AuthStore::init().await?;
+    agents_md::AgentsMdStore::init().await?;
+    
+    Ok(())
 }

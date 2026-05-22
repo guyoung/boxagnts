@@ -1,42 +1,22 @@
-import { S as defineStore, a2 as ref, J as api, R as defineComponent, a9 as useAppStore, a0 as onMounted, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, d as VBtn, y as VRow, a8 as unref, M as createBlock, N as createCommentVNode, n as VDialog, a1 as openBlock, P as createTextVNode, F as Fragment, a3 as renderList, e as VCard, g as VCardItem, j as VCardTitle, a6 as toDisplayString, h as VCardSubtitle, i as VCardText, f as VCardActions, C as VSwitch, B as VSpacer, m as VCol, G as VTextField, z as VSelect, H as VTextarea, A as VSkeletonLoader, _ as _export_sfc } from "./index-CD7sFTTo.js";
+import { T as defineStore, K as api, S as defineComponent, ab as useAppStore, a1 as onMounted, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, e as VBtn, z as VRow, aa as unref, N as createBlock, O as createCommentVNode, o as VDialog, a4 as ref, a2 as openBlock, Q as createTextVNode, F as Fragment, a5 as renderList, f as VCard, h as VCardItem, k as VCardTitle, a8 as toDisplayString, i as VCardSubtitle, j as VCardText, g as VCardActions, D as VSwitch, C as VSpacer, n as VCol, H as VTextField, A as VSelect, I as VTextarea, B as VSkeletonLoader, _ as _export_sfc } from "./main-BSD2YpbL.js";
+import { u as useCrudOperations } from "./baseCrud-dWOHLWHe.js";
 const useToolStore = defineStore("tools", () => {
-  const tools = ref([]);
-  const loading = ref(false);
-  async function fetchTools() {
-    loading.value = true;
-    try {
-      tools.value = await api.getTools();
-    } catch (e) {
-      console.error("Failed to fetch tools:", e);
-      tools.value = [];
-    } finally {
-      loading.value = false;
-    }
-  }
-  async function addTool(data) {
-    const tool = await api.createTool(data);
-    tools.value.push(tool);
-    return tool;
-  }
-  async function updateTool(id, data) {
-    const tool = await api.updateTool(id, data);
-    const idx = tools.value.findIndex((t) => t.id === id);
-    if (idx >= 0) {
-      tools.value[idx] = tool;
-    }
-    return tool;
-  }
-  async function removeTool(id) {
-    await api.deleteTool(id);
-    tools.value = tools.value.filter((t) => t.id !== id);
-  }
+  const crud = useCrudOperations(
+    {
+      fetchAll: () => api.getTools(),
+      create: (data) => api.createTool(data),
+      update: (id, data) => api.updateTool(id, data),
+      remove: (id) => api.deleteTool(id)
+    },
+    "tools"
+  );
   return {
-    tools,
-    loading,
-    fetchTools,
-    addTool,
-    updateTool,
-    removeTool
+    tools: crud.items,
+    loading: crud.loading,
+    fetchTools: crud.fetch,
+    addTool: crud.add,
+    updateTool: crud.update,
+    removeTool: crud.remove
   };
 });
 const _hoisted_1 = { class: "d-flex align-center justify-space-between mb-6" };

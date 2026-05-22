@@ -6,7 +6,7 @@
     </div>
 
     <div ref="scrollContainer" class="messages-container mb-4">
-      <div v-if="messages.length === 0 && !isRunning && availableModels.length === 0" class="empty-state">
+      <div v-if="messages.length === 0 && !uiState.isRunning && availableModels.length === 0" class="empty-state">
         <v-icon size="80" color="warning" class="mb-4">mdi-alert-circle</v-icon>
         <p class="text-h6 text-medium-emphasis">No models available</p>
         <p class="text-body-2 text-medium-emphasis mt-1">Please configure a model provider first.</p>
@@ -15,7 +15,7 @@
         </v-btn>
       </div>
 
-      <div v-else-if="messages.length === 0 && !isRunning" class="empty-state">
+      <div v-else-if="messages.length === 0 && !uiState.isRunning" class="empty-state">
         <v-icon size="80" color="medium-emphasis" class="mb-4">mdi-robot</v-icon>
         <p class="text-h6 text-medium-emphasis">Ask Boxagnts anything</p>
         <p class="text-body-2 text-medium-emphasis mt-1">Type your message below to start</p>
@@ -27,11 +27,11 @@
         </div>
       </div>
 
-      <template v-for="(item, idx) in messages" :key="idx">
+      <template v-for="(item, idx) in messages" :key="item.uuid">
         <div v-if="item.kind === 'user'" :class="['message-row', 'justify-end']">
           <div class="message-bubble user">
             <div v-if="item.editing" class="edit-wrap">
-              <v-textarea v-model="editText" variant="plain" rows="1" auto-grow hide-details class="edit-textarea"
+              <v-textarea v-model="uiState.editText" variant="plain" rows="1" auto-grow hide-details class="edit-textarea"
                 @keydown.enter.exact.prevent="confirmEdit(idx)" />
               <div class="d-flex justify-end mt-1">
                 <v-btn icon="mdi-close" variant="text" size="x-small" color="medium-emphasis"
@@ -44,11 +44,11 @@
               <div class="message-text">{{ item.text }}</div>
               <div class="d-flex justify-end mt-1">
                 <div class="d-flex">
-                  <v-btn v-if="isLastUserMessage(idx) && !isRunning" icon="mdi-pencil" variant="text" size="x-small"
+                  <v-btn v-if="isLastUserMessage(idx) && !uiState.isRunning" icon="mdi-pencil" variant="text" size="x-small"
                     color="medium-emphasis" @click="editMessage(idx)" title="Edit" />
-                  <v-btn v-if="isLastUserMessage(idx) && !isRunning" icon="mdi-refresh" variant="text" size="x-small"
+                  <v-btn v-if="isLastUserMessage(idx) && !uiState.isRunning" icon="mdi-refresh" variant="text" size="x-small"
                     color="medium-emphasis" @click="resubmitMessage(idx)" title="Resubmit" />
-                  <v-btn v-if="!isRunning" icon="mdi-delete" variant="text" size="x-small" color="medium-emphasis"
+                  <v-btn v-if="!uiState.isRunning" icon="mdi-delete" variant="text" size="x-small" color="medium-emphasis"
                     @click="confirmDeleteMsg(idx)" title="Delete" />
                 </div>
               </div>
@@ -90,11 +90,21 @@
                 <v-divider />
                 <div class="pa-3">
                   <div v-if="item.inputParams" class="mb-3">
-                    <div class="text-caption font-weight-bold text-medium-emphasis mb-1">Input Parameters</div>
+                    <div class="d-flex align-center mb-1">
+                      <span class="text-caption font-weight-bold text-medium-emphasis">Input Parameters</span>
+                      <v-spacer />
+                      <v-btn icon="mdi-content-copy" variant="text" size="x-small" color="medium-emphasis"
+                        @click.stop="copyText(item.inputParams)" title="Copy" />
+                    </div>
                     <pre class="tool-detail-text">{{ item.inputParams }}</pre>
                   </div>
                   <div v-if="item.toolType === 'tool_end'">
-                    <div class="text-caption font-weight-bold text-medium-emphasis mb-1">Result</div>
+                    <div class="d-flex align-center mb-1">
+                      <span class="text-caption font-weight-bold text-medium-emphasis">Result</span>
+                      <v-spacer />
+                      <v-btn icon="mdi-content-copy" variant="text" size="x-small" color="medium-emphasis"
+                        @click.stop="copyText(item.content || '')" title="Copy" />
+                    </div>
                     <pre class="tool-detail-text">{{ item.content || '(empty)' }}</pre>
                   </div>
                 </div>
@@ -105,7 +115,7 @@
 
         <div v-else-if="item.kind === 'assistant'" class="message-row justify-start">
           <div class="message-bubble assistant">
-            <div v-if="item.text" class="message-text markdown-body" v-html="renderMarkdown(item.text)" />
+            <div v-if="item.text" class="message-text markdown-body" v-html="renderMarkdown(item.uuid, item.text)" />
             <div v-else-if="item.isLoading" class="loading-indicator">
               <span class="dot" /><span class="dot" /><span class="dot" />
             </div>
@@ -113,7 +123,7 @@
               <div class="d-flex">
                 <v-btn v-if="item.text" icon="mdi-content-copy" variant="text" size="x-small" color="medium-emphasis"
                   @click="copyText(item.text)" title="Copy response" />
-                <v-btn v-if="item.text && !item.isLoading && !isRunning" icon="mdi-delete" variant="text" size="x-small"
+                <v-btn v-if="item.text && !item.isLoading && !uiState.isRunning" icon="mdi-delete" variant="text" size="x-small"
                   color="medium-emphasis" @click="confirmDeleteMsg(idx)" title="Delete" />
               </div>
             </div>
@@ -128,18 +138,18 @@
       <v-card-text class="pa-3">
         <div class="d-flex align-end gap-3">
           <v-textarea v-model="prompt" placeholder="Ask Boxagnts..." variant="plain" rows="1" auto-grow hide-details
-            @keydown.enter.exact.prevent="sendMessage" @keydown.shift.enter="prompt += '\n'" :disabled="isRunning"
+            @keydown.enter.exact.prevent="sendMessage" @keydown.shift.enter="prompt += '\n'" :disabled="uiState.isRunning"
             class="chat-input" />
           <div class="d-flex flex-column gap-2">
             <v-btn icon="mdi-send" color="primary" variant="tonal" @click="sendMessage"
-              :disabled="!prompt.trim() || isRunning" :loading="isRunning" size="small" />
-            <v-btn v-if="isRunning" icon="mdi-stop" color="error" variant="tonal" size="small"
+              :disabled="!prompt.trim() || uiState.isRunning" :loading="uiState.isRunning" size="small" />
+            <v-btn v-if="uiState.isRunning" icon="mdi-stop" color="error" variant="tonal" size="small"
               @click="cancelExecution" />
           </div>
         </div>
         <div class="d-flex align-center mt-2">
           <v-icon size="small" class="mr-1" color="medium-emphasis">mdi-cube</v-icon>
-          <v-select v-model="selectedModel" :items="availableModels" density="compact" variant="solo-filled"
+          <v-select v-model="uiState.selectedModel" :items="availableModels" density="compact" variant="solo-filled"
             hide-details flat style="max-width: 200px" />
         </div>
       </v-card-text>
@@ -147,398 +157,102 @@
   </div>
 
   <!-- Delete message confirmation dialog -->
-  <v-dialog v-model="deleteMsgDialog" max-width="400">
+  <v-dialog v-model="uiState.deleteMsgDialog" max-width="400">
     <v-card>
       <v-card-title>Delete Message</v-card-title>
       <v-card-text>
         <p>Delete this message?</p>
-        <p v-if="deleteMsgIsUser" class="text-caption text-medium-emphasis mt-2">
+        <p v-if="uiState.deleteMsgIsUser" class="text-caption text-medium-emphasis mt-2">
           This will also delete the assistant's response below it.
         </p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="deleteMsgDialog = false">Cancel</v-btn>
-        <v-btn color="error" @click="handleDeleteMsg" :loading="deletingMsg">Delete</v-btn>
+        <v-btn variant="text" @click="uiState.deleteMsgDialog = false">Cancel</v-btn>
+        <v-btn color="error" @click="handleDeleteMsg" :loading="uiState.deletingMsg">Delete</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { api, type Project, type SessionMessage, type ContentBlock } from '@/api'
+import { type Project } from '@/api'
 import { useAppStore } from '@/stores/app'
-import { useSessionStore } from '@/stores/sessions'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
+import { useMarkdownRender } from '@/composables/useMarkdownRender'
+import { useChatScroll } from '@/composables/useChatScroll'
+import { useChatSession } from '@/composables/useChatSession'
+import { useChatMessages, type DisplayItem, type ChatUiState } from '@/composables/useChatMessages'
 
 const router = useRouter()
-
-const availableModels = ref<string[]>([])
-const quickPrompts = [
-  'Explain this codebase', 'Find bugs and suggest fixes', 'Refactor for better readability',
-  'Add unit tests', 'Write documentation',
-]
-
 const appStore = useAppStore()
-const sessionStore = useSessionStore()
-const currentProject = ref<Project | null>(null)
-const prompt = ref('')
-const messages = ref<DisplayItem[]>([])
-const isRunning = ref(false)
-const sessionId = ref<string | null>(null)
-const selectedModel = ref<string>('')
+
+const { renderMarkdown } = useMarkdownRender()
+
+const quickPrompts = [
+  'Write JavaScript code and run it', 'Develop website', 'Develop HTML5 game',
+  'Run Linux Shell commands', 'Get today\'s weather',
+]
 
 function goToModelSettings() {
   router.push('/settings/model')
 }
-const messagesEnd = ref<HTMLElement | null>(null)
-const scrollContainer = ref<HTMLElement | null>(null)
-
-let activeUserIdx = -1
-let activeAsstIdx = -1
-let pendingText = ''
-let toolIdx = -1
-let deleteMsgIdx = -1
-
-interface ToolItem {
-  kind: 'tool'; tool: string; toolType: 'tool_start' | 'tool_end'
-  content: string; inputParams: string; isError: boolean; expanded: boolean; timestamp: string; uuid: string
-}
-interface AssistantItem {
-  kind: 'assistant'; text: string; timestamp: string; isLoading: boolean; uuid: string
-}
-interface UserItem {
-  kind: 'user'; text: string; timestamp: string; uuid: string; editing: boolean
-}
-type DisplayItem = UserItem | ToolItem | AssistantItem
-
-
-let activeCleanup: (() => void) | null = null
-
-function renderMarkdown(text: string): string {
-  try { return DOMPurify.sanitize(marked.parse(text, { async: false }) as string || '') } catch { return escapeHtml(text) }
-}
-function escapeHtml(str: string): string { return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
-function formatTime(ts: string) { return new Date(ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) }
 
 async function copyText(text: string) {
-  try { await navigator.clipboard.writeText(text); appStore.showMessage('Copied to clipboard', 'success') } catch { appStore.showMessage('Failed to copy', 'error') }
-}
-
-function scrollToBottom() {
-  nextTick(() => {
-    if (scrollContainer.value) scrollContainer.value.scrollTop = scrollContainer.value.scrollHeight
-    messagesEnd.value?.scrollIntoView({ behavior: 'smooth' })
-  })
-}
-watch(() => messages.value.length, () => scrollToBottom())
-watch(() => { const last = messages.value[messages.value.length - 1]; if (last?.kind === 'assistant') return (last as AssistantItem).text; return null }, () => scrollToBottom())
-
-// --- Watch sessionStore for selection changes ---
-watch(() => sessionStore.currentSessionId, (newId) => {
-  
-  activeCleanup?.()
-  activeCleanup = null
-  isRunning.value = false
-  if (newId) {
-    sessionId.value = newId
-    if (activeUserIdx === -1) {
-      console.log("loadSessionHistory", activeUserIdx) 
-      loadSessionHistory(newId)
-    }
-    
-  } else {
-    sessionId.value = null
-    messages.value = []
-    activeUserIdx = -1
-    activeAsstIdx = -1
-    pendingText = ''
-    toolIdx = -1
-  }
-}, { immediate: true })
-
-async function loadSessionHistory(sid: string) {
-  messages.value = []
   try {
-    const result = await api.loadSessionHistory(sid)
-    if (!result) return
-
-    // result is { messages: [...], ... } or a raw array
-    const msgs: SessionMessage[] = Array.isArray(result)
-      ? result
-      : result.messages || []
-
-    const items: DisplayItem[] = []
-    for (const msg of msgs) {
-      if (!msg) continue
-
-      if (msg.role === 'user') {
-        if (typeof msg.content === 'string') {
-          if (msg.content.trim()) {
-            items.push({
-              kind: 'user',
-              text: msg.content,
-              timestamp: '',
-              uuid: msg.uuid || '',
-              editing: false
-            })
-          }
-        } else if (Array.isArray(msg.content)) {
-          for (const block of msg.content) {
-            if (block.type === 'tool_result') {
-              items.push({
-                kind: 'tool',
-                tool: block.tool_use_id || 'tool',
-                toolType: 'tool_end',
-                content: block.content || '',
-                inputParams: '',
-                isError: !!block.is_error,
-                expanded: false,
-                timestamp: '',
-                uuid: msg.uuid || '',
-              })
-            }
-          }
-        }
-      } else if (msg.role === 'assistant') {
-        if (typeof msg.content === 'string') {
-          if (msg.content.trim()) {
-            items.push({
-              kind: 'assistant',
-              text: msg.content,
-              timestamp: '',
-              isLoading: false,
-              uuid: msg.uuid || ''
-            })
-          }
-        } else if (Array.isArray(msg.content)) {
-          for (const block of msg.content) {
-            if (block.type === 'text') {
-              items.push({
-                kind: 'assistant',
-                text: block.text,
-                timestamp: '',
-                isLoading: false,
-                uuid: msg.uuid || ''
-              })
-            } else if (block.type === 'tool_use') {
-              items.push({
-                kind: 'tool',
-                tool: block.name,
-                toolType: 'tool_start',
-                content: '',
-                inputParams: JSON.stringify(block.input || {}, null, 2),
-                isError: false,
-                expanded: false,
-                timestamp: '',
-                uuid: msg.uuid || '',
-              })
-            }
-          }
-        }
-      }
-    }
-    messages.value = items;
-    scrollToBottom();
+    await navigator.clipboard.writeText(text)
+    appStore.showMessage('Copied to clipboard', 'success')
   } catch {
-    appStore.showMessage('Failed to load session history', 'error')
+    appStore.showMessage('Failed to copy', 'error')
   }
 }
 
-function parseContentObject(content: any) {
-  if (!content) return null
-  if (typeof content === 'string') return content.trim() ? {
-    type: 'text' as const,
-    text: content,
-    uuid: ''
-  } : null
-  if (typeof content !== 'object') return null
-  if (content.type === 'text_delta' && typeof content.text === 'string') return {
-    type: 'text' as const,
-    text: content.text,
-    uuid: content.uuid
-  }
-  if (content.type === 'tool_start' && content.tool) return {
-    type: 'tool_start' as const,
-    tool: content.tool,
-    inputJson: content.input_json,
-    uuid: content.uuid
-  }
-  if (content.type === 'tool_end' && content.tool) return {
-    type: 'tool_end' as const,
-    tool: content.tool,
-    isError: !!content.is_error,
-    uuid: content.uuid
-  }
+const messages = ref<DisplayItem[]>([])
+const prompt = ref('')
+const { scrollContainer, messagesEnd, scrollToBottom } = useChatScroll()
 
-  return null
-}
+const sessionId = ref<string | null>(null)
+const currentProject = ref<Project | null>(null)
+const availableModels = ref<string[]>([])
 
-function flushText() {
-  if (!pendingText.trim()) {
-    toolIdx = -1;
-    return
-  }
-  if (activeAsstIdx < 0) return
-  const m = messages.value[activeAsstIdx] as AssistantItem
-  if (m.text) m.text += pendingText; else { m.text = pendingText; m.isLoading = false }
-  pendingText = '';
-  toolIdx = -1
-}
+const uiState = reactive<ChatUiState>({
+  isRunning: false,
+  selectedModel: '',
+  deleteMsgIdx: -1,
+  deleteMsgDialog: false,
+  deleteMsgIsUser: false,
+  deletingMsg: false,
+  editText: '',
+})
 
-function formatToolInput(inputJson: string): string {
-  try { return JSON.stringify(JSON.parse(inputJson), null, 2) } catch { return inputJson }
-}
+const {
+  sendMessage,
+  resubmitMessage: doResubmit,
+  confirmEdit,
+  handleDeleteMsg,
+  cleanupActiveStream,
+} = useChatMessages({
+  messages, prompt, sessionId, currentProject, uiState, scrollToBottom,
+})
 
-function handleOutputEvent(content: any) {
-  const result = parseContentObject(content)
-  if (!result) return
-  if (result.type === 'tool_start') {
-    flushText();
-    const item: ToolItem = {
-      kind: 'tool',
-      tool: result.tool!,
-      toolType: 'tool_start',
-      content: '',
-      inputParams: result.inputJson ? formatToolInput(result.inputJson) : '',
-      isError: false,
-      expanded: true,
-      timestamp: new Date().toISOString(),
-      uuid: result.uuid
-    }
-    messages.value.splice(activeAsstIdx, 0, item);
-    activeAsstIdx++;
-    toolIdx = activeAsstIdx - 1
-  } else if (result.type === 'tool_end') {
-    if (toolIdx >= 0) {
-      const t = messages.value[toolIdx] as ToolItem;
-      t.toolType = 'tool_end';
-      t.isError = result.isError ?? false;
-      t.expanded = false
-    }
-    toolIdx = -1;
-  } else if (result.type === 'text') {
-    if (!messages.value[activeAsstIdx].uuid) messages.value[activeAsstIdx].uuid = result.uuid;
-    pendingText += result.text;
-  }
-  scrollToBottom();
-}
+const { cancelExecution } = useChatSession({
+  sessionId, currentProject, availableModels, messages, uiState, scrollToBottom, cleanupActiveStream,
+})
 
-function sendMessage() {
-  const text = prompt.value.trim()
-  if (!text || isRunning.value || !currentProject.value) return
-  const now = new Date().toISOString()
-  messages.value.push({
-    kind: 'user',
-    text,
-    timestamp: now,
-    uuid: '',
-    editing: false
-  })
-  activeUserIdx = messages.value.length - 1
-  activeAsstIdx = messages.value.length
-  messages.value.push({
-    kind: 'assistant',
-    text: '',
-    timestamp: now,
-    isLoading: true,
-    uuid: ''
-  })
-  pendingText = '';
-  toolIdx = -1;
-  prompt.value = '';
-  isRunning.value = true;
-  scrollToBottom()
-
-  activeCleanup?.()
-  activeCleanup = null
-
-  function onOutput(e: Event) {
-    const detail = (e as CustomEvent).detail as { content: any; session_id?: string }
-    if (detail.session_id && !sessionId.value) {
-      sessionId.value = detail.session_id
-
-      setTimeout(() => {        
-        sessionStore.fetchSessions()
-        sessionStore.selectSession(sessionId.value)
-      }, 1000)
-
-    }
-    handleOutputEvent(detail.content)
-  }
-  function onComplete(e: Event) {
-    cleanup()
-    flushText()
-    const detail = (e as CustomEvent).detail as { result: any }
-    if (detail.result && detail.result.user_message_uuid) {
-      const m1 = messages.value[activeUserIdx] as AssistantItem
-      if (!m1.uuid) m1.uuid = detail.result.user_message_uuid
-    }
-
-    const m2 = messages.value[activeAsstIdx] as AssistantItem
-    if (!m2.text) m2.text = '_(no response)_'
-    m2.isLoading = false
-    isRunning.value = false
-    scrollToBottom()
-
-  }
-  function onError(e: Event) {
-    cleanup()
-    flushText()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    m.text = `**Error:** ${(e as CustomEvent).detail || 'Unknown error'}`
-    m.isLoading = false
-    isRunning.value = false
-    scrollToBottom()
-  }
-  function cleanup() {
-    window.removeEventListener('chat-output', onOutput)
-    window.removeEventListener('chat-complete', onComplete)
-    window.removeEventListener('chat-error', onError)
-    activeCleanup = null
-  }
-  activeCleanup = cleanup
-  window.addEventListener('chat-output', onOutput)
-  window.addEventListener('chat-complete', onComplete)
-  window.addEventListener('chat-error', onError)
-
-  api.chatExecute(currentProject.value!.path, text, selectedModel.value, sessionId.value).catch(() => {
-    cleanup()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    if (!m.text) m.text = '_(connection failed)_'
-    m.isLoading = false
-    isRunning.value = false
-  })
-}
-
-function cancelExecution() {
-  activeCleanup?.()
-  activeCleanup = null
-  isRunning.value = false
-  const m = messages.value[activeAsstIdx] as AssistantItem | undefined
-  if (m?.kind === 'assistant') {
-    m.isLoading = false
-    if (!m.text) m.text = '_(cancelled)_'
-  }
-  if (sessionId.value) {
-    api.chatExecuteCancel(sessionId.value).catch(() => { })
+function resubmitMessage(idx: number) {
+  const item = messages.value[idx]
+  if (item?.kind === 'user') {
+    doResubmit(idx, item.text)
   }
 }
-
-const deleteMsgDialog = ref(false)
-const deleteMsgIsUser = ref(false)
-const deletingMsg = ref(false)
-const editText = ref('')
 
 function confirmDeleteMsg(idx: number) {
-  if (isRunning.value) return
-  deleteMsgIdx = idx
+  if (uiState.isRunning) return
+  uiState.deleteMsgIdx = idx
   const item = messages.value[idx]
-  deleteMsgIsUser.value = item?.kind === 'user'
-  deleteMsgDialog.value = true
+  uiState.deleteMsgIsUser = item?.kind === 'user'
+  uiState.deleteMsgDialog = true
 }
 
 function isLastUserMessage(idx: number): boolean {
@@ -549,234 +263,16 @@ function isLastUserMessage(idx: number): boolean {
 }
 
 function editMessage(idx: number) {
-  if (isRunning.value) return
+  if (uiState.isRunning) return
   const item = messages.value[idx]
   if (item.kind !== 'user') return
   item.editing = true
-  editText.value = item.text
+  uiState.editText = item.text
   nextTick(() => {
     const input = document.querySelector('.edit-wrap textarea') as HTMLTextAreaElement | null
     input?.focus()
   })
 }
-
-async function confirmEdit(idx: number) {
-  const item = messages.value[idx]
-  if (item.kind !== 'user' || isRunning.value || !currentProject.value) return
-  const newText = editText.value.trim()
-  if (!newText) return
-
-
-  const uuids: string[] = []
-
-  // Remove this user message and all following non-user messages
-  while (idx + 1 < messages.value.length && messages.value[idx + 1]?.kind !== 'user') {
-    uuids.push(messages.value[idx + 1].uuid)
-    messages.value.splice(idx + 1, 1);
-  }
-  uuids.push(messages.value[idx].uuid)
-  messages.value.splice(idx, 1);
-  editText.value = '';
-  try {
-    if (sessionId.value) {
-      await api.deleteSessionMessages(sessionId.value, uuids)
-    }
-  } catch {
-
-  }
-
-  // Re-send
-  const now = new Date().toISOString()
-  messages.value.push({ kind: 'user', text: newText, timestamp: now, uuid: '', editing: false })
-  activeUserIdx =  messages.value.length-1
-  activeAsstIdx = messages.value.length
-  messages.value.push({ kind: 'assistant', text: '', timestamp: now, isLoading: true, uuid: '' })
-  pendingText = '';
-  toolIdx = -1;
-  isRunning.value = true;
-  scrollToBottom()
-
-  activeCleanup?.()
-  activeCleanup = null
-
-  function onOutput(e: Event) {
-    const detail = (e as CustomEvent).detail as { content: any; session_id?: string }
-    handleOutputEvent(detail.content)
-  }
-  function onComplete(e: Event) {
-    cleanup()
-    flushText()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    if (!m.text) m.text = '_(no response)_'
-    m.isLoading = false
-    isRunning.value = false
-    scrollToBottom()
-  }
-  function onError(e: Event) {
-    cleanup()
-    flushText()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    m.text = `**Error:** ${(e as CustomEvent).detail || 'Unknown error'}`
-    m.isLoading = false
-    isRunning.value = false
-    scrollToBottom()
-  }
-  function cleanup() {
-    window.removeEventListener('chat-output', onOutput)
-    window.removeEventListener('chat-complete', onComplete)
-    window.removeEventListener('chat-error', onError)
-    activeCleanup = null
-  }
-  activeCleanup = cleanup
-  window.addEventListener('chat-output', onOutput)
-  window.addEventListener('chat-complete', onComplete)
-  window.addEventListener('chat-error', onError)
-
-  api.chatExecute(currentProject.value!.path, newText, selectedModel.value, sessionId.value).catch(() => {
-    cleanup()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    if (!m.text) m.text = '_(connection failed)_'
-    m.isLoading = false
-    isRunning.value = false
-  })
-}
-
-async function resubmitMessage(idx: number) {
-  if (isRunning.value || !currentProject.value) return
-  const item = messages.value[idx]
-  if (item.kind !== 'user') return
-
-  const uuids: string[] = []
-
-  // Remove this user message and all following non-user messages
-  while (idx + 1 < messages.value.length && messages.value[idx + 1]?.kind !== 'user') {
-    uuids.push(messages.value[idx + 1].uuid)
-    messages.value.splice(idx + 1, 1)
-  }
-  const text = item.text
-  uuids.push(messages.value[idx].uuid)
-  messages.value.splice(idx, 1)
-  try {
-    if (sessionId.value) {
-      await api.deleteSessionMessages(sessionId.value, uuids)
-    }
-  } catch {
-
-  }
-
-  // Re-send the message
-  const now = new Date().toISOString()
-  messages.value.push({ kind: 'user', text, timestamp: now, uuid: '', editing: false })
-  activeUserIdx =  messages.value.length-1
-  activeAsstIdx = messages.value.length
-  messages.value.push({ kind: 'assistant', text: '', timestamp: now, isLoading: true, uuid: '' })
-  pendingText = '';
-  toolIdx = -1;
-  isRunning.value = true;
-  scrollToBottom()
-
-  activeCleanup?.()
-  activeCleanup = null
-
-  function onOutput(e: Event) {
-    const detail = (e as CustomEvent).detail as { content: any; session_id?: string }
-    handleOutputEvent(detail.content)
-  }
-  function onComplete() {
-    cleanup()
-    flushText()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    if (!m.text) m.text = '_(no response)_'
-    m.isLoading = false
-    isRunning.value = false
-    scrollToBottom()
-
-  }
-  function onError(e: Event) {
-    cleanup()
-    flushText()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    m.text = `**Error:** ${(e as CustomEvent).detail || 'Unknown error'}`
-    m.isLoading = false
-    isRunning.value = false
-    scrollToBottom()
-  }
-  function cleanup() {
-    window.removeEventListener('chat-output', onOutput)
-    window.removeEventListener('chat-complete', onComplete)
-    window.removeEventListener('chat-error', onError)
-    activeCleanup = null
-  }
-  activeCleanup = cleanup
-  window.addEventListener('chat-output', onOutput)
-  window.addEventListener('chat-complete', onComplete)
-  window.addEventListener('chat-error', onError)
-
-  api.chatExecute(currentProject.value!.path, text, selectedModel.value, sessionId.value).catch(() => {
-    cleanup()
-    const m = messages.value[activeAsstIdx] as AssistantItem
-    if (!m.text) m.text = '_(connection failed)_'
-    m.isLoading = false
-    isRunning.value = false
-  })
-}
-
-async function handleDeleteMsg() {
-  if (deleteMsgIdx < 0 || deleteMsgIdx >= messages.value.length) return
-  const item = messages.value[deleteMsgIdx]
-  deletingMsg.value = true
-
-  // Collect UUIDs to delete: this item + following items if it's a user message
-  const uuids: string[] = []
-  uuids.push(item.uuid)
-
-  if (item.kind === 'user') {
-    // Also delete the assistant/tool items that follow until next user
-    for (let i = deleteMsgIdx + 1; i < messages.value.length; i++) {
-      const next = messages.value[i]
-      if (next.kind === 'user') break
-      if (next.uuid) uuids.push(next.uuid)
-    }
-  }
-
-  try {
-    if (sessionId.value) {
-      await api.deleteSessionMessages(sessionId.value, uuids)
-    }
-    // Remove from display
-    if (item.kind === 'user') {
-      while (deleteMsgIdx + 1 < messages.value.length && messages.value[deleteMsgIdx + 1]?.kind !== 'user') {
-        messages.value.splice(deleteMsgIdx + 1, 1)
-      }
-    }
-    messages.value.splice(deleteMsgIdx, 1)
-    appStore.showMessage('Message deleted', 'success')
-  } catch {
-    appStore.showMessage('Failed to delete message', 'error')
-  } finally {
-    deletingMsg.value = false
-    deleteMsgDialog.value = false
-    deleteMsgIdx = -1
-  }
-}
-
-onMounted(async () => {
-  try {
-    currentProject.value = await api.getCurrentProject()
-  } catch {
-    appStore.showMessage('Could not detect current project', 'warning')
-  }
-  try {
-    const models = await api.getModels()
-    availableModels.value = models
-    if (models.length > 0) {
-      selectedModel.value = models[0]
-    }
-  } catch {
-    availableModels.value = []
-  }
-  sessionStore.fetchSessions()
-})
 </script>
 
 <style scoped>
@@ -969,7 +465,7 @@ onMounted(async () => {
   font-size: 0.8125rem;
   line-height: 1.5;
   color: rgba(var(--v-theme-on-surface), 0.7);
-  max-height: 300px;
+  max-height: 600px;
   overflow-y: auto;
 }
 

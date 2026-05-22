@@ -1,5 +1,5 @@
-import { R as defineComponent, a9 as useAppStore, O as createElementBlock, L as createBaseVNode, Q as createVNode, ag as withCtx, q as VIcon, e as VCard, d as VBtn, a1 as openBlock, P as createTextVNode, j as VCardTitle, i as VCardText, r as VList, F as Fragment, a3 as renderList, M as createBlock, v as VListItemTitle, a6 as toDisplayString, t as VListItem, a8 as unref, N as createCommentVNode, y as VRow, m as VCol, G as VTextField, ai as withKeys, a2 as ref } from "./index-CD7sFTTo.js";
-import { u as useSettingsStore } from "./settings-jnLiHyJO.js";
+import { S as defineComponent, ab as useAppStore, a1 as onMounted, K as api, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, f as VCard, e as VBtn, a4 as ref, a2 as openBlock, Q as createTextVNode, k as VCardTitle, j as VCardText, s as VList, F as Fragment, a5 as renderList, N as createBlock, v as VListItemTitle, a8 as toDisplayString, t as VListItem, aa as unref, O as createCommentVNode, z as VRow, n as VCol, H as VTextField, ak as withKeys } from "./main-BSD2YpbL.js";
+import { u as useSettingsStore } from "./settings-RFBLOOFr.js";
 const _hoisted_1 = { class: "d-flex align-center mb-2" };
 const _hoisted_2 = { class: "d-flex justify-end mt-4" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
@@ -8,8 +8,29 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const settings = useSettingsStore();
     const appStore = useAppStore();
     const newOutboundHost = ref("");
-    function handleSave() {
-      appStore.showMessage("Security settings saved locally!", "success");
+    const saving = ref(false);
+    const loading = ref(false);
+    onMounted(async () => {
+      loading.value = true;
+      try {
+        const hosts = await api.getAllowedOutboundHosts();
+        settings.settings.allowed_outbound_hosts = hosts;
+      } catch {
+        appStore.showMessage("Failed to load allowed outbound hosts", "error");
+      } finally {
+        loading.value = false;
+      }
+    });
+    async function handleSave() {
+      saving.value = true;
+      try {
+        await api.updateAllowedOutboundHosts(settings.settings.allowed_outbound_hosts || []);
+        appStore.showMessage("Security settings saved!", "success");
+      } catch {
+        appStore.showMessage("Failed to save security settings", "error");
+      } finally {
+        saving.value = false;
+      }
     }
     function addOutboundHost() {
       const host = newOutboundHost.value.trim();
@@ -120,7 +141,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => newOutboundHost.value = $event),
                           label: "Add Host",
                           variant: "outlined",
-                          placeholder: "api.example.com",
+                          placeholder: "https://api.example.com",
                           onKeyup: withKeys(addOutboundHost, ["enter"])
                         }, null, 8, ["modelValue"])
                       ]),
@@ -155,7 +176,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           createVNode(VBtn, {
             color: "primary",
             size: "large",
-            onClick: handleSave
+            onClick: handleSave,
+            loading: saving.value
           }, {
             default: withCtx(() => [
               createVNode(VIcon, { start: "" }, {
@@ -167,7 +189,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               _cache[9] || (_cache[9] = createTextVNode(" Save ", -1))
             ]),
             _: 1
-          })
+          }, 8, ["loading"])
         ])
       ]);
     };

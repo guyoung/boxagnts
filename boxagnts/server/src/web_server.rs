@@ -4,30 +4,22 @@ use std::sync::Arc;
 
 use axum::{
     Router,
-    response::Html,
-    routing::{ get, any_service },
+    routing::{any_service, get},
 };
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
-use tower_http::cors::CorsLayer;
 use tokio::sync::RwLock;
+use tower_http::cors::CorsLayer;
 
 
-
-/// Start web server
-pub async fn start_web_server(port: Option<u16>) -> Result<(), Box<dyn std::error::Error>> {
-    let port = port.unwrap_or(30001);
-
-    create_web_server(port).await
-}
-
-
-/// Create the web server
-async fn create_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
-
-    boxagnts_workspace::config::Settings::init().await?;
-    boxagnts_workspace::auth_store::AuthStore::init().await?;
-
+/// start_web_server
+pub async fn start_web_server(
+    host: String,
+    port: u16,
+    admin_user: Option<String>,
+    admin_pass: Option<String>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    boxagnts_workspace::init().await?;
 
     boxagnts_gateway::cron::store::init_storage().await?;
     boxagnts_gateway::site::store::init_storage().await?;
@@ -39,7 +31,6 @@ async fn create_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> 
 
     let settings = boxagnts_workspace::config::Settings::load().await?;
     let config_state = boxagnts_gateway::config::app_state::AppState::new(RwLock::new(settings));
-
 
     let jobs = boxagnts_gateway::cron::store::load_jobs().await?;
 
@@ -55,14 +46,8 @@ async fn create_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> 
         site_map: Arc::new(RwLock::new(HashMap::new())),
     };
 
-
-
     boxagnts_gateway::cron::scheduler::init_scheduler().await?;
     boxagnts_gateway::cron::scheduler::reload_all_jobs(cron_state.clone()).await?;
-
-
-
-
 
     // CORS layer to allow requests from phone browsers
     // let cors = CorsLayer::new()
@@ -71,30 +56,35 @@ async fn create_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> 
     //     .allow_headers(Any);
     let cors = CorsLayer::permissive();
 
+    let admin_auth_state = crate::dashboard::AdminAuthState {
+        admin_user,
+        admin_pass,
+    };
+
     // Create router with API endpoints
     let app = Router::new()
-        .route("/", get(sites_index))
-        .route("/index.html", get(sites_index))
-        .nest("/dashboard", crate::dashboard::crate_router(ws_state, cron_state, site_state, config_state ).await)
+        .route("/", get(crate::sites::sites_home))
+        .route("/index.html", get(crate::sites::sites_home))
+        .route(
+            "/api/get_site_nav_items",
+            get(crate::sites::get_site_nav_items),
+        )
+        .nest(
+            "/dashboard",
+            crate::dashboard::crate_router(ws_state, cron_state, site_state, config_state, admin_auth_state).await,
+        )
         .route_service(
             "/sites/{site}/{*path}",
             any_service(crate::sites::make_dynamic_service()),
         )
-        .layer(cors)
-        ;
+        .layer(cors);
 
-
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    println!("🌐 Web server running on http://127.0.0.1:{}", port);
-    println!("💻 Dashboard url http://127.0.0.1:{}/dashboard", port);
+    let addr: SocketAddr = format!("{}:{}", host, port).parse()?;
+    println!("🌐 Web server running on http://{}:{}", host, port);
+    println!("💻 Dashboard url http://{}:{}/dashboard", host, port);
 
     let listener = TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
 
     Ok(())
 }
-
-async fn sites_index() -> Html<&'static str> {
-    Html("Sites")
-}
-

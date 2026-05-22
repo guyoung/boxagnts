@@ -35,7 +35,7 @@
               v-model="newOutboundHost"
               label="Add Host"
               variant="outlined"
-              placeholder="api.example.com"
+              placeholder="https://api.example.com"
               @keyup.enter="addOutboundHost"
             />
           </v-col>
@@ -49,7 +49,7 @@
     </v-card>
 
     <div class="d-flex justify-end mt-4">
-      <v-btn color="primary" size="large" @click="handleSave">
+      <v-btn color="primary" size="large" @click="handleSave" :loading="saving">
         <v-icon start>mdi-content-save</v-icon> Save
       </v-btn>
     </div>
@@ -57,16 +57,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useAppStore } from '@/stores/app'
+import { api } from '@/api'
 
 const settings = useSettingsStore()
 const appStore = useAppStore()
 const newOutboundHost = ref('')
+const saving = ref(false)
+const loading = ref(false)
 
-function handleSave() {
-  appStore.showMessage('Security settings saved locally!', 'success')
+onMounted(async () => {
+  loading.value = true
+  try {
+    const hosts = await api.getAllowedOutboundHosts()
+    settings.settings.allowed_outbound_hosts = hosts
+  } catch {
+    appStore.showMessage('Failed to load allowed outbound hosts', 'error')
+  } finally {
+    loading.value = false
+  }
+})
+
+async function handleSave() {
+  saving.value = true
+  try {
+    await api.updateAllowedOutboundHosts(settings.settings.allowed_outbound_hosts || [])
+    appStore.showMessage('Security settings saved!', 'success')
+  } catch {
+    appStore.showMessage('Failed to save security settings', 'error')
+  } finally {
+    saving.value = false
+  }
 }
 
 function addOutboundHost() {

@@ -455,6 +455,10 @@ pub struct Settings {
     /// App version at last launch — used to detect upgrades and show release notes.
     #[serde(default, rename = "lastSeenVersion")]
     pub last_seen_version: Option<String>,
+    /// When true, releasing a drag selection automatically copies it to the
+    /// system clipboard.
+    #[serde(default = "default_true", rename = "autoCopyOnHighlight")]
+    pub auto_copy_on_highlight: bool,
 }
 
 /// A user-defined slash command template.

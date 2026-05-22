@@ -34,6 +34,8 @@ pub struct JobConfig {
     pub enabled: bool,
     #[serde(default)]
     pub timeout: Option<u64>,
+    #[serde(default)]
+    pub model: Option<String>,
     pub prompt: String,
 }
 
@@ -57,6 +59,7 @@ pub struct CreateJobReq {
     pub enabled: bool,
     #[serde(default)]
     pub timeout: Option<u64>,
+    pub model: Option<String>,
     pub prompt: String,
 }
 
@@ -67,6 +70,7 @@ pub struct UpdateJobReq {
     pub cron: Option<String>,
     pub enabled: Option<bool>,
     pub timeout: Option<u64>,
+    pub model: Option<String>,
     pub prompt: Option<String>,
 }
 
@@ -78,6 +82,7 @@ pub struct ListJobRes {
     pub description: String,
     pub cron: String,
     pub enabled: bool,
+    pub model: Option<String>,
     pub last_run_at: Option<DateTime<Utc>>,
     pub last_run_success: Option<bool>,
 

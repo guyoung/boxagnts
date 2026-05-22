@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Boxagnts navigation</title>
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #121212;
+      --surface: #1E1E2E;
+      --surface-bright: #2A2A3C;
+      --surface-light: #333347;
+      --surface-variant: #262638;
+      --text-primary: rgba(255, 255, 255, 0.87);
+      --text-secondary: #B0B0C0;
+      --text-hint: rgba(255, 255, 255, 0.38);
+      --primary: #89B4FA;
+      --primary-darken: #7CA4EA;
+      --secondary: #CBA6F7;
+      --accent: #94E2D5;
+      --success: #A6E3A1;
+      --warning: #F9E2AF;
+      --error: #F38BA8;
+      --radius: 12px;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      background: var(--surface);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 36px;
+      height: 36px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #121212;
+      font-size: 18px;
+    }
+
+    .header-logo svg {
+      width: 22px;
+      height: 22px;
+      fill: #121212;
+    }
+
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.15s ease;
+    }
+
+    .header-link:hover {
+      background: rgba(137, 180, 250, 0.1);
+    }
+
+    .header-link svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 32px;
+    }
+
+    .page-title {
+      margin-bottom: 28px;
+    }
+
+    .page-title h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .page-title p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .nav-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+    }
+
+    .nav-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(137, 180, 250, 0.15);
+      background: var(--surface-bright);
+    }
+
+    .nav-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: var(--surface-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .nav-card-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--primary);
+    }
+
+    .nav-card-body {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .nav-card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-card-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-card-arrow {
+      flex-shrink: 0;
+      color: var(--text-hint);
+      transition: transform 0.15s ease;
+    }
+
+    .nav-card:hover .nav-card-arrow {
+      transform: translateX(3px);
+      color: var(--primary);
+    }
+
+    .nav-card-arrow svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 0;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--surface-light);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 0;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      color: var(--text-hint);
+    }
+
+    .empty-icon svg {
+      width: 64px;
+      height: 64px;
+      fill: var(--text-hint);
+    }
+
+    .empty-text {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+    }
+
+    .error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 0;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .error-text {
+      color: var(--error);
+      font-size: 0.9375rem;
+    }
+
+    .count-badge {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--surface-bright);
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-title">
+      <div class="header-logo">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h6l-2 3v1h8v-1l-2-3h6c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 12H4V4h16v10zM8 11h2v2H8v-2zm3 0h2v2h-2v-2zm3 0h2v2h-2v-2z"/></svg>
+      </div>
+      <h1>Boxagnts navigation</h1>
+    </div>
+    <div class="header-actions">
+      <a href="/dashboard" class="header-link" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+        Dashboard
+      </a>
+      <a href="https://github.com/guyoung/boxagnts" class="header-link" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title">
+      <h2>Sites <span class="count-badge" id="itemCount"></span></h2>
+      <p>Quick navigation to your deployed sites</p>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <span class="loading-text">Loading sites...</span>
+    </div>
+
+    <div class="error" id="error" style="display:none">
+      <svg style="width:48px;height:48px;fill:var(--error)" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      <span class="error-text" id="errorMsg">Failed to load navigation items</span>
+    </div>
+
+    <div class="empty" id="empty" style="display:none">
+      <svg class="empty-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      <span class="empty-text">No sites configured yet</span>
+    </div>
+
+    <div class="nav-grid" id="navGrid" style="display:none"></div>
+  </main>
+
+  <template id="cardTemplate">
+    <a class="nav-card">
+      <div class="nav-card-icon">
+        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>
+      </div>
+      <div class="nav-card-body">
+        <div class="nav-card-title"></div>
+        <div class="nav-card-desc"></div>
+      </div>
+      <div class="nav-card-arrow">
+        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+      </div>
+    </a>
+  </template>
+
+  <script>
+    function showLoading() {
+      document.getElementById('loading').style.display = 'flex'
+      document.getElementById('error').style.display = 'none'
+      document.getElementById('empty').style.display = 'none'
+      document.getElementById('navGrid').style.display = 'none'
+    }
+
+    function showError(msg) {
+      document.getElementById('loading').style.display = 'none'
+      document.getElementById('error').style.display = 'flex'
+      document.getElementById('errorMsg').textContent = msg || 'Failed to load navigation items'
+      document.getElementById('empty').style.display = 'none'
+      document.getElementById('navGrid').style.display = 'none'
+    }
+
+    function showEmpty() {
+      document.getElementById('loading').style.display = 'none'
+      document.getElementById('error').style.display = 'none'
+      document.getElementById('empty').style.display = 'flex'
+      document.getElementById('navGrid').style.display = 'none'
+      document.getElementById('itemCount').textContent = ''
+    }
+
+    function renderItems(items) {
+      document.getElementById('loading').style.display = 'none'
+      document.getElementById('error').style.display = 'none'
+      document.getElementById('empty').style.display = 'none'
+
+      if (!items || items.length === 0) {
+        document.getElementById('empty').style.display = 'flex'
+        document.getElementById('itemCount').textContent = ''
+        return
+      }
+
+      document.getElementById('itemCount').textContent = '(' + items.length + ')'
+
+      var grid = document.getElementById('navGrid')
+      grid.innerHTML = ''
+
+      var tmpl = document.getElementById('cardTemplate').content
+
+      items.forEach(function (item) {
+        var card = document.importNode(tmpl.querySelector('.nav-card'), true)
+
+        card.href = item.url
+        card.querySelector('.nav-card-title').textContent = item.title
+
+        if (item.description) {
+          card.querySelector('.nav-card-desc').textContent = item.description
+        } else {
+          card.querySelector('.nav-card-desc').textContent = item.url
+        }
+
+        grid.appendChild(card)
+      })
+
+      grid.style.display = 'grid'
+    }
+
+    async function fetchNavItems() {
+      showLoading()
+
+      try {
+        var response = await fetch('/api/get_site_nav_items', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status)
+        }
+
+        var data = await response.json()
+
+        var items = Array.isArray(data) ? data : []
+        if (items.length === 0) {
+          showEmpty()
+        } else {
+          renderItems(items)
+        }
+      } catch (e) {
+        showError(e.message || 'Network error')
+      }
+    }
+
+    fetchNavItems()
+  </script>
+</body>
+</html>

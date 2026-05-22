@@ -42,6 +42,7 @@ impl ProviderId {
     pub const DEEPINFRA: &'static str = "deepinfra";
     pub const CEREBRAS: &'static str = "cerebras";
     pub const COHERE: &'static str = "cohere";
+    pub const CROF: &'static str = "crof";
     pub const TOGETHER_AI: &'static str = "together-ai";
     pub const PERPLEXITY: &'static str = "perplexity";
     pub const OPENROUTER: &'static str = "openrouter";
@@ -73,6 +74,11 @@ impl ProviderId {
     pub const MINIMAX: &'static str = "minimax";
     pub const CODEX: &'static str = "codex";
     pub const OPENCODE_GO: &'static str = "opencode-go";
+    pub const OPENCODE_ZEN: &'static str = "opencode-zen";
+    pub const SYNTHETIC: &'static str = "synthetic";
+    pub const ROUTING: &'static str = "routing";
+    pub const NEURALWATT: &'static str = "neuralwatt";
+    pub const FREE: &'static str = "free";
 }
 
 impl fmt::Display for ProviderId {

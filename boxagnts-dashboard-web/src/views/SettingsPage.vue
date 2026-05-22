@@ -9,8 +9,8 @@
       <v-tab value="model" prepend-icon="mdi-robot" @click="navigateTo('model')">
         Model Settings
       </v-tab>
-      <v-tab value="prompt" prepend-icon="mdi-text" @click="navigateTo('prompt')">
-        System Prompt
+      <v-tab value="agents-md" prepend-icon="mdi-text" @click="navigateTo('agents-md')">
+        AGENTS.md
       </v-tab>
       <v-tab value="security" prepend-icon="mdi-security" @click="navigateTo('security')">
         Security
@@ -32,7 +32,7 @@ const activeTab = ref('model')
 
 function getTabFromPath(path: string): string {
   if (path.includes('/settings/security')) return 'security'
-  if (path.includes('/settings/prompt')) return 'prompt'
+  if (path.includes('/settings/agents-md')) return 'agents-md'
   return 'model'
 }
 

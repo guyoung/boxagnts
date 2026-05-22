@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ChatPage-Z2LiO0qL.js","assets/ChatPage-Cnktm_64.css","assets/McpPage-CXT05cNi.js","assets/McpPage-DjyTiLVM.css","assets/FilePage-D96Ontlb.js","assets/FilePage-DiXuUVle.css","assets/CronsPage-D5CiQYL4.js","assets/CronsPage-D1csH-xB.css","assets/AgentsPage-Cro4BIt_.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-Cenoo-Lu.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-Cc4f-Ioq.js","assets/ToolsPage-BLqpw-br.css","assets/SettingsPromptPage-BJZxxhlH.js","assets/settings-jnLiHyJO.js","assets/SettingsModelPage-DqKlgKLH.js","assets/SettingsSecurityPage-BMvZDzzx.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ChatPage-CCZaTI8B.js","assets/ChatPage-Inv32tie.css","assets/McpPage-CyaVxL3f.js","assets/McpPage-DjyTiLVM.css","assets/FilePage-Cyw5lzyK.js","assets/FilePage-DiXuUVle.css","assets/SitesPage-atvx2DRu.js","assets/baseCrud-dWOHLWHe.js","assets/SitesPage-DAdM3Ay7.css","assets/CronsPage-CJSYv8Bs.js","assets/CronsPage-Cm0z54Jh.css","assets/AgentsPage-rgPR5bjz.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-XKGruORf.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-D0TCjD8G.js","assets/ToolsPage-BLqpw-br.css","assets/SettingsModelPage-Dz0foC62.js","assets/settings-RFBLOOFr.js","assets/SettingsSecurityPage-DRTIbgcA.js"])))=>i.map(i=>d[i]);
 var _a;
 (function polyfill() {
   const relList = document.createElement("link").relList;
@@ -45583,47 +45583,61 @@ const useAppStore = /* @__PURE__ */ defineStore("app", () => {
     hideSnackbar
   };
 });
-async function restApiCall(endpoint, params) {
-  let processedEndpoint = endpoint;
-  if (params) {
-    Object.keys(params).forEach((key) => {
-      const placeholders = [
-        `{${key}}`,
-        `{${key.charAt(0).toLowerCase() + key.slice(1)}}`,
-        `{${key.charAt(0).toUpperCase() + key.slice(1)}}`
-      ];
-      placeholders.forEach((placeholder) => {
-        if (processedEndpoint.includes(placeholder)) {
-          processedEndpoint = processedEndpoint.replace(placeholder, encodeURIComponent(String(params[key])));
-        }
-      });
-    });
-  }
-  const url = new URL(processedEndpoint, window.location.origin);
-  if (params && !processedEndpoint.includes("{")) {
-    Object.keys(params).forEach((key) => {
-      if (!endpoint.includes(`{${key}}`) && !endpoint.includes(`{${key.charAt(0).toLowerCase() + key.slice(1)}}`) && !endpoint.includes(`{${key.charAt(0).toUpperCase() + key.slice(1)}}`) && params[key] !== void 0 && params[key] !== null) {
-        url.searchParams.append(key, String(params[key]));
+function resolvePlaceholders(endpoint, params) {
+  let result = endpoint;
+  Object.keys(params).forEach((key) => {
+    const placeholders = [
+      `{${key}}`,
+      `{${key.charAt(0).toLowerCase() + key.slice(1)}}`,
+      `{${key.charAt(0).toUpperCase() + key.slice(1)}}`
+    ];
+    placeholders.forEach((ph) => {
+      if (result.includes(ph)) {
+        result = result.replace(ph, encodeURIComponent(String(params[key])));
       }
     });
+  });
+  return result;
+}
+function buildQueryParams(url, endpoint, params) {
+  Object.keys(params).forEach((key) => {
+    const usedAsPlaceholder = endpoint.includes(`{${key}}`) || endpoint.includes(`{${key.charAt(0).toLowerCase() + key.slice(1)}}`) || endpoint.includes(`{${key.charAt(0).toUpperCase() + key.slice(1)}}`);
+    if (!usedAsPlaceholder && params[key] !== void 0 && params[key] !== null) {
+      url.searchParams.append(key, String(params[key]));
+    }
+  });
+}
+async function restApiCall(endpoint, params, method = "GET", body) {
+  const processedEndpoint = params ? resolvePlaceholders(endpoint, params) : endpoint;
+  const url = new URL(processedEndpoint, window.location.origin);
+  const fetchOptions = {
+    method,
+    headers: { "Content-Type": "application/json" }
+  };
+  if (method === "GET") {
+    if (params) buildQueryParams(url, endpoint, params);
+  } else if (body !== void 0) {
+    fetchOptions.body = JSON.stringify(body);
   }
   try {
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    const response = await fetch(url.toString(), fetchOptions);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const result = await response.json();
-    if (!result.success) {
-      throw new Error(result.error || "API call failed");
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const json = await response.json();
+      if (json && typeof json === "object" && "success" in json) {
+        if (!json.success) {
+          throw new Error(json.error || "API call failed");
+        }
+        return json.data;
+      }
+      return json;
     }
-    return result.data;
+    return await response.json();
   } catch (error) {
-    console.error(`REST API call failed for ${endpoint}:`, error);
+    console.error(`REST API call failed for ${method} ${endpoint}:`, error);
     throw error;
   }
 }
@@ -45635,7 +45649,64 @@ function mapCommandToEndpoint(command, _params) {
     "get_sessions": "/dashboard/api/sessions",
     "load_session_history": "/dashboard/api/sessions/{sessionId}",
     "delete_session": "/dashboard/api/delete_session/{sessionId}",
-    "clear_session_messages": "/dashboard/api/clear_session_messages/{sessionId}"
+    "clear_session_messages": "/dashboard/api/clear_session_messages/{sessionId}",
+    "update_session_title": "/dashboard/api/update_session_title/{sessionId}",
+    "delete_session_messages": "/dashboard/api/delete_session_messages/{sessionId}",
+    // Usage
+    "get_usage_stats": "/dashboard/api/usage/stats",
+    "get_usage_by_date_range": "/dashboard/api/usage/by_date",
+    "get_session_stats": "/dashboard/api/usage/session_stats",
+    "get_usage_details": "/dashboard/api/usage/details",
+    // MCP
+    "mcp_list": "/dashboard/api/mcp/servers",
+    "mcp_add": "/dashboard/api/mcp/servers",
+    "mcp_remove": "/dashboard/api/mcp/servers/{name}",
+    "mcp_test_connection": "/dashboard/api/mcp/servers/{name}/test",
+    "mcp_add_from_claude_desktop": "/dashboard/api/mcp/import",
+    // Config
+    "update_default_model": "/dashboard/api/config/update_default_model",
+    "get_models": "/dashboard/api/config/get_models",
+    "get_allowed_outbound_hosts": "/dashboard/api/config/get_allowed_outbound_hosts",
+    "update_allowed_outbound_hosts": "/dashboard/api/config/update_allowed_outbound_hosts",
+    // Config Providers
+    "get_config_providers": "/dashboard/api/config/providers",
+    "get_config_provider": "/dashboard/api/config/providers/{id}",
+    "create_config_provider": "/dashboard/api/config/providers/create_provider",
+    "update_config_provider": "/dashboard/api/config/providers/update_provider/{id}",
+    "delete_config_provider": "/dashboard/api/config/providers/delete_provider/{id}",
+    "get_provider_options": "/dashboard/api/config/provider_options",
+    // Provider Models
+    "create_provider_model": "/dashboard/api/config/providers/{providerId}/create_model",
+    "update_provider_model": "/dashboard/api/config/providers/{providerId}/update_model/{modelId}",
+    "delete_provider_model": "/dashboard/api/config/providers/{providerId}/delete_model/{modelId}",
+    // Agents.md
+    "get_agents_md": "/dashboard/api/config/get_agents_md",
+    "update_agents_md": "/dashboard/api/config/update_agents_md",
+    // Files/Folders
+    "get_root_sub_folders": "/dashboard/api/files/root_sub_folders",
+    // Sites
+    "get_sites": "/dashboard/api/site/sites",
+    "get_site": "/dashboard/api/site/sites/{id}",
+    "create_site": "/dashboard/api/site/sites/create_site",
+    "update_site": "/dashboard/api/site/sites/update_site/{id}",
+    "delete_site": "/dashboard/api/site/sites/delete_site/{id}",
+    // Crons
+    "get_crons": "/dashboard/api/cron/jobs",
+    "get_cron": "/dashboard/api/cron/jobs/{id}",
+    "create_cron": "/dashboard/api/cron/jobs/create_job",
+    "update_cron": "/dashboard/api/cron/jobs/update_job/{id}",
+    "delete_cron": "/dashboard/api/cron/jobs/delete_job/{id}",
+    "get_cron_logs": "/dashboard/api/cron/jobs/{jobId}/logs",
+    // Skills
+    "get_skills": "/dashboard/api/skills",
+    "create_skill": "/dashboard/api/skills",
+    "update_skill": "/dashboard/api/skills/{id}",
+    "delete_skill": "/dashboard/api/skills/{id}",
+    // Tools
+    "get_tools": "/dashboard/api/tools",
+    "create_tool": "/dashboard/api/tools",
+    "update_tool": "/dashboard/api/tools/{id}",
+    "delete_tool": "/dashboard/api/tools/{id}"
   };
   const endpoint = commandToEndpoint[command];
   if (!endpoint) {
@@ -45686,14 +45757,11 @@ async function handleStreamingCommand(command, params) {
             reject(new Error(message.error || "Execution failed"));
           }
         } else if (message.type === "error") {
-          console.log(`[TRACE] Error message:`, message);
           const errorEvent = new CustomEvent("chat-error", {
             detail: message.message || "Unknown error"
           });
           window.dispatchEvent(errorEvent);
           reject(new Error(message.message || "Unknown error"));
-        } else {
-          console.log(`[TRACE] Unknown message type: ${message.type}`);
         }
       } catch (e) {
         console.error("[TRACE] Failed to parse WebSocket message:", e);
@@ -45711,20 +45779,19 @@ async function handleStreamingCommand(command, params) {
       if (event.code !== 1e3 && event.code !== 1001) {
         const cancelEvent = new CustomEvent("chat-complete", {
           detail: false
-          // false indicates cancellation/failure
         });
         window.dispatchEvent(cancelEvent);
       }
     };
   });
 }
-async function apiCall(command, params) {
+async function apiCall(command, params, method = "GET", body) {
   const streamingCommands = ["chat_execute", "chat_execute_cancel"];
   if (streamingCommands.includes(command)) {
     return handleStreamingCommand(command, params);
   }
   const endpoint = mapCommandToEndpoint(command);
-  return await restApiCall(endpoint, params);
+  return await restApiCall(endpoint, params, method, body);
 }
 function safeCall(fn, fallback) {
   return async () => {
@@ -45755,54 +45822,10 @@ const api = {
     return apiCall("delete_session", { sessionId });
   },
   async updateSessionTitle(sessionId, title) {
-    let url = `/dashboard/api/update_session_title/${sessionId}`;
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          title
-        })
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || "API call failed");
-      }
-      return result.data;
-    } catch (error) {
-      console.error(`REST API call failed for ${url}:`, error);
-      throw error;
-    }
+    return apiCall("update_session_title", { sessionId }, "POST", { title });
   },
   async deleteSessionMessages(sessionId, message_uuids) {
-    let url = `/dashboard/api/delete_session_messages/${sessionId}`;
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          messages: message_uuids
-        })
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || "API call failed");
-      }
-      return result.data;
-    } catch (error) {
-      console.error(`REST API call failed for ${url}:`, error);
-      throw error;
-    }
+    return apiCall("delete_session_messages", { sessionId }, "POST", { messages: message_uuids });
   },
   async clearSessionMessages(sessionId) {
     return apiCall("clear_session_messages", { sessionId });
@@ -45855,111 +45878,66 @@ const api = {
   mcpAddFromClaudeDesktop: (scope) => apiCall("mcp_add_from_claude_desktop", { scope }),
   // --- Update Default Model API ---
   async updateDefaultModel(id) {
-    const response = await fetch("/dashboard/api/config/update_default_model", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id })
-    });
-    if (!response.ok) throw new Error("Failed to update default model");
+    return apiCall("update_default_model", {}, "POST", { id });
   },
   // --- Get Available Models API ---
   async getModels() {
-    const response = await fetch("/dashboard/api/config/get_models", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!response.ok) throw new Error("Failed to fetch models");
-    return await response.json();
+    return apiCall("get_models");
+  },
+  // --- Allowed Outbound Hosts APIs ---
+  async getAllowedOutboundHosts() {
+    const data = await apiCall("get_allowed_outbound_hosts");
+    return data.allowed_outbound_hosts || [];
+  },
+  async updateAllowedOutboundHosts(hosts) {
+    return apiCall("update_allowed_outbound_hosts", {}, "POST", { allowed_outbound_hosts: hosts });
   },
   // --- Config Providers APIs ---
   async getConfigProviders() {
-    const response = await fetch("/dashboard/api/config/providers", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!response.ok) throw new Error("Failed to fetch providers");
-    return await response.json();
+    return apiCall("get_config_providers");
   },
   async getConfigProvider(id) {
-    const response = await fetch(`/dashboard/api/config/providers/${id}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!response.ok) throw new Error("Failed to fetch provider");
-    return await response.json();
+    return apiCall("get_config_provider", { id });
   },
   async createConfigProvider(data) {
-    const response = await fetch("/dashboard/api/config/providers/create_provider", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error("Failed to create provider");
-    return await response.json();
+    return apiCall("create_config_provider", {}, "POST", data);
   },
   async updateConfigProvider(id, data) {
-    const response = await fetch(`/dashboard/api/config/providers/update_provider/${id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error("Failed to update provider");
-    return await response.json();
+    return apiCall("update_config_provider", { id }, "POST", data);
   },
   async deleteConfigProvider(id) {
-    const response = await fetch(`/dashboard/api/config/providers/delete_provider/${id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!response.ok) throw new Error("Failed to delete provider");
+    return apiCall("delete_config_provider", { id }, "POST");
   },
   async getProviderOptions() {
-    const response = await fetch("/dashboard/api/config/provider_options", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!response.ok) throw new Error("Failed to fetch provider options");
-    return await response.json();
+    return apiCall("get_provider_options");
   },
   // --- Provider Model APIs ---
   async createProviderModel(providerId, data) {
-    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/create_model`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error("Failed to create model");
-    return await response.json();
+    return apiCall("create_provider_model", { providerId }, "POST", data);
   },
   async updateProviderModel(providerId, modelId, data) {
-    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/update_model/${encodeURIComponent(modelId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error("Failed to update model");
-    return await response.json();
+    return apiCall("update_provider_model", { providerId, modelId }, "POST", data);
   },
   async deleteProviderModel(providerId, modelId) {
-    const response = await fetch(`/dashboard/api/config/providers/${encodeURIComponent(providerId)}/delete_model/${encodeURIComponent(modelId)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }
-    });
-    if (!response.ok) throw new Error("Failed to delete model");
+    return apiCall("delete_provider_model", { providerId, modelId }, "POST");
+  },
+  // --- Agents.md APIs ---
+  async getAgentsMd() {
+    const result = await apiCall("get_agents_md");
+    return result.content || "";
+  },
+  async updateAgentsMd(content) {
+    return apiCall("update_agents_md", {}, "POST", { content });
   },
   // --- File/Folder APIs ---
   async getRootSubFolders() {
     await delay(200);
     try {
-      const response = await fetch("/dashboard/api/files/root_sub_folders", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch folders");
-      const result = await response.json();
-      return result.data.folders;
+      const res = await apiCall("get_root_sub_folders");
+      if (res && res.data && Array.isArray(res.data.folders)) {
+        return res.data.folders;
+      }
+      return [];
     } catch {
       return [];
     }
@@ -45968,15 +45946,7 @@ const api = {
   async getSites() {
     await delay(200);
     try {
-      const response = await fetch("/dashboard/api/site/sites", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch sites");
-      const result = await response.json();
-      return result.success && result.data ? result.data : result;
+      return await apiCall("get_sites");
     } catch {
       const raw = localStorage.getItem("boxagnts_sites");
       return raw ? JSON.parse(raw) : [];
@@ -45985,15 +45955,7 @@ const api = {
   async getSite(id) {
     await delay(100);
     try {
-      const response = await fetch(`/dashboard/api/site/sites/${id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch site");
-      const result = await response.json();
-      return result.success && result.data ? result.data : null;
+      return await apiCall("get_site", { id });
     } catch {
       const sites = await this.getSites();
       return sites.find((s) => s.id === id) || null;
@@ -46002,16 +45964,7 @@ const api = {
   async createSite(data) {
     await delay(300);
     try {
-      const response = await fetch("/dashboard/api/site/sites/create_site", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error("Failed to create site");
-      const result = await response.json();
-      if (result.success && result.data) return result.data;
+      return await apiCall("create_site", {}, "POST", data);
     } catch {
       const sites = await this.getSites();
       const site = {
@@ -46022,21 +45975,11 @@ const api = {
       localStorage.setItem("boxagnts_sites", JSON.stringify(sites));
       return site;
     }
-    throw new Error("Failed to create site");
   },
   async updateSite(id, data) {
     await delay(300);
     try {
-      const response = await fetch(`/dashboard/api/site/sites/update_site/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error("Failed to update site");
-      const result = await response.json();
-      if (result.success && result.data) return result.data;
+      return await apiCall("update_site", { id }, "POST", data);
     } catch {
       const sites = await this.getSites();
       const idx = sites.findIndex((s) => s.id === id);
@@ -46045,18 +45988,11 @@ const api = {
       localStorage.setItem("boxagnts_sites", JSON.stringify(sites));
       return sites[idx];
     }
-    throw new Error("Failed to update site");
   },
   async deleteSite(id) {
     await delay(200);
     try {
-      const response = await fetch(`/dashboard/api/site/sites/delete_site/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to delete site");
+      return await apiCall("delete_site", { id }, "POST");
     } catch {
       const sites = await this.getSites();
       const filtered = sites.filter((s) => s.id !== id);
@@ -46067,14 +46003,7 @@ const api = {
   async getCrons() {
     await delay(200);
     try {
-      const response = await fetch("/dashboard/api/cron/jobs", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch crons");
-      return await response.json();
+      return await apiCall("get_crons");
     } catch {
       return [];
     }
@@ -46082,64 +46011,28 @@ const api = {
   async getCron(id) {
     await delay(100);
     try {
-      const response = await fetch(`/dashboard/api/cron/jobs/${id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch cron");
-      return await response.json();
+      return await apiCall("get_cron", { id });
     } catch {
       return null;
     }
   },
   async createCron(data) {
     await delay(300);
-    const response = await fetch("/dashboard/api/cron/jobs/create_job", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error("Failed to create cron");
-    return await response.json();
+    return apiCall("create_cron", {}, "POST", data);
   },
   async updateCron(id, data) {
     await delay(300);
-    const response = await fetch(`/dashboard/api/cron/jobs/update_job/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error("Failed to update cron");
-    return await response.json();
+    return apiCall("update_cron", { id }, "POST", data);
   },
   async deleteCron(id) {
     await delay(200);
-    const response = await fetch(`/dashboard/api/cron/jobs/delete_job/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-    if (!response.ok) throw new Error("Failed to delete cron");
+    return apiCall("delete_cron", { id }, "POST");
   },
   // --- Cron Logs APIs ---
   async getCronLogs(jobId) {
     await delay(150);
     try {
-      const response = await fetch(`/dashboard/api/cron/jobs/${jobId}/logs`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch cron logs");
-      return await response.json();
+      return await apiCall("get_cron_logs", { jobId });
     } catch {
       return [];
     }
@@ -46181,15 +46074,7 @@ const api = {
   async getSkills() {
     await delay(200);
     try {
-      const response = await fetch("/dashboard/api/skills", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch skills");
-      const result = await response.json();
-      return result.success && result.data ? result.data : [];
+      return await apiCall("get_skills");
     } catch {
       const raw = localStorage.getItem("boxagnts_skills");
       return raw ? JSON.parse(raw) : [];
@@ -46198,16 +46083,7 @@ const api = {
   async createSkill(data) {
     await delay(300);
     try {
-      const response = await fetch("/dashboard/api/skills", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error("Failed to create skill");
-      const result = await response.json();
-      if (result.success && result.data) return result.data;
+      return await apiCall("create_skill", {}, "POST", data);
     } catch {
       const skills = await this.getSkills();
       const now = Date.now();
@@ -46219,21 +46095,11 @@ const api = {
       localStorage.setItem("boxagnts_skills", JSON.stringify(skills));
       return skill;
     }
-    throw new Error("Failed to create skill");
   },
   async updateSkill(id, data) {
     await delay(300);
     try {
-      const response = await fetch(`/dashboard/api/skills/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error("Failed to update skill");
-      const result = await response.json();
-      if (result.success && result.data) return result.data;
+      return await apiCall("update_skill", { id }, "PUT", data);
     } catch {
       const skills = await this.getSkills();
       const idx = skills.findIndex((s) => s.id === id);
@@ -46242,18 +46108,11 @@ const api = {
       localStorage.setItem("boxagnts_skills", JSON.stringify(skills));
       return skills[idx];
     }
-    throw new Error("Failed to update skill");
   },
   async deleteSkill(id) {
     await delay(200);
     try {
-      const response = await fetch(`/dashboard/api/skills/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to delete skill");
+      return await apiCall("delete_skill", { id }, "DELETE");
     } catch {
       const skills = await this.getSkills();
       const filtered = skills.filter((s) => s.id !== id);
@@ -46264,15 +46123,7 @@ const api = {
   async getTools() {
     await delay(200);
     try {
-      const response = await fetch("/dashboard/api/tools", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch tools");
-      const result = await response.json();
-      return result.success && result.data ? result.data : [];
+      return await apiCall("get_tools");
     } catch {
       const raw = localStorage.getItem("boxagnts_tools");
       return raw ? JSON.parse(raw) : [];
@@ -46281,16 +46132,7 @@ const api = {
   async createTool(data) {
     await delay(300);
     try {
-      const response = await fetch("/dashboard/api/tools", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error("Failed to create tool");
-      const result = await response.json();
-      if (result.success && result.data) return result.data;
+      return await apiCall("create_tool", {}, "POST", data);
     } catch {
       const tools = await this.getTools();
       const now = Date.now();
@@ -46302,21 +46144,11 @@ const api = {
       localStorage.setItem("boxagnts_tools", JSON.stringify(tools));
       return tool;
     }
-    throw new Error("Failed to create tool");
   },
   async updateTool(id, data) {
     await delay(300);
     try {
-      const response = await fetch(`/dashboard/api/tools/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error("Failed to update tool");
-      const result = await response.json();
-      if (result.success && result.data) return result.data;
+      return await apiCall("update_tool", { id }, "PUT", data);
     } catch {
       const tools = await this.getTools();
       const idx = tools.findIndex((t) => t.id === id);
@@ -46325,18 +46157,11 @@ const api = {
       localStorage.setItem("boxagnts_tools", JSON.stringify(tools));
       return tools[idx];
     }
-    throw new Error("Failed to update tool");
   },
   async deleteTool(id) {
     await delay(200);
     try {
-      const response = await fetch(`/dashboard/api/tools/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!response.ok) throw new Error("Failed to delete tool");
+      return await apiCall("delete_tool", { id }, "DELETE");
     } catch {
       const tools = await this.getTools();
       const filtered = tools.filter((t) => t.id !== id);
@@ -46908,44 +46733,49 @@ const _hoisted_2 = {
 };
 const _hoisted_3 = {
   key: 0,
-  class: "px-1 mt-1 text-center"
+  class: "text-center py-1"
 };
 const _hoisted_4 = {
   key: 1,
-  class: "px-2 mt-1 mr-1"
+  class: "px-3 pb-2"
 };
 const _hoisted_5 = {
   key: 2,
   class: "panel-area"
 };
-const _hoisted_6 = { class: "d-flex align-center px-3 pt-2 pb-1" };
-const _hoisted_7 = { class: "session-list-wrapper" };
-const _hoisted_8 = {
-  key: 0,
-  class: "text-center pa-4"
-};
+const _hoisted_6 = { class: "panel-header d-flex align-center px-3 pt-2 pb-1" };
+const _hoisted_7 = { class: "text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1" };
+const _hoisted_8 = { class: "session-list-wrapper" };
 const _hoisted_9 = {
   key: 0,
   class: "text-center pa-4"
 };
-const _hoisted_10 = { class: "d-flex align-center px-3 pt-1 pb-1" };
-const _hoisted_11 = { class: "file-tree-wrapper" };
-const _hoisted_12 = {
+const _hoisted_10 = {
   key: 0,
-  class: "text-center pa-4"
+  class: "text-center pa-6"
 };
-const _hoisted_13 = {
-  key: 0,
-  class: "text-center pa-4"
-};
+const _hoisted_11 = { class: "panel-header d-flex align-center px-3 pt-1 pb-1" };
+const _hoisted_12 = { class: "text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1" };
+const _hoisted_13 = { class: "file-tree-wrapper" };
 const _hoisted_14 = {
   key: 0,
-  class: "pa-2 d-flex flex-column align-center"
+  class: "text-center pa-4"
 };
-const _hoisted_15 = { class: "d-flex justify-center py-2" };
-const _hoisted_16 = { class: "pa-2" };
-const _hoisted_17 = { class: "text-body-2 text-medium-emphasis mt-2" };
-const _hoisted_18 = { class: "text-body-2 text-medium-emphasis mt-2" };
+const _hoisted_15 = {
+  key: 0,
+  class: "text-center pa-6"
+};
+const _hoisted_16 = {
+  key: 0,
+  class: "nav-rail-group pa-2 d-flex flex-column align-center"
+};
+const _hoisted_17 = { class: "nav-rail-section" };
+const _hoisted_18 = { class: "nav-rail-section" };
+const _hoisted_19 = { class: "nav-rail-section" };
+const _hoisted_20 = { class: "d-flex justify-center align-center ga-1 py-1 pb-2" };
+const _hoisted_21 = { class: "bottom-toggles pa-2 pt-0" };
+const _hoisted_22 = { class: "text-body-2 text-medium-emphasis mt-2" };
+const _hoisted_23 = { class: "text-body-2 text-medium-emphasis mt-2" };
 const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
   __name: "AppSidebar",
   setup(__props) {
@@ -46990,6 +46820,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
     function navigateTo(path) {
       sessionStore.selectSession(null);
       router2.push(path);
+    }
+    function openExternal(url) {
+      window.open(url, "_blank");
     }
     function confirmDelete(s) {
       deleteTarget.value = s;
@@ -47078,140 +46911,201 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, {
           append: withCtx(() => [
             createVNode(VDivider, { class: "mx-4" }),
-            unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_14, [
-              createVNode(VBtn, {
-                icon: "mdi-chart-bar",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[7] || (_cache[7] = ($event) => navigateTo("/usage")),
-                title: "Usage Analytics"
-              }),
-              createVNode(VBtn, {
-                icon: "mdi-server-network",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[8] || (_cache[8] = ($event) => navigateTo("/mcp")),
-                title: "MCP Servers"
-              }),
-              createVNode(VBtn, {
-                icon: "mdi-web",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[9] || (_cache[9] = ($event) => navigateTo("/sites")),
-                title: "Sites"
-              }),
-              createVNode(VBtn, {
-                icon: "mdi-clock-outline",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[10] || (_cache[10] = ($event) => navigateTo("/crons")),
-                title: "Crons"
-              }),
-              createVNode(VBtn, {
-                icon: "mdi-robot",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[11] || (_cache[11] = ($event) => navigateTo("/agents")),
-                title: "Agents"
-              }),
-              createVNode(VBtn, {
-                icon: "mdi-star",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[12] || (_cache[12] = ($event) => navigateTo("/skills")),
-                title: "Skills"
-              }),
-              createVNode(VBtn, {
-                icon: "mdi-hammer-wrench",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[13] || (_cache[13] = ($event) => navigateTo("/tools")),
-                title: "Tools"
-              }),
-              createVNode(VBtn, {
-                icon: "mdi-cog",
-                variant: "text",
-                size: "small",
-                color: "medium-emphasis",
-                onClick: _cache[14] || (_cache[14] = ($event) => navigateTo("/settings")),
-                title: "Settings"
-              })
-            ])) : createCommentVNode("", true),
-            !unref(appStore).sidebarCollapsed ? (openBlock(), createBlock(VMenu, {
-              key: 1,
-              location: "top end",
-              "close-on-content-click": true
-            }, {
-              activator: withCtx(({ props: menuProps }) => [
-                createBaseVNode("div", _hoisted_15, [
-                  createVNode(VBtn, mergeProps({
-                    icon: "mdi-dots-grid",
-                    variant: "text",
-                    size: "small",
-                    color: "medium-emphasis"
-                  }, menuProps), null, 16)
-                ])
+            unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_16, [
+              createBaseVNode("div", _hoisted_17, [
+                createVNode(VBtn, {
+                  icon: "mdi-chart-bar",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[7] || (_cache[7] = ($event) => navigateTo("/usage")),
+                  title: "Usage Analytics"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-server-network",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[8] || (_cache[8] = ($event) => navigateTo("/mcp")),
+                  title: "MCP Servers"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-web",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[9] || (_cache[9] = ($event) => navigateTo("/sites")),
+                  title: "Sites"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-clock-outline",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[10] || (_cache[10] = ($event) => navigateTo("/crons")),
+                  title: "Crons"
+                })
               ]),
-              default: withCtx(() => [
-                createVNode(VList, {
-                  density: "compact",
-                  "min-width": "180"
+              createVNode(VDivider, { class: "nav-rail-divider" }),
+              createBaseVNode("div", _hoisted_18, [
+                createVNode(VBtn, {
+                  icon: "mdi-robot",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[11] || (_cache[11] = ($event) => navigateTo("/agents")),
+                  title: "Agents"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-star",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[12] || (_cache[12] = ($event) => navigateTo("/skills")),
+                  title: "Skills"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-hammer-wrench",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[13] || (_cache[13] = ($event) => navigateTo("/tools")),
+                  title: "Tools"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-cog",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[14] || (_cache[14] = ($event) => navigateTo("/settings")),
+                  title: "Settings"
+                })
+              ]),
+              createVNode(VDivider, { class: "nav-rail-divider" }),
+              createBaseVNode("div", _hoisted_19, [
+                createVNode(VBtn, {
+                  icon: "mdi-home",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[15] || (_cache[15] = ($event) => openExternal("/index.html")),
+                  title: "Site Navigation"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-github",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[16] || (_cache[16] = ($event) => openExternal("https://github.com/guyoung/boxagnts")),
+                  title: "GitHub"
+                })
+              ])
+            ])) : createCommentVNode("", true),
+            !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock(Fragment, { key: 1 }, [
+              createBaseVNode("div", _hoisted_20, [
+                createVNode(VBtn, {
+                  icon: "mdi-home",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[17] || (_cache[17] = ($event) => openExternal("/index.html")),
+                  title: "Site Navigation",
+                  class: "footer-link-btn"
+                }),
+                createVNode(VBtn, {
+                  icon: "mdi-github",
+                  variant: "text",
+                  size: "small",
+                  color: "medium-emphasis",
+                  onClick: _cache[18] || (_cache[18] = ($event) => openExternal("https://github.com/guyoung/boxagnts")),
+                  title: "GitHub",
+                  class: "footer-link-btn"
+                }),
+                createVNode(VMenu, {
+                  location: "top end",
+                  "close-on-content-click": true,
+                  offset: "8"
                 }, {
+                  activator: withCtx(({ props: menuProps }) => [
+                    createVNode(VBtn, mergeProps({
+                      icon: "mdi-dots-grid",
+                      variant: "text",
+                      size: "small",
+                      color: "medium-emphasis",
+                      class: "menu-trigger-btn"
+                    }, menuProps), null, 16)
+                  ]),
                   default: withCtx(() => [
-                    createVNode(VListItem, {
-                      "prepend-icon": "mdi-web",
-                      title: "Sites",
-                      onClick: _cache[15] || (_cache[15] = ($event) => navigateTo("/sites"))
-                    }),
-                    createVNode(VListItem, {
-                      "prepend-icon": "mdi-clock-outline",
-                      title: "Crons",
-                      onClick: _cache[16] || (_cache[16] = ($event) => navigateTo("/crons"))
-                    }),
-                    createVNode(VDivider),
-                    createVNode(VListItem, {
-                      "prepend-icon": "mdi-star",
-                      title: "Skills",
-                      onClick: _cache[17] || (_cache[17] = ($event) => navigateTo("/skills"))
-                    }),
-                    createVNode(VListItem, {
-                      "prepend-icon": "mdi-hammer-wrench",
-                      title: "Tools",
-                      onClick: _cache[18] || (_cache[18] = ($event) => navigateTo("/tools"))
-                    }),
-                    createVNode(VDivider),
-                    createVNode(VListItem, {
-                      "prepend-icon": "mdi-cog",
-                      title: "Settings",
-                      onClick: _cache[19] || (_cache[19] = ($event) => navigateTo("/settings"))
+                    createVNode(VList, {
+                      density: "compact",
+                      "min-width": "180",
+                      class: "menu-list",
+                      elevation: "8",
+                      rounded: "lg"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(VListItem, {
+                          "prepend-icon": "mdi-web",
+                          title: "Sites",
+                          onClick: _cache[19] || (_cache[19] = ($event) => navigateTo("/sites")),
+                          rounded: "lg",
+                          class: "mb-0"
+                        }),
+                        createVNode(VListItem, {
+                          "prepend-icon": "mdi-clock-outline",
+                          title: "Crons",
+                          onClick: _cache[20] || (_cache[20] = ($event) => navigateTo("/crons")),
+                          rounded: "lg",
+                          class: "mb-0"
+                        }),
+                        createVNode(VDivider, { class: "my-0" }),
+                        createVNode(VListItem, {
+                          "prepend-icon": "mdi-star",
+                          title: "Skills",
+                          onClick: _cache[21] || (_cache[21] = ($event) => navigateTo("/skills")),
+                          rounded: "lg",
+                          class: "mb-0"
+                        }),
+                        createVNode(VListItem, {
+                          "prepend-icon": "mdi-hammer-wrench",
+                          title: "Tools",
+                          onClick: _cache[22] || (_cache[22] = ($event) => navigateTo("/tools")),
+                          rounded: "lg",
+                          class: "mb-0"
+                        }),
+                        createVNode(VDivider, { class: "my-0" }),
+                        createVNode(VListItem, {
+                          "prepend-icon": "mdi-cog",
+                          title: "Settings",
+                          onClick: _cache[23] || (_cache[23] = ($event) => navigateTo("/settings")),
+                          rounded: "lg",
+                          class: "mb-0"
+                        })
+                      ]),
+                      _: 1
                     })
                   ]),
                   _: 1
                 })
               ]),
-              _: 1
-            })) : createCommentVNode("", true),
-            createBaseVNode("div", _hoisted_16, [
+              createVNode(VDivider, { class: "mx-4 mb-1" })
+            ], 64)) : createCommentVNode("", true),
+            createBaseVNode("div", _hoisted_21, [
               createVNode(VBtn, {
                 icon: unref(appStore).sidebarCollapsed ? "mdi-chevron-right" : "mdi-chevron-left",
                 variant: "text",
                 size: "small",
                 block: "",
-                onClick: _cache[20] || (_cache[20] = ($event) => unref(appStore).toggleSidebar())
+                onClick: _cache[24] || (_cache[24] = ($event) => unref(appStore).toggleSidebar()),
+                class: "toggle-btn"
               }, null, 8, ["icon"]),
               createVNode(VBtn, {
                 icon: unref(appStore).isDark ? "mdi-weather-sunny" : "mdi-weather-night",
                 variant: "text",
                 size: "small",
                 block: "",
-                onClick: _cache[21] || (_cache[21] = ($event) => unref(appStore).toggleTheme())
+                onClick: _cache[25] || (_cache[25] = ($event) => unref(appStore).toggleTheme()),
+                class: "toggle-btn"
               }, null, 8, ["icon"])
             ])
           ]),
@@ -47222,7 +47116,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 color: "primary",
                 class: "mr-3"
               }, {
-                default: withCtx(() => [..._cache[29] || (_cache[29] = [
+                default: withCtx(() => [..._cache[33] || (_cache[33] = [
                   createTextVNode("mdi-console-line", -1)
                 ])]),
                 _: 1
@@ -47243,24 +47137,34 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 color: "primary",
                 variant: "flat",
                 block: "",
-                size: "small",
                 "prepend-icon": "mdi-plus",
                 onClick: newSession,
-                class: "mx-2 mr-4"
+                class: "new-session-btn"
               }, {
-                default: withCtx(() => [..._cache[30] || (_cache[30] = [
+                default: withCtx(() => [..._cache[34] || (_cache[34] = [
                   createTextVNode(" New Session ", -1)
                 ])]),
                 _: 1
               })
             ])) : createCommentVNode("", true),
-            createVNode(VDivider, { class: "mx-4 mt-3 mb-1" }),
+            createVNode(VDivider, { class: "mx-4 mb-1" }),
             !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_5, [
               createBaseVNode("div", {
                 class: normalizeClass(["panel-section", expandedPanel.value === "sessions" ? "panel-expanded" : "panel-collapsed"])
               }, [
                 createBaseVNode("div", _hoisted_6, [
-                  _cache[31] || (_cache[31] = createBaseVNode("span", { class: "text-caption font-weight-bold text-medium-emphasis" }, "SESSIONS", -1)),
+                  createBaseVNode("span", _hoisted_7, [
+                    createVNode(VIcon, {
+                      size: "12",
+                      color: "medium-emphasis"
+                    }, {
+                      default: withCtx(() => [..._cache[35] || (_cache[35] = [
+                        createTextVNode("mdi-message-text", -1)
+                      ])]),
+                      _: 1
+                    }),
+                    _cache[36] || (_cache[36] = createTextVNode(" SESSIONS ", -1))
+                  ]),
                   createVNode(VSpacer),
                   createVNode(VBtn, {
                     icon: "mdi-refresh",
@@ -47280,8 +47184,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 ]),
                 createVNode(VExpandTransition, null, {
                   default: withCtx(() => [
-                    withDirectives(createBaseVNode("div", _hoisted_7, [
-                      unref(sessionStore).loading ? (openBlock(), createElementBlock("div", _hoisted_8, [
+                    withDirectives(createBaseVNode("div", _hoisted_8, [
+                      unref(sessionStore).loading ? (openBlock(), createElementBlock("div", _hoisted_9, [
                         createVNode(VProgressCircular, {
                           indeterminate: "",
                           size: "20",
@@ -47300,7 +47204,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                               key: s.id,
                               active: unref(sessionStore).currentSessionId === s.id,
                               rounded: "lg",
-                              class: "mb-1 session-item",
+                              class: normalizeClass(["mb-1 session-item", { "session-item--active": unref(sessionStore).currentSessionId === s.id }]),
                               onClick: ($event) => selectSession(s.id)
                             }, {
                               prepend: withCtx(() => [
@@ -47308,7 +47212,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                                   size: "16",
                                   color: "medium-emphasis"
                                 }, {
-                                  default: withCtx(() => [..._cache[32] || (_cache[32] = [
+                                  default: withCtx(() => [..._cache[37] || (_cache[37] = [
                                     createTextVNode("mdi-message-text", -1)
                                   ])]),
                                   _: 1
@@ -47367,11 +47271,21 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                                 }, 1024)
                               ]),
                               _: 2
-                            }, 1032, ["active", "onClick"]);
+                            }, 1032, ["active", "class", "onClick"]);
                           }), 128)),
-                          unref(sessionStore).sessions.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_9, [..._cache[33] || (_cache[33] = [
-                            createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No sessions yet", -1)
-                          ])])) : createCommentVNode("", true)
+                          unref(sessionStore).sessions.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_10, [
+                            createVNode(VIcon, {
+                              size: "40",
+                              color: "medium-emphasis",
+                              class: "mb-2"
+                            }, {
+                              default: withCtx(() => [..._cache[38] || (_cache[38] = [
+                                createTextVNode("mdi-message-text-outline", -1)
+                              ])]),
+                              _: 1
+                            }),
+                            _cache[39] || (_cache[39] = createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No sessions yet", -1))
+                          ])) : createCommentVNode("", true)
                         ]),
                         _: 1
                       }))
@@ -47386,8 +47300,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 class: normalizeClass(["files-panel panel-section", expandedPanel.value === "files" ? "panel-expanded" : "panel-collapsed"])
               }, [
                 createVNode(VDivider, { class: "mx-4 mb-2" }),
-                createBaseVNode("div", _hoisted_10, [
-                  _cache[34] || (_cache[34] = createBaseVNode("span", { class: "text-caption font-weight-bold text-medium-emphasis" }, "FILES", -1)),
+                createBaseVNode("div", _hoisted_11, [
+                  createBaseVNode("span", _hoisted_12, [
+                    createVNode(VIcon, {
+                      size: "12",
+                      color: "medium-emphasis"
+                    }, {
+                      default: withCtx(() => [..._cache[40] || (_cache[40] = [
+                        createTextVNode("mdi-folder-outline", -1)
+                      ])]),
+                      _: 1
+                    }),
+                    _cache[41] || (_cache[41] = createTextVNode(" FILES ", -1))
+                  ]),
                   createVNode(VSpacer),
                   createVNode(VBtn, {
                     icon: "mdi-arrow-expand-all",
@@ -47423,8 +47348,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 ]),
                 createVNode(VExpandTransition, null, {
                   default: withCtx(() => [
-                    withDirectives(createBaseVNode("div", _hoisted_11, [
-                      unref(fileStore).treeLoading ? (openBlock(), createElementBlock("div", _hoisted_12, [
+                    withDirectives(createBaseVNode("div", _hoisted_13, [
+                      unref(fileStore).treeLoading ? (openBlock(), createElementBlock("div", _hoisted_14, [
                         createVNode(VProgressCircular, {
                           indeterminate: "",
                           size: "20",
@@ -47449,9 +47374,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                               onSelectFile: handleSelectFile
                             }, null, 8, ["node", "current-path", "selected-file-path"]);
                           }), 128)),
-                          unref(fileStore).treeRoots.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_13, [..._cache[35] || (_cache[35] = [
-                            createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No files", -1)
-                          ])])) : createCommentVNode("", true)
+                          unref(fileStore).treeRoots.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_15, [
+                            createVNode(VIcon, {
+                              size: "40",
+                              color: "medium-emphasis",
+                              class: "mb-2"
+                            }, {
+                              default: withCtx(() => [..._cache[42] || (_cache[42] = [
+                                createTextVNode("mdi-folder-open-outline", -1)
+                              ])]),
+                              _: 1
+                            }),
+                            _cache[43] || (_cache[43] = createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No files", -1))
+                          ])) : createCommentVNode("", true)
                         ]),
                         _: 1
                       }))
@@ -47473,23 +47408,23 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, 8, ["rail", "width"]),
         createVNode(VDialog, {
           modelValue: deleteDialog.value,
-          "onUpdate:modelValue": _cache[23] || (_cache[23] = ($event) => deleteDialog.value = $event),
+          "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => deleteDialog.value = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[36] || (_cache[36] = [
+                  default: withCtx(() => [..._cache[44] || (_cache[44] = [
                     createTextVNode("Delete Session", -1)
                   ])]),
                   _: 1
                 }),
                 createVNode(VCardText, null, {
                   default: withCtx(() => [
-                    _cache[37] || (_cache[37] = createBaseVNode("p", null, "Are you sure you want to delete this session?", -1)),
-                    createBaseVNode("p", _hoisted_17, toDisplayString(deleteTarget.value ? deleteTarget.value.title || unref(sessionStore).sessionLabel(deleteTarget.value) : ""), 1),
-                    _cache[38] || (_cache[38] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
+                    _cache[45] || (_cache[45] = createBaseVNode("p", null, "Are you sure you want to delete this session?", -1)),
+                    createBaseVNode("p", _hoisted_22, toDisplayString(deleteTarget.value ? deleteTarget.value.title || unref(sessionStore).sessionLabel(deleteTarget.value) : ""), 1),
+                    _cache[46] || (_cache[46] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
                   ]),
                   _: 1
                 }),
@@ -47498,9 +47433,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[22] || (_cache[22] = ($event) => deleteDialog.value = false)
+                      onClick: _cache[26] || (_cache[26] = ($event) => deleteDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[39] || (_cache[39] = [
+                      default: withCtx(() => [..._cache[47] || (_cache[47] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -47510,7 +47445,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                       onClick: handleDelete,
                       loading: deleting.value
                     }, {
-                      default: withCtx(() => [..._cache[40] || (_cache[40] = [
+                      default: withCtx(() => [..._cache[48] || (_cache[48] = [
                         createTextVNode("Delete", -1)
                       ])]),
                       _: 1
@@ -47526,14 +47461,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, 8, ["modelValue"]),
         createVNode(VDialog, {
           modelValue: renameDialog.value,
-          "onUpdate:modelValue": _cache[26] || (_cache[26] = ($event) => renameDialog.value = $event),
+          "onUpdate:modelValue": _cache[30] || (_cache[30] = ($event) => renameDialog.value = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[41] || (_cache[41] = [
+                  default: withCtx(() => [..._cache[49] || (_cache[49] = [
                     createTextVNode("Rename Session", -1)
                   ])]),
                   _: 1
@@ -47542,7 +47477,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   default: withCtx(() => [
                     createVNode(VTextField, {
                       modelValue: renameTitle.value,
-                      "onUpdate:modelValue": _cache[24] || (_cache[24] = ($event) => renameTitle.value = $event),
+                      "onUpdate:modelValue": _cache[28] || (_cache[28] = ($event) => renameTitle.value = $event),
                       label: "Session Title",
                       variant: "outlined",
                       autofocus: "",
@@ -47556,9 +47491,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[25] || (_cache[25] = ($event) => renameDialog.value = false)
+                      onClick: _cache[29] || (_cache[29] = ($event) => renameDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[42] || (_cache[42] = [
+                      default: withCtx(() => [..._cache[50] || (_cache[50] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -47568,7 +47503,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                       onClick: handleRename,
                       loading: renaming.value
                     }, {
-                      default: withCtx(() => [..._cache[43] || (_cache[43] = [
+                      default: withCtx(() => [..._cache[51] || (_cache[51] = [
                         createTextVNode("Save", -1)
                       ])]),
                       _: 1
@@ -47584,23 +47519,23 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, 8, ["modelValue"]),
         createVNode(VDialog, {
           modelValue: clearDialog.value,
-          "onUpdate:modelValue": _cache[28] || (_cache[28] = ($event) => clearDialog.value = $event),
+          "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => clearDialog.value = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[44] || (_cache[44] = [
+                  default: withCtx(() => [..._cache[52] || (_cache[52] = [
                     createTextVNode("Clear All Messages", -1)
                   ])]),
                   _: 1
                 }),
                 createVNode(VCardText, null, {
                   default: withCtx(() => [
-                    _cache[45] || (_cache[45] = createBaseVNode("p", null, "Are you sure you want to clear all messages from this session?", -1)),
-                    createBaseVNode("p", _hoisted_18, toDisplayString(clearTarget.value ? clearTarget.value.title || unref(sessionStore).sessionLabel(clearTarget.value) : ""), 1),
-                    _cache[46] || (_cache[46] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
+                    _cache[53] || (_cache[53] = createBaseVNode("p", null, "Are you sure you want to clear all messages from this session?", -1)),
+                    createBaseVNode("p", _hoisted_23, toDisplayString(clearTarget.value ? clearTarget.value.title || unref(sessionStore).sessionLabel(clearTarget.value) : ""), 1),
+                    _cache[54] || (_cache[54] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
                   ]),
                   _: 1
                 }),
@@ -47609,9 +47544,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[27] || (_cache[27] = ($event) => clearDialog.value = false)
+                      onClick: _cache[31] || (_cache[31] = ($event) => clearDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[47] || (_cache[47] = [
+                      default: withCtx(() => [..._cache[55] || (_cache[55] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -47621,7 +47556,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                       onClick: handleClear,
                       loading: clearing.value
                     }, {
-                      default: withCtx(() => [..._cache[48] || (_cache[48] = [
+                      default: withCtx(() => [..._cache[56] || (_cache[56] = [
                         createTextVNode("Clear", -1)
                       ])]),
                       _: 1
@@ -47646,7 +47581,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const AppSidebar = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-1b792e0c"]]);
+const AppSidebar = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2bb677aa"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent$1({
   __name: "App",
   setup(__props) {
@@ -47767,67 +47702,67 @@ const router = createRouter({
     {
       path: "/",
       name: "chat",
-      component: () => __vitePreload(() => import("./ChatPage-Z2LiO0qL.js"), true ? __vite__mapDeps([0,1]) : void 0)
+      component: () => __vitePreload(() => import("./ChatPage-CCZaTI8B.js"), true ? __vite__mapDeps([0,1]) : void 0)
     },
     {
       path: "/usage",
       name: "usage",
-      component: () => __vitePreload(() => import("./UsagePage-ozxHw5LQ.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./UsagePage-JywAFgiy.js"), true ? [] : void 0)
     },
     {
       path: "/mcp",
       name: "mcp",
-      component: () => __vitePreload(() => import("./McpPage-CXT05cNi.js"), true ? __vite__mapDeps([2,3]) : void 0)
+      component: () => __vitePreload(() => import("./McpPage-CyaVxL3f.js"), true ? __vite__mapDeps([2,3]) : void 0)
     },
     {
       path: "/files",
       name: "files",
-      component: () => __vitePreload(() => import("./FilePage-D96Ontlb.js"), true ? __vite__mapDeps([4,5]) : void 0)
+      component: () => __vitePreload(() => import("./FilePage-Cyw5lzyK.js"), true ? __vite__mapDeps([4,5]) : void 0)
     },
     {
       path: "/sites",
       name: "sites",
-      component: () => __vitePreload(() => import("./SitesPage-CevGyQSP.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./SitesPage-atvx2DRu.js"), true ? __vite__mapDeps([6,7,8]) : void 0)
     },
     {
       path: "/crons",
       name: "crons",
-      component: () => __vitePreload(() => import("./CronsPage-D5CiQYL4.js"), true ? __vite__mapDeps([6,7]) : void 0)
+      component: () => __vitePreload(() => import("./CronsPage-CJSYv8Bs.js"), true ? __vite__mapDeps([9,7,10]) : void 0)
     },
     {
       path: "/agents",
       name: "agents",
-      component: () => __vitePreload(() => import("./AgentsPage-Cro4BIt_.js"), true ? __vite__mapDeps([8,9]) : void 0)
+      component: () => __vitePreload(() => import("./AgentsPage-rgPR5bjz.js"), true ? __vite__mapDeps([11,7,12]) : void 0)
     },
     {
       path: "/skills",
       name: "skills",
-      component: () => __vitePreload(() => import("./SkillsPage-Cenoo-Lu.js"), true ? __vite__mapDeps([10,11]) : void 0)
+      component: () => __vitePreload(() => import("./SkillsPage-XKGruORf.js"), true ? __vite__mapDeps([13,7,14]) : void 0)
     },
     {
       path: "/tools",
       name: "tools",
-      component: () => __vitePreload(() => import("./ToolsPage-Cc4f-Ioq.js"), true ? __vite__mapDeps([12,13]) : void 0)
+      component: () => __vitePreload(() => import("./ToolsPage-D0TCjD8G.js"), true ? __vite__mapDeps([15,7,16]) : void 0)
     },
     {
       path: "/settings",
-      component: () => __vitePreload(() => import("./SettingsPage-CkoDCssM.js"), true ? [] : void 0),
+      component: () => __vitePreload(() => import("./SettingsPage-BSison1H.js"), true ? [] : void 0),
       redirect: "/settings/model",
       children: [
         {
-          path: "prompt",
-          name: "settings-prompt",
-          component: () => __vitePreload(() => import("./SettingsPromptPage-BJZxxhlH.js"), true ? __vite__mapDeps([14,15]) : void 0)
+          path: "agents-md",
+          name: "settings-agents-md",
+          component: () => __vitePreload(() => import("./SettingsAgentsMdPage-CBXqjmAe.js"), true ? [] : void 0)
         },
         {
           path: "model",
           name: "settings-model",
-          component: () => __vitePreload(() => import("./SettingsModelPage-DqKlgKLH.js"), true ? __vite__mapDeps([16,15]) : void 0)
+          component: () => __vitePreload(() => import("./SettingsModelPage-Dz0foC62.js"), true ? __vite__mapDeps([17,18]) : void 0)
         },
         {
           path: "security",
           name: "settings-security",
-          component: () => __vitePreload(() => import("./SettingsSecurityPage-BMvZDzzx.js"), true ? __vite__mapDeps([17,15]) : void 0)
+          component: () => __vitePreload(() => import("./SettingsSecurityPage-DRTIbgcA.js"), true ? __vite__mapDeps([19,18]) : void 0)
         }
       ]
     }
@@ -47901,78 +47836,80 @@ app.use(router);
 app.use(vuetify);
 app.mount("#app");
 export {
-  onBeforeUnmount as $,
-  VSkeletonLoader as A,
-  VSpacer as B,
-  VSwitch as C,
-  VTab as D,
-  VTabs as E,
+  normalizeClass as $,
+  VSelect as A,
+  VSkeletonLoader as B,
+  VSpacer as C,
+  VSwitch as D,
+  VTab as E,
   Fragment as F,
-  VTextField as G,
-  VTextarea as H,
-  VToolbar as I,
-  api as J,
-  computed as K,
-  createBaseVNode as L,
-  createBlock as M,
-  createCommentVNode as N,
-  createElementBlock as O,
-  createTextVNode as P,
-  createVNode as Q,
-  defineComponent$1 as R,
-  defineStore as S,
-  fileApi as T,
-  h as U,
+  VTabs as G,
+  VTextField as H,
+  VTextarea as I,
+  VToolbar as J,
+  api as K,
+  computed as L,
+  createBaseVNode as M,
+  createBlock as N,
+  createCommentVNode as O,
+  createElementBlock as P,
+  createTextVNode as Q,
+  createVNode as R,
+  defineComponent$1 as S,
+  defineStore as T,
+  fileApi as U,
   VAlert as V,
-  inject$1 as W,
-  mergeProps as X,
-  nextTick as Y,
-  normalizeClass as Z,
+  h as W,
+  inject$1 as X,
+  mergeProps as Y,
+  nextTick as Z,
   _export_sfc as _,
   VAutocomplete as a,
-  onMounted as a0,
-  openBlock as a1,
-  ref as a2,
-  renderList as a3,
-  resolveComponent as a4,
-  shallowRef as a5,
-  toDisplayString as a6,
-  toRaw as a7,
-  unref as a8,
-  useAppStore as a9,
-  useFileStore as aa,
-  useRoute as ab,
-  useRouter as ac,
-  useSessionStore as ad,
-  vShow as ae,
-  watch as af,
-  withCtx as ag,
-  withDirectives as ah,
-  withKeys as ai,
-  withModifiers as aj,
-  VBreadcrumbs as b,
-  VBreadcrumbsItem as c,
-  VBtn as d,
-  VCard as e,
-  VCardActions as f,
-  VCardItem as g,
-  VCardSubtitle as h,
-  VCardText as i,
-  VCardTitle as j,
-  VCheckbox as k,
-  VChip as l,
-  VCol as m,
-  VDialog as n,
-  VDivider as o,
-  VExpandTransition as p,
-  VIcon as q,
-  VList as r,
-  VListGroup as s,
+  onBeforeUnmount as a0,
+  onMounted as a1,
+  openBlock as a2,
+  reactive as a3,
+  ref as a4,
+  renderList as a5,
+  resolveComponent as a6,
+  shallowRef as a7,
+  toDisplayString as a8,
+  toRaw as a9,
+  unref as aa,
+  useAppStore as ab,
+  useFileStore as ac,
+  useRoute as ad,
+  useRouter as ae,
+  useSessionStore as af,
+  vShow as ag,
+  watch as ah,
+  withCtx as ai,
+  withDirectives as aj,
+  withKeys as ak,
+  withModifiers as al,
+  VAvatar as b,
+  VBreadcrumbs as c,
+  VBreadcrumbsItem as d,
+  VBtn as e,
+  VCard as f,
+  VCardActions as g,
+  VCardItem as h,
+  VCardSubtitle as i,
+  VCardText as j,
+  VCardTitle as k,
+  VCheckbox as l,
+  VChip as m,
+  VCol as n,
+  VDialog as o,
+  VDivider as p,
+  VExpandTransition as q,
+  VIcon as r,
+  VList as s,
   VListItem as t,
   VListItemSubtitle as u,
   VListItemTitle as v,
   VMenu as w,
   VProgressCircular as x,
-  VRow as y,
-  VSelect as z
+  VProgressLinear as y,
+  VRow as z
 };
