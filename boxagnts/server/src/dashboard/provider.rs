@@ -203,7 +203,13 @@ pub async fn delete_provider(
 pub async fn list_provider_options(
     State(_state): State<AppState>,
 ) -> Result<Json<Vec<Value>>, Response> {
-    let provider_options = boxagnts_gateway::config::provider_util::get_provider_options();
+    let mut provider_options = boxagnts_gateway::config::provider_util::get_provider_options();
+
+    provider_options.sort_by(|a, b| {
+        let a_id = a.get("id").and_then(|v| v.as_str()).unwrap_or("");
+        let b_id = b.get("id").and_then(|v| v.as_str()).unwrap_or("");
+        a_id.cmp(b_id)
+    });
 
     Ok(Json(provider_options))
 }

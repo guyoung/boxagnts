@@ -36,6 +36,9 @@ pub struct RunOption {
     ///
     /// Example: `--allowed-outbound-host https://*.github.net`
     pub allowed_outbound_hosts: Option<Vec<String>>,
+    
+    ///
+    pub block_url: Option<String>,
 
     /// Set of IP networks to be blocked
     ///
@@ -100,6 +103,7 @@ pub async fn execute(
         dirs,
         vars,
         allowed_outbound_hosts: option.allowed_outbound_hosts.unwrap_or(Vec::new()),
+        block_url: option.block_url.clone(),
         block_networks: option.block_networks.unwrap_or(Vec::new()),
     };
     run_common.common.wasm.component_model = Some(true);

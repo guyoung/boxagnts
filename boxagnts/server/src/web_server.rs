@@ -13,13 +13,15 @@ use tower_http::cors::CorsLayer;
 
 
 /// start_web_server
-pub async fn start_web_server(
+pub async fn start_web_server(    
     host: String,
     port: u16,
     admin_user: Option<String>,
     admin_pass: Option<String>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    boxagnts_workspace::init().await?;
+    let base_url = format!("http://{}:{}/dashboard", host, port); 
+    
+    boxagnts_workspace::init(&base_url).await?;
 
     boxagnts_gateway::cron::store::init_storage().await?;
     boxagnts_gateway::site::store::init_storage().await?;

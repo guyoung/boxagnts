@@ -1,5 +1,5 @@
-import { S as defineComponent, ab as useAppStore, a1 as onMounted, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, f as VCard, e as VBtn, o as VDialog, a4 as ref, K as api, a2 as openBlock, Q as createTextVNode, k as VCardTitle, j as VCardText, N as createBlock, x as VProgressCircular, s as VList, F as Fragment, a5 as renderList, t as VListItem, v as VListItemTitle, a8 as toDisplayString, u as VListItemSubtitle, O as createCommentVNode, m as VChip, al as withModifiers, q as VExpandTransition, aj as withDirectives, ag as vShow, p as VDivider, A as VSelect, aa as unref, z as VRow, H as VTextField, n as VCol, a as VAutocomplete, Y as mergeProps, D as VSwitch, g as VCardActions, C as VSpacer, L as computed } from "./main-BSD2YpbL.js";
-import { u as useSettingsStore } from "./settings-RFBLOOFr.js";
+import { S as defineComponent, ab as useAppStore, a1 as onMounted, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, f as VCard, e as VBtn, o as VDialog, a4 as ref, K as api, a2 as openBlock, Q as createTextVNode, k as VCardTitle, j as VCardText, N as createBlock, x as VProgressCircular, s as VList, F as Fragment, a5 as renderList, t as VListItem, v as VListItemTitle, a8 as toDisplayString, u as VListItemSubtitle, O as createCommentVNode, m as VChip, al as withModifiers, q as VExpandTransition, aj as withDirectives, ag as vShow, p as VDivider, A as VSelect, aa as unref, z as VRow, H as VTextField, n as VCol, a as VAutocomplete, Y as mergeProps, D as VSwitch, g as VCardActions, C as VSpacer, L as computed } from "./main-gWZPyuWK.js";
+import { u as useSettingsStore } from "./settings-m6tcaaQA.js";
 const _hoisted_1 = { class: "d-flex align-center mb-2" };
 const _hoisted_2 = { class: "text-medium-emphasis" };
 const _hoisted_3 = { key: 0 };
@@ -105,16 +105,23 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         updatingDefault.value = false;
       }
     }
+    const pendingDefaultModel = ref(null);
+    const pendingDefaultModelProviderId = ref("");
+    const defaultModelDialogOpen = ref(false);
+    const savingDefaultModel = ref(false);
     function onProviderSelected(id) {
       const option = providerOptionsData.value.find((o) => o.id === id);
       if (option) {
         form.value.name = option.title;
+        form.value.api_base = option.api_base || "";
+        pendingDefaultModel.value = option.default_model;
       }
     }
     function openAddDialog() {
       isEditing.value = false;
       editingProviderId.value = null;
       form.value = { id: "", name: "", api_base: "", api_key: "", enabled: true };
+      pendingDefaultModel.value = null;
       dialogOpen.value = true;
     }
     function openEditDialog(provider) {
@@ -153,6 +160,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
         dialogOpen.value = false;
         await fetchProviders();
+        if (!isEditing.value && pendingDefaultModel.value) {
+          pendingDefaultModelProviderId.value = form.value.id;
+          defaultModelDialogOpen.value = true;
+        }
       } catch (e) {
         appStore.showMessage("Failed to save provider", "error");
       } finally {
@@ -242,6 +253,29 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         deletingModelLoading.value = false;
       }
     }
+    async function handleAddDefaultModel() {
+      if (!pendingDefaultModel.value) return;
+      savingDefaultModel.value = true;
+      try {
+        const modelId = `${pendingDefaultModelProviderId.value}/${pendingDefaultModel.value}`;
+        await api.createProviderModel(pendingDefaultModelProviderId.value, {
+          id: modelId,
+          name: pendingDefaultModel.value
+        });
+        appStore.showMessage("Default model added!", "success");
+        defaultModelDialogOpen.value = false;
+        pendingDefaultModel.value = null;
+        await fetchProviders();
+      } catch (e) {
+        appStore.showMessage("Failed to add default model", "error");
+      } finally {
+        savingDefaultModel.value = false;
+      }
+    }
+    function handleSkipDefaultModel() {
+      pendingDefaultModel.value = null;
+      defaultModelDialogOpen.value = false;
+    }
     onMounted(() => {
       fetchProviders();
       fetchProviderOptions();
@@ -253,25 +287,25 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             color: "primary",
             class: "mr-2"
           }, {
-            default: withCtx(() => [..._cache[18] || (_cache[18] = [
+            default: withCtx(() => [..._cache[19] || (_cache[19] = [
               createTextVNode("mdi-robot", -1)
             ])]),
             _: 1
           }),
-          _cache[19] || (_cache[19] = createBaseVNode("h2", { class: "text-h5 font-weight-bold" }, "Model Settings", -1))
+          _cache[20] || (_cache[20] = createBaseVNode("h2", { class: "text-h5 font-weight-bold" }, "Model Settings", -1))
         ]),
-        _cache[44] || (_cache[44] = createBaseVNode("p", { class: "text-body-2 text-medium-emphasis mb-4" }, " Manage model providers and configure default model settings. ", -1)),
+        _cache[51] || (_cache[51] = createBaseVNode("p", { class: "text-body-2 text-medium-emphasis mb-4" }, " Manage model providers and configure default model settings. ", -1)),
         createVNode(VCard, { class: "mb-4" }, {
           default: withCtx(() => [
             createVNode(VCardTitle, { class: "d-flex align-center" }, {
               default: withCtx(() => [
                 createVNode(VIcon, { start: "" }, {
-                  default: withCtx(() => [..._cache[20] || (_cache[20] = [
+                  default: withCtx(() => [..._cache[21] || (_cache[21] = [
                     createTextVNode("mdi-server", -1)
                   ])]),
                   _: 1
                 }),
-                _cache[21] || (_cache[21] = createTextVNode(" Model Providers ", -1))
+                _cache[22] || (_cache[22] = createTextVNode(" Model Providers ", -1))
               ]),
               _: 1
             }),
@@ -371,8 +405,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           default: withCtx(() => [
                             withDirectives(createBaseVNode("div", _hoisted_4, [
                               createVNode(VDivider, { class: "mb-1" }),
-                              _cache[25] || (_cache[25] = createBaseVNode("div", { class: "text-caption text-medium-emphasis pa-2 font-weight-bold" }, "MODELS", -1)),
-                              provider.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_5, [..._cache[22] || (_cache[22] = [
+                              _cache[26] || (_cache[26] = createBaseVNode("div", { class: "text-caption text-medium-emphasis pa-2 font-weight-bold" }, "MODELS", -1)),
+                              provider.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_5, [..._cache[23] || (_cache[23] = [
                                 createBaseVNode("span", { class: "text-caption text-medium-emphasis" }, "No models", -1)
                               ])])) : createCommentVNode("", true),
                               createVNode(VList, {
@@ -392,7 +426,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                           size: "16",
                                           color: "medium-emphasis"
                                         }, {
-                                          default: withCtx(() => [..._cache[23] || (_cache[23] = [
+                                          default: withCtx(() => [..._cache[24] || (_cache[24] = [
                                             createTextVNode("mdi-cube-outline", -1)
                                           ])]),
                                           _: 1
@@ -440,7 +474,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   "prepend-icon": "mdi-plus",
                                   onClick: withModifiers(($event) => openAddModelDialog(provider.id), ["stop"])
                                 }, {
-                                  default: withCtx(() => [..._cache[24] || (_cache[24] = [
+                                  default: withCtx(() => [..._cache[25] || (_cache[25] = [
                                     createTextVNode(" Add Model ", -1)
                                   ])]),
                                   _: 1
@@ -457,7 +491,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     providers.value.length === 0 ? (openBlock(), createBlock(VListItem, { key: 0 }, {
                       default: withCtx(() => [
                         createVNode(VListItemTitle, { class: "text-medium-emphasis" }, {
-                          default: withCtx(() => [..._cache[26] || (_cache[26] = [
+                          default: withCtx(() => [..._cache[27] || (_cache[27] = [
                             createTextVNode("No providers configured", -1)
                           ])]),
                           _: 1
@@ -474,7 +508,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   class: "mt-2",
                   onClick: openAddDialog
                 }, {
-                  default: withCtx(() => [..._cache[27] || (_cache[27] = [
+                  default: withCtx(() => [..._cache[28] || (_cache[28] = [
                     createTextVNode(" Add Provider ", -1)
                   ])]),
                   _: 1
@@ -490,12 +524,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             createVNode(VCardTitle, { class: "d-flex align-center" }, {
               default: withCtx(() => [
                 createVNode(VIcon, { start: "" }, {
-                  default: withCtx(() => [..._cache[28] || (_cache[28] = [
+                  default: withCtx(() => [..._cache[29] || (_cache[29] = [
                     createTextVNode("mdi-star", -1)
                   ])]),
                   _: 1
                 }),
-                _cache[29] || (_cache[29] = createTextVNode(" Default Settings ", -1))
+                _cache[30] || (_cache[30] = createTextVNode(" Default Settings ", -1))
               ]),
               _: 1
             }),
@@ -534,12 +568,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }, {
             default: withCtx(() => [
               createVNode(VIcon, { start: "" }, {
-                default: withCtx(() => [..._cache[30] || (_cache[30] = [
+                default: withCtx(() => [..._cache[31] || (_cache[31] = [
                   createTextVNode("mdi-content-save", -1)
                 ])]),
                 _: 1
               }),
-              _cache[31] || (_cache[31] = createTextVNode(" Update Default Model ", -1))
+              _cache[32] || (_cache[32] = createTextVNode(" Update Default Model ", -1))
             ]),
             _: 1
           }, 8, ["loading"])
@@ -676,7 +710,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       variant: "text",
                       onClick: _cache[8] || (_cache[8] = ($event) => dialogOpen.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[32] || (_cache[32] = [
+                      default: withCtx(() => [..._cache[33] || (_cache[33] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -709,7 +743,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[33] || (_cache[33] = [
+                  default: withCtx(() => [..._cache[34] || (_cache[34] = [
                     createTextVNode("Delete Provider", -1)
                   ])]),
                   _: 1
@@ -718,9 +752,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => {
                     var _a;
                     return [
-                      _cache[34] || (_cache[34] = createTextVNode(" Are you sure you want to delete ", -1)),
+                      _cache[35] || (_cache[35] = createTextVNode(" Are you sure you want to delete ", -1)),
                       createBaseVNode("strong", null, toDisplayString((_a = deletingProvider.value) == null ? void 0 : _a.name), 1),
-                      _cache[35] || (_cache[35] = createTextVNode("? ", -1))
+                      _cache[36] || (_cache[36] = createTextVNode("? ", -1))
                     ];
                   }),
                   _: 1
@@ -732,7 +766,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       variant: "text",
                       onClick: _cache[10] || (_cache[10] = ($event) => deleteConfirmOpen.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[36] || (_cache[36] = [
+                      default: withCtx(() => [..._cache[37] || (_cache[37] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -742,7 +776,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       loading: deletingProviderLoading.value,
                       onClick: handleDeleteProvider
                     }, {
-                      default: withCtx(() => [..._cache[37] || (_cache[37] = [
+                      default: withCtx(() => [..._cache[38] || (_cache[38] = [
                         createTextVNode("Delete", -1)
                       ])]),
                       _: 1
@@ -813,7 +847,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       variant: "text",
                       onClick: _cache[14] || (_cache[14] = ($event) => modelDialogOpen.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[38] || (_cache[38] = [
+                      default: withCtx(() => [..._cache[39] || (_cache[39] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -846,7 +880,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[39] || (_cache[39] = [
+                  default: withCtx(() => [..._cache[40] || (_cache[40] = [
                     createTextVNode("Delete Model", -1)
                   ])]),
                   _: 1
@@ -855,9 +889,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => {
                     var _a;
                     return [
-                      _cache[40] || (_cache[40] = createTextVNode(" Are you sure you want to delete ", -1)),
+                      _cache[41] || (_cache[41] = createTextVNode(" Are you sure you want to delete ", -1)),
                       createBaseVNode("strong", null, toDisplayString((_a = deletingModel.value) == null ? void 0 : _a.name), 1),
-                      _cache[41] || (_cache[41] = createTextVNode("? ", -1))
+                      _cache[42] || (_cache[42] = createTextVNode("? ", -1))
                     ];
                   }),
                   _: 1
@@ -869,7 +903,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       variant: "text",
                       onClick: _cache[16] || (_cache[16] = ($event) => deleteModelConfirmOpen.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[42] || (_cache[42] = [
+                      default: withCtx(() => [..._cache[43] || (_cache[43] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -879,9 +913,79 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       loading: deletingModelLoading.value,
                       onClick: handleDeleteModel
                     }, {
-                      default: withCtx(() => [..._cache[43] || (_cache[43] = [
+                      default: withCtx(() => [..._cache[44] || (_cache[44] = [
                         createTextVNode("Delete", -1)
                       ])]),
+                      _: 1
+                    }, 8, ["loading"])
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        }, 8, ["modelValue"]),
+        createVNode(VDialog, {
+          modelValue: defaultModelDialogOpen.value,
+          "onUpdate:modelValue": _cache[18] || (_cache[18] = ($event) => defaultModelDialogOpen.value = $event),
+          "max-width": "450",
+          persistent: ""
+        }, {
+          default: withCtx(() => [
+            createVNode(VCard, null, {
+              default: withCtx(() => [
+                createVNode(VCardTitle, { class: "text-h6" }, {
+                  default: withCtx(() => [..._cache[45] || (_cache[45] = [
+                    createTextVNode("Add Default Model?", -1)
+                  ])]),
+                  _: 1
+                }),
+                createVNode(VCardText, null, {
+                  default: withCtx(() => [
+                    _cache[46] || (_cache[46] = createBaseVNode("p", { class: "mb-2" }, " This provider recommends a default model: ", -1)),
+                    createVNode(VChip, {
+                      color: "primary",
+                      variant: "tonal",
+                      size: "small",
+                      class: "mb-3"
+                    }, {
+                      default: withCtx(() => [
+                        createTextVNode(toDisplayString(pendingDefaultModelProviderId.value) + "/" + toDisplayString(pendingDefaultModel.value), 1)
+                      ]),
+                      _: 1
+                    }),
+                    _cache[47] || (_cache[47] = createBaseVNode("p", { class: "text-body-2 text-medium-emphasis" }, " Would you like to add it automatically? ", -1))
+                  ]),
+                  _: 1
+                }),
+                createVNode(VCardActions, null, {
+                  default: withCtx(() => [
+                    createVNode(VSpacer),
+                    createVNode(VBtn, {
+                      variant: "text",
+                      onClick: handleSkipDefaultModel
+                    }, {
+                      default: withCtx(() => [..._cache[48] || (_cache[48] = [
+                        createTextVNode("Skip", -1)
+                      ])]),
+                      _: 1
+                    }),
+                    createVNode(VBtn, {
+                      color: "primary",
+                      loading: savingDefaultModel.value,
+                      onClick: handleAddDefaultModel
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(VIcon, { start: "" }, {
+                          default: withCtx(() => [..._cache[49] || (_cache[49] = [
+                            createTextVNode("mdi-plus", -1)
+                          ])]),
+                          _: 1
+                        }),
+                        _cache[50] || (_cache[50] = createTextVNode(" Add Model ", -1))
+                      ]),
                       _: 1
                     }, 8, ["loading"])
                   ]),

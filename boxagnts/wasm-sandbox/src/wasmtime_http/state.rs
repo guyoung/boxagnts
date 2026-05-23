@@ -117,6 +117,7 @@ fn new_store(
         allowed_outbound_hosts: Some(crate::extension::net::parse_allowed_outbound_hosts(
             run_common.allowed_outbound_hosts.clone(),
         )),
+        block_url: run_common.block_url.clone(),
         block_networks: Some(crate::extension::net::parse_block_networks(
             run_common.block_networks.clone(),
         )),

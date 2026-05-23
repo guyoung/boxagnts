@@ -232,6 +232,31 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Default Model Dialog -->
+    <v-dialog v-model="defaultModelDialogOpen" max-width="450" persistent>
+      <v-card>
+        <v-card-title class="text-h6">Add Default Model?</v-card-title>
+        <v-card-text>
+          <p class="mb-2">
+            This provider recommends a default model:
+          </p>
+          <v-chip color="primary" variant="tonal" size="small" class="mb-3">
+            {{ pendingDefaultModelProviderId }}/{{ pendingDefaultModel }}
+          </v-chip>
+          <p class="text-body-2 text-medium-emphasis">
+            Would you like to add it automatically?
+          </p>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="handleSkipDefaultModel">Skip</v-btn>
+          <v-btn color="primary" :loading="savingDefaultModel" @click="handleAddDefaultModel">
+            <v-icon start>mdi-plus</v-icon> Add Model
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -348,10 +373,17 @@ async function handleUpdateDefaultModel() {
   }
 }
 
+const pendingDefaultModel = ref<string | null>(null)
+const pendingDefaultModelProviderId = ref('')
+const defaultModelDialogOpen = ref(false)
+const savingDefaultModel = ref(false)
+
 function onProviderSelected(id: string) {
   const option = providerOptionsData.value.find(o => o.id === id)
   if (option) {
     form.value.name = option.title
+    form.value.api_base = option.api_base || ''
+    pendingDefaultModel.value = option.default_model
   }
 }
 
@@ -359,6 +391,7 @@ function openAddDialog() {
   isEditing.value = false
   editingProviderId.value = null
   form.value = { id: '', name: '', api_base: '', api_key: '', enabled: true }
+  pendingDefaultModel.value = null
   dialogOpen.value = true
 }
 
@@ -400,6 +433,11 @@ async function handleSaveProvider() {
     }
     dialogOpen.value = false
     await fetchProviders()
+
+    if (!isEditing.value && pendingDefaultModel.value) {
+      pendingDefaultModelProviderId.value = form.value.id
+      defaultModelDialogOpen.value = true
+    }
   } catch (e) {
     appStore.showMessage('Failed to save provider', 'error')
   } finally {
@@ -497,6 +535,31 @@ async function handleDeleteModel() {
   } finally {
     deletingModelLoading.value = false
   }
+}
+
+async function handleAddDefaultModel() {
+  if (!pendingDefaultModel.value) return
+  savingDefaultModel.value = true
+  try {
+    const modelId = `${pendingDefaultModelProviderId.value}/${pendingDefaultModel.value}`
+    await api.createProviderModel(pendingDefaultModelProviderId.value, {
+      id: modelId,
+      name: pendingDefaultModel.value,
+    })
+    appStore.showMessage('Default model added!', 'success')
+    defaultModelDialogOpen.value = false
+    pendingDefaultModel.value = null
+    await fetchProviders()
+  } catch (e) {
+    appStore.showMessage('Failed to add default model', 'error')
+  } finally {
+    savingDefaultModel.value = false
+  }
+}
+
+function handleSkipDefaultModel() {
+  pendingDefaultModel.value = null
+  defaultModelDialogOpen.value = false
 }
 
 onMounted(() => {

@@ -1,4 +1,4 @@
-import { S as defineComponent, ah as watch, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, G as VTabs, a4 as ref, a2 as openBlock, Q as createTextVNode, E as VTab, ae as useRouter, ad as useRoute, a6 as resolveComponent } from "./main-BSD2YpbL.js";
+import { S as defineComponent, ah as watch, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, G as VTabs, a4 as ref, a2 as openBlock, Q as createTextVNode, E as VTab, ae as useRouter, ad as useRoute, a6 as resolveComponent } from "./main-gWZPyuWK.js";
 const _hoisted_1 = { class: "d-flex align-center mb-6" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "SettingsPage",

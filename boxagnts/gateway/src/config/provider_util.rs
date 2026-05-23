@@ -4,60 +4,492 @@ use serde_json::{ json, Value };
 
 pub fn get_provider_options() -> Vec<Value> {
     vec![
-        json!({ "id": "free", "title": "Free Mode", "description": "OpenCode Zen → OpenRouter free fallback (no spend)", "category": "Popular", "badge": Some("FREE") }),
-        json!({ "id": "openai", "title": "OpenAI", "description": "(API key)", "category": "Popular", "badge": null }),
-        json!({ "id": "openai-codex", "title": "OpenAI Codex", "description": "(ChatGPT Plus/Pro — browser login)", "category": "Popular", "badge": null }),
-        json!({ "id": "github-copilot", "title": "GitHub Copilot", "description": "(GitHub subscription or token)", "category": "Popular", "badge": null }),
-        json!({ "id": "google", "title": "Google", "description": "(API key)", "category": "Popular", "badge": null }),
-        json!({ "id": "anthropic", "title": "Anthropic", "description": "(API key)", "category": "Popular", "badge": null }),
-        json!({ "id": "custom-openai", "title": "Custom OpenAI-Compatible", "description": "Custom URL + API key", "category": "Advanced", "badge": null }),
-        json!({ "id": "openrouter", "title": "OpenRouter", "description": "100+ models with one key", "category": "Popular", "badge": null }),
-        json!({ "id": "vercel", "title": "Vercel AI Gateway", "description": "Gateway for AI SDK models", "category": "Popular", "badge": null }),
-        json!({ "id": "groq", "title": "Groq", "description": "Fast hosted inference", "category": "Popular", "badge": Some("FREE") }),
-        json!({ "id": "ollama", "title": "Ollama", "description": "Local inference + cloud models", "category": "Popular", "badge": Some("LOCAL") }),
-        json!({ "id": "zai", "title": "Z.AI", "description": "GLM-5.1 / GLM-5 / GLM-4.7 Coding Plan", "category": "Popular", "badge": null }),
-        json!({ "id": "opencode-go", "title": "OpenCode Go", "description": "$10/mo flat-rate · Kimi · DeepSeek · GLM · MiniMax", "category": "Popular", "badge": null }),
-        json!({ "id": "opencode-zen", "title": "OpenCode Zen", "description": "Free models + paid · Nemotron · Ring · MiniMax · DeepSeek", "category": "Popular", "badge": Some("FREE") }),
-        json!({ "id": "synthetic", "title": "Synthetic.dev", "description": "Hosted open weights", "category": "Popular", "badge": null }),
-        json!({ "id": "routing", "title": "routing.run", "description": "Hosted open weights · DeepSeek · Llama · Mixtral · Qwen", "category": "Popular", "badge": null }),
-        json!({ "id": "neuralwatt", "title": "NeuralWatt", "description": "Hosted open weights - energy-efficient", "category": "Popular", "badge": null }),
-        json!({ "id": "cerebras", "title": "Cerebras", "description": "Fast hosted inference", "category": "Other", "badge": Some("FREE") }),
-        json!({ "id": "sambanova", "title": "SambaNova", "description": "Fast hosted inference", "category": "Other", "badge": Some("FREE") }),
-        json!({ "id": "lmstudio", "title": "LM Studio", "description": "Local model server", "category": "Other", "badge": Some("LOCAL") }),
-        json!({ "id": "llamacpp", "title": "llama.cpp", "description": "Local inference server", "category": "Other", "badge": Some("LOCAL") }),
-        json!({ "id": "deepseek", "title": "DeepSeek", "description": "Reasoning and coding models", "category": "Other", "badge": null }),
-        json!({ "id": "mistral", "title": "Mistral", "description": "Hosted Mistral models", "category": "Other", "badge": null }),
-        json!({ "id": "togetherai", "title": "Together AI", "description": "Open model hosting", "category": "Other", "badge": null }),
-        json!({ "id": "perplexity", "title": "Perplexity", "description": "Search-augmented models", "category": "Other", "badge": null }),
-        json!({ "id": "cohere", "title": "Cohere", "description": "Command models", "category": "Other", "badge": null }),
-        json!({ "id": "xai", "title": "xAI", "description": "Grok models", "category": "Other", "badge": null }),
-        json!({ "id": "deepinfra", "title": "DeepInfra", "description": "Hosted open models", "category": "Other", "badge": null }),
-        json!({ "id": "azure", "title": "Azure OpenAI", "description": "Enterprise OpenAI deployments", "category": "Other", "badge": null }),
-        json!({ "id": "amazon-bedrock", "title": "AWS Bedrock", "description": "Enterprise foundation models", "category": "Other", "badge": null }),
-        json!({ "id": "google-vertex", "title": "Google Vertex AI", "description": "Enterprise Google models", "category": "Other", "badge": null }),
-        json!({ "id": "sap-ai-core", "title": "SAP AI Core", "description": "Enterprise AI platform", "category": "Other", "badge": null }),
-        json!({ "id": "gitlab", "title": "GitLab Duo", "description": "AI in GitLab", "category": "Other", "badge": null }),
-        json!({ "id": "cloudflare-ai-gateway", "title": "Cloudflare AI Gateway", "description": "Gateway for multiple providers", "category": "Other", "badge": null }),
-        json!({ "id": "cloudflare-workers-ai", "title": "Cloudflare Workers AI", "description": "Edge AI inference", "category": "Other", "badge": null }),
-        json!({ "id": "helicone", "title": "Helicone", "description": "AI gateway and observability", "category": "Other", "badge": null }),
-        json!({ "id": "huggingface", "title": "Hugging Face", "description": "Hosted community models", "category": "Other", "badge": null }),
-        json!({ "id": "nvidia", "title": "NVIDIA", "description": "Hosted NVIDIA models", "category": "Other", "badge": null }),
-        json!({ "id": "alibaba", "title": "Alibaba", "description": "Qwen and hosted models", "category": "Other", "badge": null }),
-        json!({ "id": "venice", "title": "Venice AI", "description": "Privacy-first AI", "category": "Other", "badge": null }),
-        json!({ "id": "moonshotai", "title": "Moonshot AI", "description": "Hosted Moonshot models", "category": "Other", "badge": null }),
-        json!({ "id": "zhipuai", "title": "Zhipu AI", "description": "Hosted GLM models", "category": "Other", "badge": null }),
-        json!({ "id": "siliconflow", "title": "SiliconFlow", "description": "Hosted open models", "category": "Other", "badge": null }),
-        json!({ "id": "nebius", "title": "Nebius", "description": "Cloud inference", "category": "Other", "badge": null }),
-        json!({ "id": "novita", "title": "Novita", "description": "Cloud inference", "category": "Other", "badge": null }),
-        json!({ "id": "minimax", "title": "MiniMax", "description": "Anthropic-compatible (M2.7)", "category": "Other", "badge": null }),
-        json!({ "id": "ovhcloud", "title": "OVHcloud", "description": "EU-hosted AI", "category": "Other", "badge": null }),
-        json!({ "id": "scaleway", "title": "Scaleway", "description": "EU cloud AI", "category": "Other", "badge": null }),
-        json!({ "id": "vultr", "title": "Vultr", "description": "Cloud inference", "category": "Other", "badge": null }),
-        json!({ "id": "baseten", "title": "Baseten", "description": "Model serving", "category": "Other", "badge": null }),
-        json!({ "id": "friendli", "title": "Friendli", "description": "Serverless inference", "category": "Other", "badge": null }),
-        json!({ "id": "upstage", "title": "Upstage", "description": "Hosted Upstage models", "category": "Other", "badge": null }),
-        json!({ "id": "stepfun", "title": "StepFun", "description": "Hosted reasoning models", "category": "Other", "badge": null }),
-        json!({ "id": "fireworks", "title": "Fireworks AI", "description": "Fast inference", "category": "Other", "badge": null }),
+        json!({
+            "id": "free",
+            "title": "Free Mode",
+            "description": "OpenCode Zen → OpenRouter free fallback (no spend)",
+            "category": "Popular",
+            "badge": Some("FREE"),
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "openai",
+            "title": "OpenAI",
+            "description": "(API key)",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://api.openai.com/v1",
+            "default_model": "gpt-4.1"
+        }),
+        json!({
+            "id": "openai-codex",
+            "title": "OpenAI Codex",
+            "description": "(ChatGPT Plus/Pro — browser login)",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://api.openai.com/v1",
+            "default_model": "gpt-4.1"
+        }),
+        json!({
+            "id": "github-copilot",
+            "title": "GitHub Copilot",
+            "description": "(GitHub subscription or token)",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://api.githubcopilot.com",
+            "default_model": "gpt-4o"
+        }),
+        json!({
+            "id": "google",
+            "title": "Google",
+            "description": "(API key)",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://generativelanguage.googleapis.com/v1beta",
+            "default_model": "gemini-2.5-pro"
+        }),
+        json!({
+            "id": "anthropic",
+            "title": "Anthropic",
+            "description": "(API key)",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://api.anthropic.com",
+            "default_model": "claude-sonnet-4-0"
+        }),
+        json!({
+            "id": "custom-openai",
+            "title": "Custom OpenAI-Compatible",
+            "description": "Custom URL + API key",
+            "category": "Advanced",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "openrouter",
+            "title": "OpenRouter",
+            "description": "100+ models with one key",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://openrouter.ai/api/v1",
+            "default_model": "openai/gpt-4.1"
+        }),
+        json!({
+            "id": "vercel",
+            "title": "Vercel AI Gateway",
+            "description": "Gateway for AI SDK models",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://ai-gateway.vercel.sh/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "groq",
+            "title": "Groq",
+            "description": "Fast hosted inference",
+            "category": "Popular",
+            "badge": Some("FREE"),
+            "api_base": "https://api.groq.com/openai/v1",
+            "default_model": "llama-3.3-70b-versatile"
+        }),
+        json!({
+            "id": "ollama",
+            "title": "Ollama",
+            "description": "Local inference + cloud models",
+            "category": "Popular",
+            "badge": Some("LOCAL"),
+            "api_base": "http://localhost:11434",
+            "default_model": "qwen2.5-coder:7b"
+        }),
+        json!({
+            "id": "zai",
+            "title": "Z.AI",
+            "description": "GLM-5.1 / GLM-5 / GLM-4.7 Coding Plan",
+            "category": "Popular",
+            "badge": null,
+            "api_base": "https://api.z.ai/api/coding/paas/v4",
+            "default_model": "glm-5.1"
+        }),
+        json!({
+            "id": "opencode-go",
+            "title": "OpenCode Go",
+            "description": "$10/mo flat-rate · Kimi · DeepSeek · GLM · MiniMax",
+            "category": "Popular",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "opencode-zen",
+            "title": "OpenCode Zen",
+            "description": "Free models + paid · Nemotron · Ring · MiniMax · DeepSeek",
+            "category": "Popular",
+            "badge": Some("FREE"),
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "synthetic",
+            "title": "Synthetic.dev",
+            "description": "Hosted open weights",
+            "category": "Popular",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "routing",
+            "title": "routing.run",
+            "description": "Hosted open weights · DeepSeek · Llama · Mixtral · Qwen",
+            "category": "Popular",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "neuralwatt",
+            "title": "NeuralWatt",
+            "description": "Hosted open weights - energy-efficient",
+            "category": "Popular",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "cerebras",
+            "title": "Cerebras",
+            "description": "Fast hosted inference",
+            "category": "Other",
+            "badge": Some("FREE"),
+            "api_base": "https://api.cerebras.ai/v1",
+            "default_model": "llama3.1-70b"
+        }),
+        json!({
+            "id": "sambanova",
+            "title": "SambaNova",
+            "description": "Fast hosted inference",
+            "category": "Other",
+            "badge": Some("FREE"),
+            "api_base": "https://api.sambanova.ai/v1",
+            "default_model": "Meta-Llama-3.1-70B-Instruct"
+        }),
+        json!({
+            "id": "lmstudio",
+            "title": "LM Studio",
+            "description": "Local model server",
+            "category": "Other",
+            "badge": Some("LOCAL"),
+            "api_base": "http://localhost:1234/v1",
+            "default_model": "local-model"
+        }),
+        json!({
+            "id": "llamacpp",
+            "title": "llama.cpp",
+            "description": "Local inference server",
+            "category": "Other",
+            "badge": Some("LOCAL"),
+            "api_base": "http://localhost:8080",
+            "default_model": "local-model"
+        }),
+        json!({
+            "id": "deepseek",
+            "title": "DeepSeek",
+            "description": "Reasoning and coding models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.deepseek.com/v1",
+            "default_model": "deepseek-v4-pro"
+        }),
+        json!({
+            "id": "mistral",
+            "title": "Mistral",
+            "description": "Hosted Mistral models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.mistral.ai/v1",
+            "default_model": "mistral-large-latest"
+        }),
+        json!({
+            "id": "togetherai",
+            "title": "Together AI",
+            "description": "Open model hosting",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.together.xyz/v1",
+            "default_model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+        }),
+        json!({
+            "id": "perplexity",
+            "title": "Perplexity",
+            "description": "Search-augmented models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.perplexity.ai",
+            "default_model": "sonar-pro"
+        }),
+        json!({
+            "id": "cohere",
+            "title": "Cohere",
+            "description": "Command models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.cohere.com/v2",
+            "default_model": "command-r-plus"
+        }),
+        json!({
+            "id": "xai",
+            "title": "xAI",
+            "description": "Grok models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.x.ai/v1",
+            "default_model": "grok-3"
+        }),
+        json!({
+            "id": "deepinfra",
+            "title": "DeepInfra",
+            "description": "Hosted open models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.deepinfra.com/v1/openai",
+            "default_model": "meta-llama/Meta-Llama-3.1-70B-Instruct"
+        }),
+        json!({
+            "id": "azure",
+            "title": "Azure OpenAI",
+            "description": "Enterprise OpenAI deployments",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://{}.openai.azure.com/openai/deployments/{}/chat/completions?api-version={}",
+            "default_model": "gpt-4.1"
+        }),
+        json!({
+            "id": "amazon-bedrock",
+            "title": "AWS Bedrock",
+            "description": "Enterprise foundation models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://bedrock-runtime.{}.amazonaws.com/model/{}/converse-stream",
+            "default_model": "anthropic.claude-3-5-sonnet"
+        }),
+        json!({
+            "id": "google-vertex",
+            "title": "Google Vertex AI",
+            "description": "Enterprise Google models",
+            "category": "Other",
+            "badge": null,
+            "api_base": null,
+            "default_model": "gemini-2.5-pro"
+        }),
+        json!({
+            "id": "sap-ai-core",
+            "title": "SAP AI Core",
+            "description": "Enterprise AI platform",
+            "category": "Other",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "gitlab",
+            "title": "GitLab Duo",
+            "description": "AI in GitLab",
+            "category": "Other",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "cloudflare-ai-gateway",
+            "title": "Cloudflare AI Gateway",
+            "description": "Gateway for multiple providers",
+            "category": "Other",
+            "badge": null,
+            "api_base": null,
+            "default_model": null
+        }),
+        json!({
+            "id": "cloudflare-workers-ai",
+            "title": "Cloudflare Workers AI",
+            "description": "Edge AI inference",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+            "default_model": "@cf/meta/llama-3.1-8b-instruct"
+        }),
+        json!({
+            "id": "helicone",
+            "title": "Helicone",
+            "description": "AI gateway and observability",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://oai.helicone.ai/v1",
+            "default_model": "gpt-4.1"
+        }),
+        json!({
+            "id": "huggingface",
+            "title": "Hugging Face",
+            "description": "Hosted community models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://router.huggingface.co/v1",
+            "default_model": "meta-llama/Meta-Llama-3.1-70B-Instruct"
+        }),
+        json!({
+            "id": "nvidia",
+            "title": "NVIDIA",
+            "description": "Hosted NVIDIA models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://integrate.api.nvidia.com/v1",
+            "default_model": "meta/llama-3.1-70b-instruct"
+        }),
+        json!({
+            "id": "qwen",
+            "title": "Qwen (Alibaba)",
+            "description": "Qwen and hosted models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "default_model": "qwen-plus"
+        }),
+        json!({
+            "id": "venice",
+            "title": "Venice AI",
+            "description": "Privacy-first AI",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.venice.ai/api/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "moonshotai",
+            "title": "Moonshot AI",
+            "description": "Hosted Moonshot models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.moonshot.ai/v1",
+            "default_model": "moonshot-v1-8k"
+        }),
+        json!({
+            "id": "zhipuai",
+            "title": "Zhipu AI",
+            "description": "Hosted GLM models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://open.bigmodel.cn/api/paas/v4",
+            "default_model": "glm-4-plus"
+        }),
+        json!({
+            "id": "siliconflow",
+            "title": "SiliconFlow",
+            "description": "Hosted open models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.siliconflow.cn/v1",
+            "default_model": "Qwen/Qwen2.5-Coder-32B-Instruct"
+        }),
+        json!({
+            "id": "nebius",
+            "title": "Nebius",
+            "description": "Cloud inference",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.tokenfactory.nebius.com/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "novita",
+            "title": "Novita",
+            "description": "Cloud inference",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.novita.ai/v3/openai",
+            "default_model": "meta-llama/llama-3.1-70b-instruct"
+        }),
+        json!({
+            "id": "minimax",
+            "title": "MiniMax",
+            "description": "Anthropic-compatible (M2.7)",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.minimax.io/anthropic",
+            "default_model": "MiniMax-M2.7"
+        }),
+        json!({
+            "id": "ovhcloud",
+            "title": "OVHcloud",
+            "description": "EU-hosted AI",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "scaleway",
+            "title": "Scaleway",
+            "description": "EU cloud AI",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.scaleway.ai/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "vultr",
+            "title": "Vultr",
+            "description": "Cloud inference",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.vultrinference.com/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "baseten",
+            "title": "Baseten",
+            "description": "Model serving",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://inference.baseten.co/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "friendli",
+            "title": "Friendli",
+            "description": "Serverless inference",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.friendli.ai/serverless/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "upstage",
+            "title": "Upstage",
+            "description": "Hosted Upstage models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.upstage.ai/v1",
+            "default_model": "solar-pro"
+        }),
+        json!({
+            "id": "stepfun",
+            "title": "StepFun",
+            "description": "Hosted reasoning models",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.stepfun.com/v1",
+            "default_model": null
+        }),
+        json!({
+            "id": "fireworks",
+            "title": "Fireworks AI",
+            "description": "Fast inference",
+            "category": "Other",
+            "badge": null,
+            "api_base": "https://api.fireworks.ai/inference/v1",
+            "default_model": "accounts/fireworks/models/llama-v3p1-70b-instruct"
+        }),
     ]
 }
 

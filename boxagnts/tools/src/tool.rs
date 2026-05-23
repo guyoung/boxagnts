@@ -125,6 +125,8 @@ pub struct ToolContext {
     // pub permission_manager: Option<Arc<std::sync::Mutex<boxagnts_workspace::permissions::PermissionManager>>>,
     /// Allowed outbound hosts
     pub allowed_outbound_hosts: Vec<String>,
+    ///
+    pub block_url: Option<String>,
 }
 
 impl ToolContext {

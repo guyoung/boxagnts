@@ -126,6 +126,7 @@ pub async fn execute(prompt: String, model: Option<String>) -> anyhow::Result<Qu
         config: config.clone(),
         managed_agent_config: config.managed_agents.clone(),
         allowed_outbound_hosts: config.allowed_outbound_hosts.clone(),
+        block_url: Some(settings.base_url.clone())
     };
 
     // Build the full tool list: built-ins from cc-tools plus AgentTool from cc-query

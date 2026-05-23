@@ -236,6 +236,7 @@ fn crate_run_common(run_option: option::RunOption) -> Result<RunCommon> {
         dirs,
         vars,
         allowed_outbound_hosts: run_option.allowed_outbound_hosts.unwrap_or(Vec::new()),
+        block_url: run_option.block_url.clone(),
         block_networks: run_option.block_networks.unwrap_or(Vec::new()),
     };
     run_common.common.wasm.component_model = Some(true);

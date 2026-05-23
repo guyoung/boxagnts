@@ -50,6 +50,8 @@ pub fn make_dynamic_service() -> impl tower::Service<
 
         let site = site.unwrap();
 
+        // println!("site: {:?}", site.clone());
+
         if !site.enabled {
             return Ok::<_, Infallible>(text_response(StatusCode::NOT_FOUND, "Site is disabled"));
         }
@@ -63,6 +65,8 @@ pub fn make_dynamic_service() -> impl tower::Service<
                 .join(site.component)
                 .display()
         );
+
+
 
         let work_dir = workspace_dir.join("root").join(site.path.clone());
 

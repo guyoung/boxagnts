@@ -142,8 +142,10 @@ export interface ConfigProvider {
 }
 
 export interface ProviderOption {
+  api_base: string | null
   badge: string | null
   category: string
+  default_model: string | null
   description: string
   id: string
   title: string

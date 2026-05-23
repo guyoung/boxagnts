@@ -34,6 +34,7 @@ pub struct Host {
     /*** ***/
     pub allowed_outbound_hosts:
         Option<crate::extension::outbound_networking_config::allowed_hosts::OutboundAllowedHosts>,
+    pub block_url: Option<String>,
     pub block_networks:
         Option<crate::extension::outbound_networking_config::blocked_networks::BlockedNetworks>,
     /*** ***/

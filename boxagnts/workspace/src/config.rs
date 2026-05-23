@@ -434,6 +434,8 @@ pub struct SkillsConfig {
 pub struct Settings {
     #[serde(default)]
     pub config: Config,
+    #[serde(default)]
+    pub base_url: String,
     pub version: Option<u32>,
     #[serde(default)]
     pub projects: HashMap<String, ProjectSettings>,
@@ -749,19 +751,23 @@ impl Settings {
         crate::path::get_saved_dir().await.join("settings.json")
     }
 
-    pub async fn init() -> anyhow::Result<()> {
+    pub async fn init(base_url: &str) -> anyhow::Result<()> {
         let path = Self::get_settings_path().await;
 
-        if !path.exists() {
+        let mut settings = if path.exists() {
+            let content = tokio::fs::read_to_string(&path).await?;
+            serde_json::from_str(&content).unwrap_or_default()
+        } else {
             if let Some(parent) = path.parent() {
                 tokio::fs::create_dir_all(parent).await?;
             }
+            Settings::default()         
+        };
 
-            let settings: Settings = Settings::default();
+        settings.base_url = base_url.to_string();
 
-            let content = serde_json::to_string_pretty(&settings)?;
-            tokio::fs::write(&path, content).await?;
-        }
+        let content = serde_json::to_string_pretty(&settings)?;
+        tokio::fs::write(&path, content).await?;
 
         Ok(())
     }

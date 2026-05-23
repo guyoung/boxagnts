@@ -1,4 +1,4 @@
-import { a4 as ref } from "./main-BSD2YpbL.js";
+import { a4 as ref } from "./main-gWZPyuWK.js";
 function useCrudOperations(api, storeName) {
   const items = ref([]);
   const loading = ref(false);

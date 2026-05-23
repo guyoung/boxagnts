@@ -213,6 +213,12 @@ async function handleStreamingCommand<T>(command: string, params?: any): Promise
         const message = JSON.parse(event.data)
 
         if (message.type === 'start') {
+          if (message.session_id) {
+            const startEvent = new CustomEvent('chat-session', {
+              detail: { session_id: message.session_id }
+            })
+            window.dispatchEvent(startEvent)
+          }
         } else if (message.type === 'output') {
           const content = typeof message.content === 'string'
             ? JSON.parse(message.content)
@@ -229,7 +235,7 @@ async function handleStreamingCommand<T>(command: string, params?: any): Promise
         } else if (message.type === 'completion') {
           const completeEvent = new CustomEvent('chat-complete', {
             detail: {
-              result: message.result
+              result: { ...message.result, ...(message.session_id ? { session_id: message.session_id } : {}) }
             }
           })
 

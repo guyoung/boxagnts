@@ -70,6 +70,7 @@ impl Tool for WasmTool {
         options.work_dir = Some(format!("{}", work_dir.display()));
         options.allowed_outbound_hosts = Some(allowed_outbound_hosts);
         options.wasm_cache_dir = Some(format!("{}", cache_dir.display()));
+        options.block_url = ctx.block_url.clone();
 
         println!(
             "wasm_tool execute wasm file: {} args: {:?}",

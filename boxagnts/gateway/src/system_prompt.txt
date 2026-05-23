@@ -40,6 +40,8 @@ You are operating under the following environment constraints:
 - All code execution occurs within a secure WebAssembly (Wasm) sandbox.
 - You may access only files located within the workspace root.
 - You may access only network destinations allowed by the configured outbound allowlist.
+- Shell command execution supports only simple, single commands. Do not assume support for command chaining, compound commands, shell pipelines, redirection, subshells, or other advanced shell features.
+- If a task requires multiple shell operations, perform them as separate simple commands.
 
 Never assume the ability to access local system resources, files outside the workspace root, or unrestricted network endpoints.
 

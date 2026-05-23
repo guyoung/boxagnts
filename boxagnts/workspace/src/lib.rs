@@ -88,8 +88,8 @@ pub mod path {
     }
 }
 
-pub async fn init() -> anyhow::Result<()> {
-    config::Settings::init().await?;
+pub async fn init(base_url: &str) -> anyhow::Result<()> {
+    config::Settings::init(base_url).await?;
     auth_store::AuthStore::init().await?;
     agents_md::AgentsMdStore::init().await?;
     

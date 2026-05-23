@@ -184,7 +184,7 @@ export function useChatMessages(options: UseChatMessagesOptions) {
     activeCleanup: null,
   }
 
-  function flushText() {
+  function flushText(createNewSlot = false) {
     if (!stream.pendingText.trim()) {
       stream.toolIdx = -1
       return
@@ -199,13 +199,23 @@ export function useChatMessages(options: UseChatMessagesOptions) {
     }
     stream.pendingText = ''
     stream.toolIdx = -1
+    if (createNewSlot) {
+      messages.value.push({
+        kind: 'assistant',
+        text: '',
+        timestamp: new Date().toISOString(),
+        isLoading: true,
+        uuid: generateUuid(),
+      })
+      stream.activeAsstIdx = messages.value.length - 1
+    }
   }
 
   function handleOutputEvent(content: any) {
     const result = parseContentObject(content)
     if (!result) return
     if (result.type === 'tool_start') {
-      flushText()
+      flushText(true)
       const item: ToolItem = {
         kind: 'tool',
         tool: result.tool!,
@@ -245,16 +255,31 @@ export function useChatMessages(options: UseChatMessagesOptions) {
     stream.activeCleanup = null
 
     let cleanupCalled = false
+    let sessionRegistered = false
+
+    function ensureSessionRefreshed(sid: string) {
+      if (sessionRegistered) return
+      sessionRegistered = true
+      if (!sessionId.value) {
+        sessionId.value = sid
+        sessionStore.selectSession(sid)
+      }
+      sessionStore.fetchSessions()
+    }
+
+    function onSession(e: Event) {
+      if (cleanupCalled) return
+      const detail = (e as CustomEvent).detail as { session_id: string }
+      if (isNewSession && detail.session_id) {
+        ensureSessionRefreshed(detail.session_id)
+      }
+    }
 
     function onOutput(e: Event) {
       if (cleanupCalled) return
       const detail = (e as CustomEvent).detail as { content: any; session_id?: string }
-      if (isNewSession && detail.session_id && !sessionId.value) {
-        sessionId.value = detail.session_id
-        setTimeout(() => {
-          sessionStore.fetchSessions()
-          sessionStore.selectSession(sessionId.value)
-        }, 1000)
+      if (isNewSession && detail.session_id) {
+        ensureSessionRefreshed(detail.session_id)
       }
       handleOutputEvent(detail.content)
     }
@@ -263,15 +288,21 @@ export function useChatMessages(options: UseChatMessagesOptions) {
       if (cleanupCalled) return
       cleanup()
       flushText()
-      const detail = (e as CustomEvent).detail as { result?: { user_message_uuid?: string } }
+      const detail = (e as CustomEvent).detail as { result?: { user_message_uuid?: string; session_id?: string } }
       if (detail?.result?.user_message_uuid) {
         messages.value[stream.activeUserIdx].uuid = detail.result.user_message_uuid
+      }
+      if (isNewSession && detail?.result?.session_id) {
+        ensureSessionRefreshed(detail.result.session_id)
       }
       const m = messages.value[stream.activeAsstIdx] as AssistantItem
       if (!m.text) m.text = '_(no response)_'
       m.isLoading = false
       uiState.isRunning = false
       scrollToBottom()
+      if (isNewSession) {
+        setTimeout(() => sessionStore.fetchSessions(), 500)
+      }
     }
 
     function onError(e: Event) {
@@ -285,11 +316,15 @@ export function useChatMessages(options: UseChatMessagesOptions) {
       m.isLoading = false
       uiState.isRunning = false
       scrollToBottom()
+      if (isNewSession) {
+        setTimeout(() => sessionStore.fetchSessions(), 500)
+      }
     }
 
     function cleanup() {
       if (cleanupCalled) return
       cleanupCalled = true
+      window.removeEventListener('chat-session', onSession)
       window.removeEventListener('chat-output', onOutput)
       window.removeEventListener('chat-complete', onComplete)
       window.removeEventListener('chat-error', onError)
@@ -297,6 +332,7 @@ export function useChatMessages(options: UseChatMessagesOptions) {
     }
 
     stream.activeCleanup = cleanup
+    window.addEventListener('chat-session', onSession)
     window.addEventListener('chat-output', onOutput)
     window.addEventListener('chat-complete', onComplete)
     window.addEventListener('chat-error', onError)

@@ -19,6 +19,10 @@ pub struct RunOption {
     /// e.g. "https://\*.example.com". Application variables are allowed using
     /// `{{ my_var }}`` syntax.
     pub allowed_outbound_hosts: Option<Vec<String>>,
+    
+    ///
+    pub block_url: Option<String>,
+
 
     /// Set of IP networks to be blocked
     pub block_networks: Option<Vec<String>>,

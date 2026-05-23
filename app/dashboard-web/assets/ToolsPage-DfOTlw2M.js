@@ -1,22 +1,22 @@
-import { T as defineStore, K as api, S as defineComponent, ab as useAppStore, a1 as onMounted, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, e as VBtn, z as VRow, aa as unref, N as createBlock, O as createCommentVNode, o as VDialog, a4 as ref, a2 as openBlock, Q as createTextVNode, F as Fragment, a5 as renderList, f as VCard, h as VCardItem, k as VCardTitle, a8 as toDisplayString, i as VCardSubtitle, j as VCardText, g as VCardActions, D as VSwitch, C as VSpacer, n as VCol, H as VTextField, A as VSelect, I as VTextarea, B as VSkeletonLoader, _ as _export_sfc } from "./main-BSD2YpbL.js";
-import { u as useCrudOperations } from "./baseCrud-dWOHLWHe.js";
-const useSkillStore = defineStore("skills", () => {
+import { T as defineStore, K as api, S as defineComponent, ab as useAppStore, a1 as onMounted, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, e as VBtn, z as VRow, aa as unref, N as createBlock, O as createCommentVNode, o as VDialog, a4 as ref, a2 as openBlock, Q as createTextVNode, F as Fragment, a5 as renderList, f as VCard, h as VCardItem, k as VCardTitle, a8 as toDisplayString, i as VCardSubtitle, j as VCardText, g as VCardActions, D as VSwitch, C as VSpacer, n as VCol, H as VTextField, A as VSelect, I as VTextarea, B as VSkeletonLoader, _ as _export_sfc } from "./main-gWZPyuWK.js";
+import { u as useCrudOperations } from "./baseCrud-wwuZycIH.js";
+const useToolStore = defineStore("tools", () => {
   const crud = useCrudOperations(
     {
-      fetchAll: () => api.getSkills(),
-      create: (data) => api.createSkill(data),
-      update: (id, data) => api.updateSkill(id, data),
-      remove: (id) => api.deleteSkill(id)
+      fetchAll: () => api.getTools(),
+      create: (data) => api.createTool(data),
+      update: (id, data) => api.updateTool(id, data),
+      remove: (id) => api.deleteTool(id)
     },
-    "skills"
+    "tools"
   );
   return {
-    skills: crud.items,
+    tools: crud.items,
     loading: crud.loading,
-    fetchSkills: crud.fetch,
-    addSkill: crud.add,
-    updateSkill: crud.update,
-    removeSkill: crud.remove
+    fetchTools: crud.fetch,
+    addTool: crud.add,
+    updateTool: crud.update,
+    removeTool: crud.remove
   };
 });
 const _hoisted_1 = { class: "d-flex align-center justify-space-between mb-6" };
@@ -35,94 +35,94 @@ const _hoisted_6 = {
   class: "text-center py-12"
 };
 const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "SkillsPage",
+  __name: "ToolsPage",
   setup(__props) {
-    const skillStore = useSkillStore();
+    const toolStore = useToolStore();
     const appStore = useAppStore();
     const showDialog = ref(false);
-    const editingSkill = ref(null);
+    const editingTool = ref(null);
     const saving = ref(false);
     const deleteDialog = ref(false);
     const deleteTarget = ref(null);
     const deleting = ref(false);
     const availableTypes = [
-      "prompt",
-      "tool",
-      "workflow",
-      "template",
+      "function",
+      "browser",
+      "search",
+      "file",
       "custom"
     ];
     const defaultForm = () => ({
       name: "",
       description: "",
-      type: "prompt",
+      type: "function",
       config: "",
       enabled: true
     });
     const form = ref(defaultForm());
     function openAddDialog() {
-      editingSkill.value = null;
+      editingTool.value = null;
       form.value = defaultForm();
       showDialog.value = true;
     }
-    function openEditDialog(skill) {
-      editingSkill.value = skill;
+    function openEditDialog(tool) {
+      editingTool.value = tool;
       form.value = {
-        name: skill.name,
-        description: skill.description,
-        type: skill.type,
-        config: skill.config,
-        enabled: skill.enabled
+        name: tool.name,
+        description: tool.description,
+        type: tool.type,
+        config: tool.config,
+        enabled: tool.enabled
       };
       showDialog.value = true;
     }
     async function handleSave() {
       saving.value = true;
       try {
-        if (editingSkill.value) {
-          await skillStore.updateSkill(editingSkill.value.id, { ...form.value });
-          appStore.showMessage("Skill updated", "success");
+        if (editingTool.value) {
+          await toolStore.updateTool(editingTool.value.id, { ...form.value });
+          appStore.showMessage("Tool updated", "success");
         } else {
-          await skillStore.addSkill({ ...form.value });
-          appStore.showMessage("Skill created", "success");
+          await toolStore.addTool({ ...form.value });
+          appStore.showMessage("Tool created", "success");
         }
         showDialog.value = false;
         form.value = defaultForm();
-        editingSkill.value = null;
+        editingTool.value = null;
       } catch {
-        appStore.showMessage("Failed to save skill", "error");
+        appStore.showMessage("Failed to save tool", "error");
       } finally {
         saving.value = false;
       }
     }
-    function confirmRemove(skill) {
-      deleteTarget.value = skill;
+    function confirmRemove(tool) {
+      deleteTarget.value = tool;
       deleteDialog.value = true;
     }
     async function handleDelete() {
       if (!deleteTarget.value) return;
       deleting.value = true;
       try {
-        await skillStore.removeSkill(deleteTarget.value.id);
-        appStore.showMessage("Skill deleted", "success");
+        await toolStore.removeTool(deleteTarget.value.id);
+        appStore.showMessage("Tool deleted", "success");
       } catch {
-        appStore.showMessage("Failed to delete skill", "error");
+        appStore.showMessage("Failed to delete tool", "error");
       } finally {
         deleting.value = false;
         deleteDialog.value = false;
         deleteTarget.value = null;
       }
     }
-    async function handleToggleEnabled(skill, enabled) {
+    async function handleToggleEnabled(tool, enabled) {
       try {
-        await skillStore.updateSkill(skill.id, { enabled });
-        appStore.showMessage(enabled ? "Skill enabled" : "Skill disabled", "success");
+        await toolStore.updateTool(tool.id, { enabled });
+        appStore.showMessage(enabled ? "Tool enabled" : "Tool disabled", "success");
       } catch {
-        appStore.showMessage("Failed to update skill", "error");
+        appStore.showMessage("Failed to update tool", "error");
       }
     }
     onMounted(() => {
-      skillStore.fetchSkills();
+      toolStore.fetchTools();
     });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", null, [
@@ -134,11 +134,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               class: "mr-3"
             }, {
               default: withCtx(() => [..._cache[9] || (_cache[9] = [
-                createTextVNode("mdi-star", -1)
+                createTextVNode("mdi-hammer-wrench", -1)
               ])]),
               _: 1
             }),
-            _cache[10] || (_cache[10] = createBaseVNode("h1", { class: "text-h4 font-weight-bold" }, "Skills", -1))
+            _cache[10] || (_cache[10] = createBaseVNode("h1", { class: "text-h4 font-weight-bold" }, "Tools", -1))
           ]),
           createVNode(VBtn, {
             color: "primary",
@@ -146,19 +146,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             onClick: openAddDialog
           }, {
             default: withCtx(() => [..._cache[11] || (_cache[11] = [
-              createTextVNode(" Add Skill ", -1)
+              createTextVNode(" Add Tool ", -1)
             ])]),
             _: 1
           })
         ]),
         createVNode(VRow, null, {
           default: withCtx(() => [
-            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(skillStore).skills, (skill) => {
+            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(toolStore).tools, (tool) => {
               return openBlock(), createBlock(VCol, {
                 cols: "12",
                 md: "6",
                 lg: "4",
-                key: skill.id
+                key: tool.id
               }, {
                 default: withCtx(() => [
                   createVNode(VCard, { class: "fill-height" }, {
@@ -166,11 +166,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       createVNode(VCardItem, null, {
                         prepend: withCtx(() => [
                           createVNode(VIcon, {
-                            color: skill.enabled ? "primary" : "medium-emphasis",
+                            color: tool.enabled ? "primary" : "medium-emphasis",
                             size: "28"
                           }, {
                             default: withCtx(() => [..._cache[12] || (_cache[12] = [
-                              createTextVNode(" mdi-star ", -1)
+                              createTextVNode(" mdi-hammer-wrench ", -1)
                             ])]),
                             _: 1
                           }, 8, ["color"])
@@ -178,13 +178,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         default: withCtx(() => [
                           createVNode(VCardTitle, null, {
                             default: withCtx(() => [
-                              createTextVNode(toDisplayString(skill.name), 1)
+                              createTextVNode(toDisplayString(tool.name), 1)
                             ]),
                             _: 2
                           }, 1024),
                           createVNode(VCardSubtitle, null, {
                             default: withCtx(() => [
-                              createTextVNode(toDisplayString(skill.type), 1)
+                              createTextVNode(toDisplayString(tool.type), 1)
                             ]),
                             _: 2
                           }, 1024)
@@ -193,10 +193,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }, 1024),
                       createVNode(VCardText, null, {
                         default: withCtx(() => [
-                          skill.description ? (openBlock(), createElementBlock("div", _hoisted_3, toDisplayString(skill.description), 1)) : createCommentVNode("", true),
-                          skill.config ? (openBlock(), createElementBlock("div", _hoisted_4, [
+                          tool.description ? (openBlock(), createElementBlock("div", _hoisted_3, toDisplayString(tool.description), 1)) : createCommentVNode("", true),
+                          tool.config ? (openBlock(), createElementBlock("div", _hoisted_4, [
                             _cache[13] || (_cache[13] = createBaseVNode("div", { class: "text-caption text-medium-emphasis mb-1" }, "Config", -1)),
-                            createBaseVNode("div", _hoisted_5, toDisplayString(skill.config), 1)
+                            createBaseVNode("div", _hoisted_5, toDisplayString(tool.config), 1)
                           ])) : createCommentVNode("", true)
                         ]),
                         _: 2
@@ -204,19 +204,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       createVNode(VCardActions, null, {
                         default: withCtx(() => [
                           createVNode(VSwitch, {
-                            "model-value": skill.enabled,
-                            label: skill.enabled ? "Enabled" : "Disabled",
+                            "model-value": tool.enabled,
+                            label: tool.enabled ? "Enabled" : "Disabled",
                             color: "success",
                             density: "compact",
                             "hide-details": "",
-                            "onUpdate:modelValue": (v) => handleToggleEnabled(skill, !!v)
+                            "onUpdate:modelValue": (v) => handleToggleEnabled(tool, !!v)
                           }, null, 8, ["model-value", "label", "onUpdate:modelValue"]),
                           createVNode(VSpacer),
                           createVNode(VBtn, {
                             variant: "tonal",
                             size: "small",
                             "prepend-icon": "mdi-pencil",
-                            onClick: ($event) => openEditDialog(skill)
+                            onClick: ($event) => openEditDialog(tool)
                           }, {
                             default: withCtx(() => [..._cache[14] || (_cache[14] = [
                               createTextVNode(" Edit ", -1)
@@ -229,7 +229,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             variant: "text",
                             size: "small",
                             color: "error",
-                            onClick: ($event) => confirmRemove(skill)
+                            onClick: ($event) => confirmRemove(tool)
                           }, null, 8, ["onClick"])
                         ]),
                         _: 2
@@ -244,28 +244,28 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }),
-        unref(skillStore).loading ? (openBlock(), createBlock(VSkeletonLoader, {
+        unref(toolStore).loading ? (openBlock(), createBlock(VSkeletonLoader, {
           key: 0,
           type: "card@3"
         })) : createCommentVNode("", true),
-        !unref(skillStore).loading && unref(skillStore).skills.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_6, [
+        !unref(toolStore).loading && unref(toolStore).tools.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_6, [
           createVNode(VIcon, {
             size: "64",
             color: "medium-emphasis"
           }, {
             default: withCtx(() => [..._cache[15] || (_cache[15] = [
-              createTextVNode("mdi-star-off", -1)
+              createTextVNode("mdi-hammer-wrench", -1)
             ])]),
             _: 1
           }),
-          _cache[17] || (_cache[17] = createBaseVNode("p", { class: "text-medium-emphasis mt-4" }, "No skills configured", -1)),
+          _cache[17] || (_cache[17] = createBaseVNode("p", { class: "text-medium-emphasis mt-4" }, "No tools configured", -1)),
           createVNode(VBtn, {
             color: "primary",
             class: "mt-4",
             onClick: openAddDialog
           }, {
             default: withCtx(() => [..._cache[16] || (_cache[16] = [
-              createTextVNode("Add Skill", -1)
+              createTextVNode("Add Tool", -1)
             ])]),
             _: 1
           })
@@ -280,7 +280,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
                   default: withCtx(() => [
-                    createTextVNode(toDisplayString(editingSkill.value ? "Edit Skill" : "Add Skill"), 1)
+                    createTextVNode(toDisplayString(editingTool.value ? "Edit Tool" : "Add Tool"), 1)
                   ]),
                   _: 1
                 }),
@@ -298,8 +298,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => form.value.name = $event),
                               label: "Name",
                               variant: "outlined",
-                              placeholder: "code-review",
-                              hint: "Unique name for the skill",
+                              placeholder: "file-reader",
+                              hint: "Unique name for the tool",
                               "persistent-hint": ""
                             }, null, 8, ["modelValue"])
                           ]),
@@ -328,7 +328,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               label: "Description",
                               variant: "outlined",
                               rows: "2",
-                              placeholder: "Skill description..."
+                              placeholder: "Tool description..."
                             }, null, 8, ["modelValue"])
                           ]),
                           _: 1
@@ -341,7 +341,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               label: "Config",
                               variant: "outlined",
                               rows: "6",
-                              placeholder: '{"prompt": "...", "max_tokens": 1000}'
+                              placeholder: '{"type": "function", "function": {...}}'
                             }, null, 8, ["modelValue"])
                           ]),
                           _: 1
@@ -383,7 +383,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       disabled: !form.value.name.trim()
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(toDisplayString(editingSkill.value ? "Update" : "Create"), 1)
+                        createTextVNode(toDisplayString(editingTool.value ? "Update" : "Create"), 1)
                       ]),
                       _: 1
                     }, 8, ["loading", "disabled"])
@@ -406,7 +406,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
                   default: withCtx(() => [..._cache[19] || (_cache[19] = [
-                    createTextVNode("Delete Skill", -1)
+                    createTextVNode("Delete Tool", -1)
                   ])]),
                   _: 1
                 }),
@@ -459,7 +459,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const SkillsPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5c3f29e3"]]);
+const ToolsPage = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-bc5265b8"]]);
 export {
-  SkillsPage as default
+  ToolsPage as default
 };

@@ -2,7 +2,7 @@ var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var _a;
-import { Z as nextTick, a4 as ref, ab as useAppStore, af as useSessionStore, K as api, ah as watch, a1 as onMounted, S as defineComponent, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, a8 as toDisplayString, O as createCommentVNode, e as VBtn, F as Fragment, a5 as renderList, f as VCard, o as VDialog, a3 as reactive, ae as useRouter, a2 as openBlock, Q as createTextVNode, aa as unref, m as VChip, ak as withKeys, al as withModifiers, I as VTextarea, N as createBlock, $ as normalizeClass, C as VSpacer, q as VExpandTransition, aj as withDirectives, p as VDivider, ag as vShow, j as VCardText, A as VSelect, k as VCardTitle, g as VCardActions, _ as _export_sfc } from "./main-BSD2YpbL.js";
+import { Z as nextTick, a4 as ref, ab as useAppStore, af as useSessionStore, K as api, ah as watch, a1 as onMounted, S as defineComponent, P as createElementBlock, M as createBaseVNode, R as createVNode, ai as withCtx, r as VIcon, a8 as toDisplayString, O as createCommentVNode, e as VBtn, F as Fragment, a5 as renderList, f as VCard, o as VDialog, a3 as reactive, ae as useRouter, a2 as openBlock, Q as createTextVNode, aa as unref, m as VChip, ak as withKeys, al as withModifiers, I as VTextarea, N as createBlock, $ as normalizeClass, C as VSpacer, q as VExpandTransition, aj as withDirectives, p as VDivider, ag as vShow, j as VCardText, A as VSelect, k as VCardTitle, g as VCardActions, _ as _export_sfc } from "./main-gWZPyuWK.js";
 function _getDefaults() {
   return {
     async: false,
@@ -3375,7 +3375,7 @@ function useChatMessages(options) {
     toolIdx: -1,
     activeCleanup: null
   };
-  function flushText() {
+  function flushText(createNewSlot = false) {
     if (!stream.pendingText.trim()) {
       stream.toolIdx = -1;
       return;
@@ -3390,12 +3390,22 @@ function useChatMessages(options) {
     }
     stream.pendingText = "";
     stream.toolIdx = -1;
+    if (createNewSlot) {
+      messages.value.push({
+        kind: "assistant",
+        text: "",
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        isLoading: true,
+        uuid: generateUuid()
+      });
+      stream.activeAsstIdx = messages.value.length - 1;
+    }
   }
   function handleOutputEvent(content) {
     const result = parseContentObject(content);
     if (!result) return;
     if (result.type === "tool_start") {
-      flushText();
+      flushText(true);
       const item = {
         kind: "tool",
         tool: result.tool,
@@ -3433,20 +3443,33 @@ function useChatMessages(options) {
     (_a2 = stream.activeCleanup) == null ? void 0 : _a2.call(stream);
     stream.activeCleanup = null;
     let cleanupCalled = false;
+    let sessionRegistered = false;
+    function ensureSessionRefreshed(sid) {
+      if (sessionRegistered) return;
+      sessionRegistered = true;
+      if (!sessionId.value) {
+        sessionId.value = sid;
+        sessionStore.selectSession(sid);
+      }
+      sessionStore.fetchSessions();
+    }
+    function onSession(e) {
+      if (cleanupCalled) return;
+      const detail = e.detail;
+      if (isNewSession && detail.session_id) {
+        ensureSessionRefreshed(detail.session_id);
+      }
+    }
     function onOutput(e) {
       if (cleanupCalled) return;
       const detail = e.detail;
-      if (isNewSession && detail.session_id && !sessionId.value) {
-        sessionId.value = detail.session_id;
-        setTimeout(() => {
-          sessionStore.fetchSessions();
-          sessionStore.selectSession(sessionId.value);
-        }, 1e3);
+      if (isNewSession && detail.session_id) {
+        ensureSessionRefreshed(detail.session_id);
       }
       handleOutputEvent(detail.content);
     }
     function onComplete(e) {
-      var _a3;
+      var _a3, _b;
       if (cleanupCalled) return;
       cleanup();
       flushText();
@@ -3454,11 +3477,17 @@ function useChatMessages(options) {
       if ((_a3 = detail == null ? void 0 : detail.result) == null ? void 0 : _a3.user_message_uuid) {
         messages.value[stream.activeUserIdx].uuid = detail.result.user_message_uuid;
       }
+      if (isNewSession && ((_b = detail == null ? void 0 : detail.result) == null ? void 0 : _b.session_id)) {
+        ensureSessionRefreshed(detail.result.session_id);
+      }
       const m = messages.value[stream.activeAsstIdx];
       if (!m.text) m.text = "_(no response)_";
       m.isLoading = false;
       uiState.isRunning = false;
       scrollToBottom();
+      if (isNewSession) {
+        setTimeout(() => sessionStore.fetchSessions(), 500);
+      }
     }
     function onError(e) {
       if (cleanupCalled) return;
@@ -3471,16 +3500,21 @@ function useChatMessages(options) {
       m.isLoading = false;
       uiState.isRunning = false;
       scrollToBottom();
+      if (isNewSession) {
+        setTimeout(() => sessionStore.fetchSessions(), 500);
+      }
     }
     function cleanup() {
       if (cleanupCalled) return;
       cleanupCalled = true;
+      window.removeEventListener("chat-session", onSession);
       window.removeEventListener("chat-output", onOutput);
       window.removeEventListener("chat-complete", onComplete);
       window.removeEventListener("chat-error", onError);
       stream.activeCleanup = null;
     }
     stream.activeCleanup = cleanup;
+    window.addEventListener("chat-session", onSession);
     window.addEventListener("chat-output", onOutput);
     window.addEventListener("chat-complete", onComplete);
     window.addEventListener("chat-error", onError);

@@ -209,6 +209,7 @@ impl RunCommand {
             allowed_outbound_hosts: Some(crate::extension::net::parse_allowed_outbound_hosts(
                 self.run.allowed_outbound_hosts.clone(),
             )),
+            block_url: self.run.block_url.clone(),
             block_networks: Some(crate::extension::net::parse_block_networks(
                 self.run.block_networks.clone(),
             )),
@@ -1295,6 +1296,9 @@ pub struct Host {
     /*** ***/
     allowed_outbound_hosts:
         Option<crate::extension::outbound_networking_config::allowed_hosts::OutboundAllowedHosts>,
+
+    block_url: Option<String>,
+
     block_networks:
         Option<crate::extension::outbound_networking_config::blocked_networks::BlockedNetworks>,
     /*** ***/
@@ -1349,7 +1353,16 @@ impl wasmtime_wasi_http::types::WasiHttpView for Host {
     ) -> wasmtime_wasi_http::HttpResult<wasmtime_wasi_http::types::HostFutureIncomingResponse> {
         let uri = request.uri();
 
+        if let Some(block_url) = self.block_url.as_deref() {
+            if uri.to_string().starts_with(block_url) {
+                return Err(wasmtime_wasi_http::HttpError::trap(format_err!(
+                "destination not allowed"
+            )));
+            }
+        }
+
         let allowed_outbound_hosts = self.allowed_outbound_hosts.clone().unwrap();
+
         let is_allowed = futures::executor::block_on(async {
             allowed_outbound_hosts
                 .check_url(

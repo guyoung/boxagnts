@@ -113,6 +113,11 @@ pub struct RunCommon {
     #[arg(long = "allowed-outbound-hosts")]
     pub allowed_outbound_hosts: Vec<String>,
 
+
+    ///
+    #[arg(long = "block-url")]
+    pub block_url: Option<String>,
+
     /// Set of IP networks to be blocked
     ///
     /// Example: `--block-networks 1.1.1.1/32, -- block-networks private`
@@ -365,6 +370,8 @@ impl RunCommon {
         let blocked_networks =
             crate::extension::net::parse_block_networks(self.block_networks.clone());
 
+
+
         builder.socket_addr_check(move |addr, addr_use| {
             Box::pin({
                 let allowed_outbound_hosts = allowed_outbound_hosts.clone();
@@ -391,6 +398,7 @@ impl RunCommon {
         if let Some(limit) = self.common.wasi.max_http_fields_size {
             http.set_field_size_limit(limit);
         }
+        
 
         Ok(http)
     }

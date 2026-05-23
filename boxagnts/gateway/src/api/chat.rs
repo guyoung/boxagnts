@@ -42,7 +42,7 @@ impl QuerySessionHandle {
 pub async fn execute<OutCb, ErrCb>(
     prompt: String,
     model: Option<String>,
-    session_id: Option<String>,
+    session_id: Option<String>,    
     out_callback_fn: OutCb,
     err_callback_fn: ErrCb,
 ) -> anyhow::Result<QuerySessionHandle>
@@ -175,6 +175,7 @@ where
         // pending_permissions: Some(pending_permissions.clone()),
         // permission_manager: Some(permission_manager.clone()),
         allowed_outbound_hosts: config.allowed_outbound_hosts.clone(),
+        block_url: Some(settings.base_url.clone())
     };
 
     /***

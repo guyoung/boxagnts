@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ChatPage-CCZaTI8B.js","assets/ChatPage-Inv32tie.css","assets/McpPage-CyaVxL3f.js","assets/McpPage-DjyTiLVM.css","assets/FilePage-Cyw5lzyK.js","assets/FilePage-DiXuUVle.css","assets/SitesPage-atvx2DRu.js","assets/baseCrud-dWOHLWHe.js","assets/SitesPage-DAdM3Ay7.css","assets/CronsPage-CJSYv8Bs.js","assets/CronsPage-Cm0z54Jh.css","assets/AgentsPage-rgPR5bjz.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-XKGruORf.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-D0TCjD8G.js","assets/ToolsPage-BLqpw-br.css","assets/SettingsModelPage-Dz0foC62.js","assets/settings-RFBLOOFr.js","assets/SettingsSecurityPage-DRTIbgcA.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ChatPage-BmgDhI1m.js","assets/ChatPage-Inv32tie.css","assets/McpPage-D_FzbXlS.js","assets/McpPage-DjyTiLVM.css","assets/FilePage-Cc_sGEnW.js","assets/FilePage-DiXuUVle.css","assets/SitesPage-DKmsBsLw.js","assets/baseCrud-wwuZycIH.js","assets/SitesPage-DAdM3Ay7.css","assets/CronsPage-CkQKWDo_.js","assets/CronsPage-Cm0z54Jh.css","assets/AgentsPage-CPQjC4Ee.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-CVJ8Bzn-.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-DfOTlw2M.js","assets/ToolsPage-BLqpw-br.css","assets/SettingsModelPage-CeJwAtjg.js","assets/settings-m6tcaaQA.js","assets/SettingsSecurityPage-OaJSGUib.js"])))=>i.map(i=>d[i]);
 var _a;
 (function polyfill() {
   const relList = document.createElement("link").relList;
@@ -45734,6 +45734,12 @@ async function handleStreamingCommand(command, params) {
       try {
         const message = JSON.parse(event.data);
         if (message.type === "start") {
+          if (message.session_id) {
+            const startEvent = new CustomEvent("chat-session", {
+              detail: { session_id: message.session_id }
+            });
+            window.dispatchEvent(startEvent);
+          }
         } else if (message.type === "output") {
           const content = typeof message.content === "string" ? JSON.parse(message.content) : message.content;
           const customEvent = new CustomEvent("chat-output", {
@@ -45746,7 +45752,7 @@ async function handleStreamingCommand(command, params) {
         } else if (message.type === "completion") {
           const completeEvent = new CustomEvent("chat-complete", {
             detail: {
-              result: message.result
+              result: { ...message.result, ...message.session_id ? { session_id: message.session_id } : {} }
             }
           });
           window.dispatchEvent(completeEvent);
@@ -47702,67 +47708,67 @@ const router = createRouter({
     {
       path: "/",
       name: "chat",
-      component: () => __vitePreload(() => import("./ChatPage-CCZaTI8B.js"), true ? __vite__mapDeps([0,1]) : void 0)
+      component: () => __vitePreload(() => import("./ChatPage-BmgDhI1m.js"), true ? __vite__mapDeps([0,1]) : void 0)
     },
     {
       path: "/usage",
       name: "usage",
-      component: () => __vitePreload(() => import("./UsagePage-JywAFgiy.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./UsagePage-BCmBRaym.js"), true ? [] : void 0)
     },
     {
       path: "/mcp",
       name: "mcp",
-      component: () => __vitePreload(() => import("./McpPage-CyaVxL3f.js"), true ? __vite__mapDeps([2,3]) : void 0)
+      component: () => __vitePreload(() => import("./McpPage-D_FzbXlS.js"), true ? __vite__mapDeps([2,3]) : void 0)
     },
     {
       path: "/files",
       name: "files",
-      component: () => __vitePreload(() => import("./FilePage-Cyw5lzyK.js"), true ? __vite__mapDeps([4,5]) : void 0)
+      component: () => __vitePreload(() => import("./FilePage-Cc_sGEnW.js"), true ? __vite__mapDeps([4,5]) : void 0)
     },
     {
       path: "/sites",
       name: "sites",
-      component: () => __vitePreload(() => import("./SitesPage-atvx2DRu.js"), true ? __vite__mapDeps([6,7,8]) : void 0)
+      component: () => __vitePreload(() => import("./SitesPage-DKmsBsLw.js"), true ? __vite__mapDeps([6,7,8]) : void 0)
     },
     {
       path: "/crons",
       name: "crons",
-      component: () => __vitePreload(() => import("./CronsPage-CJSYv8Bs.js"), true ? __vite__mapDeps([9,7,10]) : void 0)
+      component: () => __vitePreload(() => import("./CronsPage-CkQKWDo_.js"), true ? __vite__mapDeps([9,7,10]) : void 0)
     },
     {
       path: "/agents",
       name: "agents",
-      component: () => __vitePreload(() => import("./AgentsPage-rgPR5bjz.js"), true ? __vite__mapDeps([11,7,12]) : void 0)
+      component: () => __vitePreload(() => import("./AgentsPage-CPQjC4Ee.js"), true ? __vite__mapDeps([11,7,12]) : void 0)
     },
     {
       path: "/skills",
       name: "skills",
-      component: () => __vitePreload(() => import("./SkillsPage-XKGruORf.js"), true ? __vite__mapDeps([13,7,14]) : void 0)
+      component: () => __vitePreload(() => import("./SkillsPage-CVJ8Bzn-.js"), true ? __vite__mapDeps([13,7,14]) : void 0)
     },
     {
       path: "/tools",
       name: "tools",
-      component: () => __vitePreload(() => import("./ToolsPage-D0TCjD8G.js"), true ? __vite__mapDeps([15,7,16]) : void 0)
+      component: () => __vitePreload(() => import("./ToolsPage-DfOTlw2M.js"), true ? __vite__mapDeps([15,7,16]) : void 0)
     },
     {
       path: "/settings",
-      component: () => __vitePreload(() => import("./SettingsPage-BSison1H.js"), true ? [] : void 0),
+      component: () => __vitePreload(() => import("./SettingsPage-Buaeq-M0.js"), true ? [] : void 0),
       redirect: "/settings/model",
       children: [
         {
           path: "agents-md",
           name: "settings-agents-md",
-          component: () => __vitePreload(() => import("./SettingsAgentsMdPage-CBXqjmAe.js"), true ? [] : void 0)
+          component: () => __vitePreload(() => import("./SettingsAgentsMdPage-GykKLAYY.js"), true ? [] : void 0)
         },
         {
           path: "model",
           name: "settings-model",
-          component: () => __vitePreload(() => import("./SettingsModelPage-Dz0foC62.js"), true ? __vite__mapDeps([17,18]) : void 0)
+          component: () => __vitePreload(() => import("./SettingsModelPage-CeJwAtjg.js"), true ? __vite__mapDeps([17,18]) : void 0)
         },
         {
           path: "security",
           name: "settings-security",
-          component: () => __vitePreload(() => import("./SettingsSecurityPage-DRTIbgcA.js"), true ? __vite__mapDeps([19,18]) : void 0)
+          component: () => __vitePreload(() => import("./SettingsSecurityPage-OaJSGUib.js"), true ? __vite__mapDeps([19,18]) : void 0)
         }
       ]
     }
