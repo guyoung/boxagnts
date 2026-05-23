@@ -10,7 +10,7 @@ BoxAgnts is an open-source AI Agent ToolBox built with Rust, dedicated to delive
 
 BoxAgnts is a fully-featured AI Agent toolkit providing:
 
-- **Multi-model support**: Compatible with major AI model providers including OpenAI, Anthropic, Google, Azure, Bedrock
+- **Multi-model support**: Compatible with major AI model providers including OpenAI, Anthropic, CodeX, Google, Deepseek, MiniMax, OpenCode
 - **Tool system**: Built-in file operations, web access, code execution, and many other tools
 - **Skill system**: Create specialized AI skills through simple configuration
 

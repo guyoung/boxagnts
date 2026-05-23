@@ -10,7 +10,7 @@ BoxAgnts 是一个基于 Rust 构建的开源 AI Agent ToolBox，专注于开箱
 
 BoxAgnts 是一个功能完备的 AI Agent 工具箱，提供：
 
-- **多模型支持**：兼容 OpenAI、Anthropic、Google、Azure、Bedrock 等主流 AI 模型提供商
+- **多模型支持**：兼容 OpenAI、Anthropic、CodeX、Google、Deepseek、MiniMax、OpenCode 等主流 AI 模型提供商
 - **工具系统**：内置文件操作、Web 访问、代码执行等多种工具
 - **技能系统**：通过简单的配置即可创建专用 AI 技能
 
