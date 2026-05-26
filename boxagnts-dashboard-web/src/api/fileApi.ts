@@ -44,6 +44,13 @@ export interface RenameData {
     is_dir: boolean
 }
 
+export interface CopyMoveData {
+    source_path: string
+    target_path: string
+    name: string
+    is_dir: boolean
+}
+
 export interface DownloadFileResult {
     blob: Blob
     fileName: string
@@ -165,6 +172,42 @@ export async function renameFile(
     })
 }
 
+export async function copyFile(
+    path: string,
+    targetPath: string,
+    newName?: string
+): Promise<ApiResponse<CopyMoveData>> {
+    return request<ApiResponse<CopyMoveData>>('/files/copy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            path,
+            target_path: targetPath,
+            new_name: newName
+        })
+    })
+}
+
+export async function moveFile(
+    path: string,
+    targetPath: string,
+    newName?: string
+): Promise<ApiResponse<CopyMoveData>> {
+    return request<ApiResponse<CopyMoveData>>('/files/move', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            path,
+            target_path: targetPath,
+            new_name: newName
+        })
+    })
+}
+
 export async function downloadFile(path: string): Promise<DownloadFileResult> {
     const response = await fetch(`${API_BASE_URL}/files/download${buildQuery({ path })}`, {
         method: 'GET'
@@ -221,12 +264,81 @@ export function saveBlob(blob: Blob, fileName: string): void {
     window.URL.revokeObjectURL(objectUrl)
 }
 
+export interface FileChangeEvent {
+    kind: string
+    path: string
+    old_path: string | null
+    source: string
+    time: string
+}
+
+export interface FileWatcher {
+    stop: () => void
+}
+
+export function startFileWatcher(onChange: (event: FileChangeEvent) => void): FileWatcher {
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${wsProtocol}//${window.location.host}/dashboard/file_ws`
+
+    let ws: WebSocket | null = null
+    let stopped = false
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+    function connect() {
+        if (stopped) return
+
+        ws = new WebSocket(wsUrl)
+
+        ws.onopen = () => {
+            console.log('[fileWatcher] connected')
+        }
+
+        ws.onmessage = (e) => {
+            //console.log('[fileWatcher] received message:', e.data)
+            try {
+                const data = JSON.parse(e.data) as FileChangeEvent
+                onChange(data)
+            } catch (err) {
+                console.error('[fileWatcher] failed to parse message:', err)
+            }
+        }
+
+        ws.onclose = () => {
+            console.log('[fileWatcher] closed')
+            if (!stopped) {
+                reconnectTimer = setTimeout(connect, 3000)
+            }
+        }
+
+        ws.onerror = (err) => {
+            console.error('[fileWatcher] error:', err)
+            ws?.close()
+        }
+    }
+
+    connect()
+
+    return {
+        stop: () => {
+            stopped = true
+            if (reconnectTimer) {
+                clearTimeout(reconnectTimer)
+                reconnectTimer = null
+            }
+            ws?.close()
+            ws = null
+        }
+    }
+}
+
 const fileApi = {
     listFiles,
     createDirectory,
     uploadFiles,
     deleteFile,
     renameFile,
+    copyFile,
+    moveFile,
     downloadFile,
     saveBlob
 }

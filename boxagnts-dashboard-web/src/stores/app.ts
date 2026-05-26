@@ -1,11 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { Project } from '@/api'
 
 export const useAppStore = defineStore('app', () => {
   const sidebarCollapsed = ref(false)
+  const rightSidebarCollapsed = ref(false)
   const sidebarWidth = ref(280)
   const theme = ref<'dark' | 'light'>('dark')
   const searchQuery = ref('')
+  const currentProject = ref<Project | null>(null)
   const snackbar = ref({
     show: false,
     message: '',
@@ -17,6 +20,10 @@ export const useAppStore = defineStore('app', () => {
 
   function toggleSidebar() {
     sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+
+  function toggleRightSidebar() {
+    rightSidebarCollapsed.value = !rightSidebarCollapsed.value
   }
 
   function setSidebarWidth(w: number) {
@@ -35,17 +42,25 @@ export const useAppStore = defineStore('app', () => {
     snackbar.value.show = false
   }
 
+  function setCurrentProject(project: Project | null) {
+    currentProject.value = project
+  }
+
   return {
     sidebarCollapsed,
+    rightSidebarCollapsed,
     sidebarWidth,
     theme,
     searchQuery,
+    currentProject,
     snackbar,
     isDark,
     toggleSidebar,
+    toggleRightSidebar,
     setSidebarWidth,
     toggleTheme,
     showMessage,
     hideSnackbar,
+    setCurrentProject,
   }
 })

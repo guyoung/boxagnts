@@ -12,7 +12,7 @@ use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
 
 #[derive(Clone)]
-pub struct WSAppState {
+pub struct ChatWSAppState {
     // instance_id -> websocket sender
     pub ws_instances: Arc<Mutex<HashMap<String, tokio::sync::mpsc::Sender<String>>>>,
 
@@ -32,12 +32,12 @@ pub struct ExecutionRequest {
 /// WebSocket handler for execution with streaming output
 pub async fn handle_websocket(
     ws: WebSocketUpgrade,
-    AxumState(state): AxumState<WSAppState>,
+    AxumState(state): AxumState<ChatWSAppState>,
 ) -> Response {
     ws.on_upgrade(move |socket| process(socket, state))
 }
 
-async fn process(socket: WebSocket, state: WSAppState) {
+async fn process(socket: WebSocket, state: ChatWSAppState) {
     let (mut sender, mut receiver) = socket.split();
     let instance_id = uuid::Uuid::new_v4().to_string();
 
@@ -202,7 +202,7 @@ async fn execute_command(
     prompt: String,
     model: String,
     session_id: String,
-    state: WSAppState,
+    state: ChatWSAppState,
     instance_id: String,
 ) -> anyhow::Result<Value> {
     send_to_instance(
@@ -281,7 +281,7 @@ async fn execute_command(
     result
 }
 
-async fn cancel_running_query(state: WSAppState, session_id: String) -> bool {
+async fn cancel_running_query(state: ChatWSAppState, session_id: String) -> bool {
     let running = state.running_queries.lock().await;
     if let Some(token) = running.get(&session_id) {
         token.cancel();
@@ -291,7 +291,7 @@ async fn cancel_running_query(state: WSAppState, session_id: String) -> bool {
     }
 }
 
-async fn send_to_instance(state: WSAppState, instance_id: String, message: String) {
+async fn send_to_instance(state: ChatWSAppState, instance_id: String, message: String) {
     let sender_opt = {
         let instances = state.ws_instances.lock().await;
         instances.get(&instance_id).cloned()

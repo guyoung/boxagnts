@@ -47,6 +47,7 @@ export function useChatSession(options: UseChatSessionOptions) {
   onMounted(async () => {
     try {
       currentProject.value = await api.getCurrentProject()
+      appStore.setCurrentProject(currentProject.value)
     } catch {
       appStore.showMessage('Could not detect current project', 'warning')
     }

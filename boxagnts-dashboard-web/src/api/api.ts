@@ -180,7 +180,7 @@ export interface FolderItem {
 export interface FolderListResponse {
   code: number
   data: {
-    folders: FolderItem[]
+    items: FolderItem[]
     path: string
   }
   message: string
@@ -379,8 +379,8 @@ export const api = {
     await delay(200)
     try {
       const res = await apiCall<FolderListResponse>('get_root_sub_folders')
-      if (res && res.data && Array.isArray(res.data.folders)) {
-        return res.data.folders
+      if (res && res.data && Array.isArray(res.data.items)) {
+        return res.data.items
       }
       return []
     } catch {

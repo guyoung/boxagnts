@@ -5,8 +5,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'chat',
-      component: () => import('@/views/ChatPage.vue'),
+      name: 'home',
+      component: () => import('@/views/HomePage.vue'),
     },
     {
       path: '/usage',
@@ -17,11 +17,6 @@ const router = createRouter({
       path: '/mcp',
       name: 'mcp',
       component: () => import('@/views/McpPage.vue'),
-    },
-    {
-      path: '/files',
-      name: 'files',
-      component: () => import('@/views/FilePage.vue'),
     },
     {
       path: '/sites',

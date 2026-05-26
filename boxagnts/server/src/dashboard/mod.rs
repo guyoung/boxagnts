@@ -1,12 +1,13 @@
 mod chat;
 mod cron;
 mod file;
-pub mod ws;
+pub mod chat_ws;
 mod site;
 mod skill;
 mod tool;
 mod provider;
 mod config;
+mod file_ws;
 
 use std::path::PathBuf;
 use axum::body::Body;
@@ -53,7 +54,7 @@ pub struct AdminAuthState {
 }
 
 pub async fn crate_router(
-    ws_state: ws::WSAppState,
+    chat_ws_state: chat_ws::ChatWSAppState,
     cron_state: boxagnts_gateway::cron::app_state::AppState,
     site_state: boxagnts_gateway::site::app_state::AppState,
     config_state: boxagnts_gateway::config::app_state::AppState,
@@ -99,6 +100,8 @@ pub async fn crate_router(
         .route("/api/files/upload", post(file::upload))
         .route("/api/files/delete", post(file::delete))
         .route("/api/files/rename", post(file::rename))
+        .route("/api/files/copy", post(file::copy))
+        .route("/api/files/move", post(file::move_item))
         .route("/api/files/download", get(file::download))
         .route("/api/files/root_sub_folders", get(file::list_root_sub_folders))
         // Tool
@@ -115,8 +118,9 @@ pub async fn crate_router(
         .nest("/api/config", config_router)
         .with_state(config_state)
         // ws
-        .route("/ws", get(ws::handle_websocket))
-        .with_state(ws_state)
+        .route("/chat_ws", get(chat_ws::handle_websocket))
+        .with_state(chat_ws_state)
+        .route("/file_ws", get(file_ws::handle_websocket))
         // static
         .nest_service("/assets", assets)
         // Basic Auth only protects /dashboard/*

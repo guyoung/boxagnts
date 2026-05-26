@@ -72,10 +72,10 @@ impl Tool for WasmTool {
         options.wasm_cache_dir = Some(format!("{}", cache_dir.display()));
         options.block_url = ctx.block_url.clone();
 
-        println!(
-            "wasm_tool execute wasm file: {} args: {:?}",
-            wasm_file, args
-        );
+        // println!(
+        //     "wasm_tool execute wasm file: {} args: {:?}",
+        //     wasm_file, args
+        // );
 
         let result =
             boxagnts_wasm_sandbox::run::execute(wasm_file.clone(), None, Some(args), options, None)

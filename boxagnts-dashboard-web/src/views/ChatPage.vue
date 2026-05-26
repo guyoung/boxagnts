@@ -1,11 +1,6 @@
 <template>
   <div class="chat-layout">
-    <div class="d-flex align-center mb-4" v-if="currentProject">
-      <v-icon color="primary" class="mr-2">mdi-folder</v-icon>
-      <span class="text-body-2 text-medium-emphasis">{{ currentProject.id }}</span>
-    </div>
-
-    <div ref="scrollContainer" class="messages-container mb-4">
+    <div ref="scrollContainer" class="messages-container">
       <div v-if="messages.length === 0 && !uiState.isRunning && availableModels.length === 0" class="empty-state">
         <v-icon size="80" color="warning" class="mb-4">mdi-alert-circle</v-icon>
         <p class="text-h6 text-medium-emphasis">No models available</p>
@@ -279,17 +274,20 @@ function editMessage(idx: number) {
 .chat-layout {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 48px);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .messages-container {
   flex: 1;
   overflow-y: auto;
   padding: 8px 0;
-  min-height: 0;
+  margin: 0 auto;
   max-width: 900px;
   width: 100%;
-  margin: 0 auto;
+  min-height: calc(100vh - 300px);
+  max-height: calc(100vh - 225px);
 }
 
 .empty-state {
@@ -525,9 +523,7 @@ function editMessage(idx: number) {
 }
 
 .input-card {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
+  flex-shrink: 0;
   max-width: 900px;
   width: 100%;
   margin: 0 auto;
@@ -544,13 +540,28 @@ function editMessage(idx: number) {
 .gap-3 {
   gap: 12px;
 }
+</style>
 
+<style>
 .messages-container::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .messages-container::-webkit-scrollbar-thumb {
-  background: rgba(var(--v-theme-on-surface), 0.15);
-  border-radius: 4px;
+  background: rgba(var(--v-theme-on-surface), 0.18);
+  border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-on-surface), 0.3);
+}
+
+.messages-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-on-surface), 0.18) transparent;
 }
 </style>

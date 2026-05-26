@@ -1,4 +1,4 @@
-import { T as defineStore, a4 as ref } from "./main-gWZPyuWK.js";
+import { Q as defineStore, a1 as ref } from "./main-D22gLLWp.js";
 const useSettingsStore = defineStore("settings", () => {
   const settings = ref({
     system_prompt: "",

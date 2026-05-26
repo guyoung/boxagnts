@@ -192,7 +192,7 @@ function mapCommandToEndpoint(command: string, _params?: any): string {
 async function handleStreamingCommand<T>(command: string, params?: any): Promise<T> {
   return new Promise((resolve, reject) => {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const wsUrl = `${wsProtocol}//${window.location.host}/dashboard/ws`
+    const wsUrl = `${wsProtocol}//${window.location.host}/dashboard/chat_ws`
 
     const ws = new WebSocket(wsUrl)
 

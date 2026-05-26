@@ -93,6 +93,24 @@ pub async fn rename(
     Ok(Json(result))
 }
 
+pub async fn copy(
+    Json(payload): Json<boxagnts_gateway::api::file::CopyRequest>,
+) -> Result<Json<Value>, Response> {
+    let result = boxagnts_gateway::api::file::copy(payload)
+        .await
+        .map_err(|e| error_into_response(e))?;
+    Ok(Json(result))
+}
+
+pub async fn move_item(
+    Json(payload): Json<boxagnts_gateway::api::file::MoveRequest>,
+) -> Result<Json<Value>, Response> {
+    let result = boxagnts_gateway::api::file::move_item(payload)
+        .await
+        .map_err(|e| error_into_response(e))?;
+    Ok(Json(result))
+}
+
 pub async fn download(
     Query(query): Query<boxagnts_gateway::api::file::DownloadQuery>,
 ) -> Result<Response<Body>, Response> {
@@ -133,7 +151,7 @@ pub async fn download(
 
 
 pub async fn list_root_sub_folders() -> Result<Json<Value>, Response> {
-    let result = boxagnts_gateway::api::file::list_sub_folders(None)
+    let result = boxagnts_gateway::api::file::list_folders(None)
         .await
         .map_err(|e| error_into_response(e))?;
     Ok(Json(result))

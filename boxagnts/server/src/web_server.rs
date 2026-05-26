@@ -26,7 +26,20 @@ pub async fn start_web_server(
     boxagnts_gateway::cron::store::init_storage().await?;
     boxagnts_gateway::site::store::init_storage().await?;
 
-    let ws_state = crate::dashboard::ws::WSAppState {
+    let workspace_dir = boxagnts_workspace::path::get_workspace_dir().await;
+    let root_dir = workspace_dir.join("root");
+    let root_dir = std::fs::canonicalize(root_dir)?;
+
+    if !root_dir.exists() {
+        std::fs::create_dir_all(&root_dir).expect("failed to create root directory");
+    }
+
+    boxagnts_gateway::api::fs_events::start_watcher(root_dir)
+        .await
+        .expect("failed to start fs watcher");
+
+
+    let ws_state = crate::dashboard::chat_ws::ChatWSAppState {
         ws_instances: Arc::new(Mutex::new(HashMap::new())),
         running_queries: Arc::new(Mutex::new(HashMap::new())),
     };

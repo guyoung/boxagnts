@@ -20,102 +20,55 @@
 
     <v-divider class="mx-4 mb-1" />
 
-    <!-- Sessions &amp; Files panels -->
-    <div class="panel-area" v-if="!appStore.sidebarCollapsed">
-      <!-- Sessions list -->
-      <div class="panel-section" :class="expandedPanel === 'sessions' ? 'panel-expanded' : 'panel-collapsed'">
-        <div class="panel-header d-flex align-center px-3 pt-2 pb-1">
-          <span class="text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1">
-            <v-icon size="12" color="medium-emphasis">mdi-message-text</v-icon>
-            SESSIONS
-          </span>
-          <v-spacer />
-          <v-btn icon="mdi-refresh" variant="text" size="x-small" color="medium-emphasis"
-            @click="sessionStore.fetchSessions()" :loading="sessionStore.loading" />
-          <v-btn :icon="expandedPanel === 'sessions' ? 'mdi-chevron-up' : 'mdi-chevron-down'" variant="text"
-            size="x-small" color="medium-emphasis"
-            @click="expandedPanel = expandedPanel === 'sessions' ? null : 'sessions'" />
-        </div>
-
-        <v-expand-transition>
-          <div v-show="expandedPanel === 'sessions'" class="session-list-wrapper">
-            <div v-if="sessionStore.loading" class="text-center pa-4">
-              <v-progress-circular indeterminate size="20" width="2" color="primary" />
-            </div>
-
-            <v-list v-else density="compact" nav class="px-1">
-              <v-list-item v-for="s in sessionStore.sessions" :key="s.id"
-                :active="sessionStore.currentSessionId === s.id" rounded="lg" class="mb-1 session-item"
-                :class="{ 'session-item--active': sessionStore.currentSessionId === s.id }"
-                @click="selectSession(s.id)">
-                <template #prepend>
-                  <v-icon size="16" color="medium-emphasis">mdi-message-text</v-icon>
-                </template>
-                <v-list-item-title class="text-body-2">
-                  {{ s.title || sessionStore.sessionLabel(s) }}
-                </v-list-item-title>
-                <template #append>
-                  <v-menu location="bottom end" :close-on-content-click="true">
-                    <template #activator="{ props: menuProps }">
-                      <v-btn icon="mdi-dots-vertical" variant="text" size="x-small" color="medium-emphasis"
-                        v-bind="menuProps" @click.stop />
-                    </template>
-                    <v-list density="compact" min-width="150">
-                      <v-list-item prepend-icon="mdi-pencil" title="Rename" @click.stop="openRename(s)" />
-                      <v-list-item prepend-icon="mdi-delete-sweep" title="Clear Message"
-                        @click.stop="confirmClear(s)" />
-                      <v-list-item prepend-icon="mdi-delete" title="Delete" @click.stop="confirmDelete(s)" />
-                    </v-list>
-                  </v-menu>
-                </template>
-              </v-list-item>
-
-              <div v-if="sessionStore.sessions.length === 0" class="text-center pa-6">
-                <v-icon size="40" color="medium-emphasis" class="mb-2">mdi-message-text-outline</v-icon>
-                <p class="text-caption text-medium-emphasis">No sessions yet</p>
-              </div>
-            </v-list>
-          </div>
-        </v-expand-transition>
+    <!-- Sessions panel -->
+    <div class="sessions-area" v-if="!appStore.sidebarCollapsed">
+      <div class="sessions-header d-flex align-center px-3 pt-2 pb-1">
+        <span class="text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1">
+          <v-icon size="12" color="medium-emphasis">mdi-message-text</v-icon>
+          SESSIONS
+        </span>
+        <v-spacer />
+        <v-btn icon="mdi-refresh" variant="text" size="x-small" color="medium-emphasis"
+          @click="sessionStore.fetchSessions()" :loading="sessionStore.loading" />
       </div>
 
-      <!-- Files tree -->
-      <div class="files-panel panel-section" :class="expandedPanel === 'files' ? 'panel-expanded' : 'panel-collapsed'">
-        <v-divider class="mx-4 mb-2" />
-        <div class="panel-header d-flex align-center px-3 pt-1 pb-1">
-          <span class="text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1">
-            <v-icon size="12" color="medium-emphasis">mdi-folder-outline</v-icon>
-            FILES
-          </span>
-          <v-spacer />
-          <v-btn icon="mdi-arrow-expand-all" variant="text" size="x-small" color="medium-emphasis"
-            @click="fileStore.expandAll()" title="Expand All" />
-          <v-btn icon="mdi-arrow-collapse-all" variant="text" size="x-small" color="medium-emphasis"
-            @click="fileStore.collapseAll()" title="Collapse All" />
-          <v-btn icon="mdi-refresh" variant="text" size="x-small" color="medium-emphasis"
-            @click="fileStore.refreshTree()" :loading="fileStore.treeLoading" />
-          <v-btn :icon="expandedPanel === 'files' ? 'mdi-chevron-up' : 'mdi-chevron-down'" variant="text" size="x-small"
-            color="medium-emphasis" @click="expandedPanel = expandedPanel === 'files' ? null : 'files'" />
+      <div class="session-list-wrapper">
+        <div v-if="sessionStore.loading" class="text-center pa-4">
+          <v-progress-circular indeterminate size="20" width="2" color="primary" />
         </div>
 
-        <v-expand-transition>
-          <div v-show="expandedPanel === 'files'" class="file-tree-wrapper">
-            <div v-if="fileStore.treeLoading" class="text-center pa-4">
-              <v-progress-circular indeterminate size="20" width="2" color="primary" />
-            </div>
+        <v-list v-else density="compact" nav class="px-1">
+          <v-list-item v-for="s in sessionStore.sessions" :key="s.id"
+            :active="sessionStore.currentSessionId === s.id" rounded="lg" class="mb-1 session-item"
+            :class="{ 'session-item--active': sessionStore.currentSessionId === s.id }"
+            @click="selectSession(s.id)">
+            <template #prepend>
+              <v-icon size="16" color="medium-emphasis">mdi-message-text</v-icon>
+            </template>
+            <v-list-item-title class="text-body-2">
+              {{ s.title || sessionStore.sessionLabel(s) }}
+            </v-list-item-title>
+            <template #append>
+              <v-menu location="bottom end" :close-on-content-click="true">
+                <template #activator="{ props: menuProps }">
+                  <v-btn icon="mdi-dots-vertical" variant="text" size="x-small" color="medium-emphasis"
+                    v-bind="menuProps" @click.stop />
+                </template>
+                <v-list density="compact" min-width="150">
+                  <v-list-item prepend-icon="mdi-pencil" title="Rename" @click.stop="openRename(s)" />
+                  <v-list-item prepend-icon="mdi-delete-sweep" title="Clear Message"
+                    @click.stop="confirmClear(s)" />
+                  <v-list-item prepend-icon="mdi-delete" title="Delete" @click.stop="confirmDelete(s)" />
+                </v-list>
+              </v-menu>
+            </template>
+          </v-list-item>
 
-            <v-list v-else density="compact" nav class="px-1">
-              <FileTreeItem v-for="node in fileStore.treeRoots" :key="node.path" :node="node" :depth="0"
-                :current-path="currentFilePath" :selected-file-path="selectedFilePath" @navigate="goToFilePath"
-                @select-file="handleSelectFile" />
-
-              <div v-if="fileStore.treeRoots.length === 0" class="text-center pa-6">
-                <v-icon size="40" color="medium-emphasis" class="mb-2">mdi-folder-open-outline</v-icon>
-                <p class="text-caption text-medium-emphasis">No files</p>
-              </div>
-            </v-list>
+          <div v-if="sessionStore.sessions.length === 0" class="text-center pa-6">
+            <v-icon size="40" color="medium-emphasis" class="mb-2">mdi-message-text-outline</v-icon>
+            <p class="text-caption text-medium-emphasis">No sessions yet</p>
           </div>
-        </v-expand-transition>
+        </v-list>
       </div>
     </div>
 
@@ -247,18 +200,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useSessionStore } from '@/stores/sessions'
-import { useFileStore } from '@/stores/files'
-import FileTreeItem from '@/components/FileTreeItem.vue'
 import { api, type Session } from '@/api'
 
 const appStore = useAppStore()
 const sessionStore = useSessionStore()
-const fileStore = useFileStore()
-const route = useRoute()
 const router = useRouter()
 
 const deleteDialog = ref(false)
@@ -271,7 +220,6 @@ const renaming = ref(false)
 const clearDialog = ref(false)
 const clearTarget = ref<Session | null>(null)
 const clearing = ref(false)
-const expandedPanel = ref<'sessions' | 'files' | null>('sessions')
 
 function startResize(e: MouseEvent) {
   const startX = e.clientX
@@ -378,22 +326,7 @@ async function handleClear() {
 
 onMounted(() => {
   sessionStore.fetchSessions()
-  fileStore.fetchTree()
 })
-
-const currentFilePath = computed(() => (route.query.path as string) || '')
-
-const selectedFilePath = computed(() => fileStore.selectedFile)
-
-function goToFilePath(path: string) {
-  fileStore.clearSelectedFile()
-  router.push({ path: '/files', query: path ? { path } : undefined })
-}
-
-function handleSelectFile(filePath: string) {
-  const parentDir = filePath.substring(0, filePath.lastIndexOf('/'))
-  router.push({ path: '/files', query: { path: parentDir } })
-}
 </script>
 
 <style scoped>
@@ -420,7 +353,7 @@ function handleSelectFile(filePath: string) {
   filter: brightness(1.08);
 }
 
-.panel-area {
+.sessions-area {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -428,45 +361,34 @@ function handleSelectFile(filePath: string) {
   overflow: hidden;
 }
 
-.panel-section {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.panel-header {
+.sessions-header {
   user-select: none;
 }
 
-.panel-header:hover {
+.sessions-header:hover {
   background: rgba(var(--v-theme-on-surface), 0.04);
 }
 
-.panel-section :deep(.v-expand-transition) {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.panel-expanded {
-  flex: 1;
-  flex-shrink: 1;
-}
-
-.panel-collapsed {
-  flex: 0 0 auto;
-  overflow: hidden;
-}
-
-.files-panel {
-  margin-top: 8px;
-}
-
-.session-list-wrapper,
-.file-tree-wrapper {
+.session-list-wrapper {
   overflow-y: auto;
   height: 100%;
+}
+
+.session-list-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.session-list-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.session-list-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 3px;
+}
+
+.session-list-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-on-surface), 0.2);
 }
 
 .session-item {

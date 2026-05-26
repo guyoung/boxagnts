@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ChatPage-BmgDhI1m.js","assets/ChatPage-Inv32tie.css","assets/McpPage-D_FzbXlS.js","assets/McpPage-DjyTiLVM.css","assets/FilePage-Cc_sGEnW.js","assets/FilePage-DiXuUVle.css","assets/SitesPage-DKmsBsLw.js","assets/baseCrud-wwuZycIH.js","assets/SitesPage-DAdM3Ay7.css","assets/CronsPage-CkQKWDo_.js","assets/CronsPage-Cm0z54Jh.css","assets/AgentsPage-CPQjC4Ee.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-CVJ8Bzn-.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-DfOTlw2M.js","assets/ToolsPage-BLqpw-br.css","assets/SettingsModelPage-CeJwAtjg.js","assets/settings-m6tcaaQA.js","assets/SettingsSecurityPage-OaJSGUib.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/HomePage-C9PrVOaD.js","assets/HomePage-DEoilpp2.css","assets/McpPage-COyZ_UzK.js","assets/McpPage-DjyTiLVM.css","assets/SitesPage--WvwYfwK.js","assets/baseCrud-jA2AHr9e.js","assets/SitesPage-DAdM3Ay7.css","assets/CronsPage-BZF9HC6a.js","assets/CronsPage-Cm0z54Jh.css","assets/AgentsPage-ChNwkyPT.js","assets/AgentsPage-GJSgnSd7.css","assets/SkillsPage-DsAAXlJW.js","assets/SkillsPage-C8F7QxzR.css","assets/ToolsPage-CpCmzJFc.js","assets/ToolsPage-BLqpw-br.css","assets/SettingsModelPage-ByzplPj1.js","assets/settings-CkbaMNi4.js","assets/SettingsSecurityPage-CFC44puj.js"])))=>i.map(i=>d[i]);
 var _a;
 (function polyfill() {
   const relList = document.createElement("link").relList;
@@ -72,9 +72,9 @@ const isDate = (val) => toTypeString(val) === "[object Date]";
 const isFunction = (val) => typeof val === "function";
 const isString = (val) => typeof val === "string";
 const isSymbol = (val) => typeof val === "symbol";
-const isObject$1 = (val) => val !== null && typeof val === "object";
+const isObject$2 = (val) => val !== null && typeof val === "object";
 const isPromise = (val) => {
-  return (isObject$1(val) || isFunction(val)) && isFunction(val.then) && isFunction(val.catch);
+  return (isObject$2(val) || isFunction(val)) && isFunction(val.then) && isFunction(val.catch);
 };
 const objectToString = Object.prototype.toString;
 const toTypeString = (value) => objectToString.call(value);
@@ -152,7 +152,7 @@ function normalizeStyle(value) {
       }
     }
     return res;
-  } else if (isString(value) || isObject$1(value)) {
+  } else if (isString(value) || isObject$2(value)) {
     return value;
   }
 }
@@ -180,7 +180,7 @@ function normalizeClass(value) {
         res += normalized + " ";
       }
     }
-  } else if (isObject$1(value)) {
+  } else if (isObject$2(value)) {
     for (const name in value) {
       if (value[name]) {
         res += name + " ";
@@ -230,8 +230,8 @@ function looseEqual(a, b) {
   if (aValidType || bValidType) {
     return aValidType && bValidType ? looseCompareArrays(a, b) : false;
   }
-  aValidType = isObject$1(a);
-  bValidType = isObject$1(b);
+  aValidType = isObject$2(a);
+  bValidType = isObject$2(b);
   if (aValidType || bValidType) {
     if (!aValidType || !bValidType) {
       return false;
@@ -255,7 +255,7 @@ const isRef$1 = (val) => {
   return !!(val && val["__v_isRef"] === true);
 };
 const toDisplayString = (val) => {
-  return isString(val) ? val : val == null ? "" : isArray$1(val) || isObject$1(val) && (val.toString === objectToString || !isFunction(val.toString)) ? isRef$1(val) ? toDisplayString(val.value) : JSON.stringify(val, replacer, 2) : String(val);
+  return isString(val) ? val : val == null ? "" : isArray$1(val) || isObject$2(val) && (val.toString === objectToString || !isFunction(val.toString)) ? isRef$1(val) ? toDisplayString(val.value) : JSON.stringify(val, replacer, 2) : String(val);
 };
 const replacer = (_key, val) => {
   if (isRef$1(val)) {
@@ -276,7 +276,7 @@ const replacer = (_key, val) => {
     };
   } else if (isSymbol(val)) {
     return stringifySymbol(val);
-  } else if (isObject$1(val) && !isArray$1(val) && !isPlainObject$2(val)) {
+  } else if (isObject$2(val) && !isArray$1(val) && !isPlainObject$2(val)) {
     return String(val);
   }
   return val;
@@ -1169,9 +1169,9 @@ class BaseReactiveHandler {
     }
     if (/* @__PURE__ */ isRef(res)) {
       const value = targetIsArray && isIntegerKey(key) ? res : res.value;
-      return isReadonly2 && isObject$1(value) ? /* @__PURE__ */ readonly(value) : value;
+      return isReadonly2 && isObject$2(value) ? /* @__PURE__ */ readonly(value) : value;
     }
-    if (isObject$1(res)) {
+    if (isObject$2(res)) {
       return isReadonly2 ? /* @__PURE__ */ readonly(res) : /* @__PURE__ */ reactive(res);
     }
     return res;
@@ -1518,7 +1518,7 @@ function shallowReadonly(target) {
   );
 }
 function createReactiveObject(target, isReadonly2, baseHandlers, collectionHandlers, proxyMap) {
-  if (!isObject$1(target)) {
+  if (!isObject$2(target)) {
     return target;
   }
   if (target["__v_raw"] && !(isReadonly2 && target["__v_isReactive"])) {
@@ -1569,8 +1569,8 @@ function markRaw(value) {
   }
   return value;
 }
-const toReactive = (value) => isObject$1(value) ? /* @__PURE__ */ reactive(value) : value;
-const toReadonly = (value) => isObject$1(value) ? /* @__PURE__ */ readonly(value) : value;
+const toReactive = (value) => isObject$2(value) ? /* @__PURE__ */ reactive(value) : value;
+const toReadonly = (value) => isObject$2(value) ? /* @__PURE__ */ readonly(value) : value;
 // @__NO_SIDE_EFFECTS__
 function isRef(r) {
   return r ? r["__v_isRef"] === true : false;
@@ -1620,7 +1620,7 @@ class RefImpl {
 function unref(ref2) {
   return /* @__PURE__ */ isRef(ref2) ? ref2.value : ref2;
 }
-function toValue(source) {
+function toValue$1(source) {
   return isFunction(source) ? source() : unref(source);
 }
 const shallowUnwrapHandlers = {
@@ -1701,7 +1701,7 @@ function toRef(source, key, defaultValue) {
     return source;
   } else if (isFunction(source)) {
     return new GetterRefImpl(source);
-  } else if (isObject$1(source) && arguments.length > 1) {
+  } else if (isObject$2(source) && arguments.length > 1) {
     return propertyToRef(source, key, defaultValue);
   } else {
     return /* @__PURE__ */ ref(source);
@@ -1917,7 +1917,7 @@ function watch$1(source, cb, options = EMPTY_OBJ) {
   return watchHandle;
 }
 function traverse(value, depth = Infinity, seen2) {
-  if (depth <= 0 || !isObject$1(value) || value["__v_skip"]) {
+  if (depth <= 0 || !isObject$2(value) || value["__v_skip"]) {
     return value;
   }
   seen2 = seen2 || /* @__PURE__ */ new Map();
@@ -3460,7 +3460,7 @@ function renderList(source, renderItem, cache, index) {
         ret[i] = renderItem(i + 1, i, void 0, cached);
       }
     }
-  } else if (isObject$1(source)) {
+  } else if (isObject$2(source)) {
     if (source[Symbol.iterator]) {
       ret = Array.from(
         source,
@@ -3683,7 +3683,7 @@ function applyOptions(instance) {
   }
   if (dataOptions) {
     const data = dataOptions.call(publicThis, publicThis);
-    if (!isObject$1(data)) ;
+    if (!isObject$2(data)) ;
     else {
       instance.data = /* @__PURE__ */ reactive(data);
     }
@@ -3772,7 +3772,7 @@ function resolveInjections(injectOptions, ctx, checkDuplicateProperties = NOOP) 
   for (const key in injectOptions) {
     const opt = injectOptions[key];
     let injected;
-    if (isObject$1(opt)) {
+    if (isObject$2(opt)) {
       if ("default" in opt) {
         injected = inject$1(
           opt.from || key,
@@ -3817,7 +3817,7 @@ function createWatcher(raw, ctx, publicThis, key) {
     {
       watch(getter, raw.bind(publicThis));
     }
-  } else if (isObject$1(raw)) {
+  } else if (isObject$2(raw)) {
     if (isArray$1(raw)) {
       raw.forEach((r) => createWatcher(r, ctx, publicThis, key));
     } else {
@@ -3853,7 +3853,7 @@ function resolveMergedOptions(instance) {
     }
     mergeOptions$1(resolved, base, optionMergeStrategies);
   }
-  if (isObject$1(base)) {
+  if (isObject$2(base)) {
     cache.set(base, resolved);
   }
   return resolved;
@@ -3991,7 +3991,7 @@ function createAppAPI(render2, hydrate) {
     if (!isFunction(rootComponent)) {
       rootComponent = extend({}, rootComponent);
     }
-    if (rootProps != null && !isObject$1(rootProps)) {
+    if (rootProps != null && !isObject$2(rootProps)) {
       rootProps = null;
     }
     const context = createAppContext();
@@ -4170,7 +4170,7 @@ function normalizeEmitsOptions(comp, appContext, asMixin = false) {
     }
   }
   if (!raw && !hasExtends) {
-    if (isObject$1(comp)) {
+    if (isObject$2(comp)) {
       cache.set(comp, null);
     }
     return null;
@@ -4180,7 +4180,7 @@ function normalizeEmitsOptions(comp, appContext, asMixin = false) {
   } else {
     extend(normalized, raw);
   }
-  if (isObject$1(comp)) {
+  if (isObject$2(comp)) {
     cache.set(comp, normalized);
   }
   return normalized;
@@ -4373,7 +4373,7 @@ function hasPropsChanged(prevProps, nextProps, emitsOptions) {
 function hasPropValueChanged(nextProps, prevProps, key) {
   const nextProp = nextProps[key];
   const prevProp = prevProps[key];
-  if (key === "style" && isObject$1(nextProp) && isObject$1(prevProp)) {
+  if (key === "style" && isObject$2(nextProp) && isObject$2(prevProp)) {
     return !looseEqual(nextProp, prevProp);
   }
   return nextProp !== prevProp;
@@ -4621,7 +4621,7 @@ function normalizePropsOptions(comp, appContext, asMixin = false) {
     }
   }
   if (!raw && !hasExtends) {
-    if (isObject$1(comp)) {
+    if (isObject$2(comp)) {
       cache.set(comp, EMPTY_ARR);
     }
     return EMPTY_ARR;
@@ -4671,7 +4671,7 @@ function normalizePropsOptions(comp, appContext, asMixin = false) {
     }
   }
   const res = [normalized, needCastKeys];
-  if (isObject$1(comp)) {
+  if (isObject$2(comp)) {
     cache.set(comp, res);
   }
   return res;
@@ -6307,14 +6307,14 @@ function _createVNode(type, props = null, children = null, patchFlag = 0, dynami
     if (klass && !isString(klass)) {
       props.class = normalizeClass(klass);
     }
-    if (isObject$1(style)) {
+    if (isObject$2(style)) {
       if (/* @__PURE__ */ isProxy(style) && !isArray$1(style)) {
         style = extend({}, style);
       }
       props.style = normalizeStyle(style);
     }
   }
-  const shapeFlag = isString(type) ? 1 : isSuspense(type) ? 128 : isTeleport(type) ? 64 : isObject$1(type) ? 4 : isFunction(type) ? 2 : 0;
+  const shapeFlag = isString(type) ? 1 : isSuspense(type) ? 128 : isTeleport(type) ? 64 : isObject$2(type) ? 4 : isFunction(type) ? 2 : 0;
   return createBaseVNode(
     type,
     props,
@@ -6680,7 +6680,7 @@ function handleSetupResult(instance, setupResult, isSSR) {
     } else {
       instance.render = setupResult;
     }
-  } else if (isObject$1(setupResult)) {
+  } else if (isObject$2(setupResult)) {
     instance.setupState = proxyRefs(setupResult);
   } else ;
   finishComponentSetup(instance);
@@ -6777,7 +6777,7 @@ function h(type, propsOrChildren, children) {
     setBlockTracking(-1);
     const l = arguments.length;
     if (l === 2) {
-      if (isObject$1(propsOrChildren) && !isArray$1(propsOrChildren)) {
+      if (isObject$2(propsOrChildren) && !isArray$1(propsOrChildren)) {
         if (isVNode(propsOrChildren)) {
           return createVNode(type, null, [propsOrChildren]);
         }
@@ -7043,7 +7043,7 @@ function resolveTransitionProps(rawProps) {
 function normalizeDuration(duration) {
   if (duration == null) {
     return null;
-  } else if (isObject$1(duration)) {
+  } else if (isObject$2(duration)) {
     return [NumberOf(duration.enter), NumberOf(duration.leave)];
   } else {
     const n = NumberOf(duration);
@@ -7901,9 +7901,9 @@ function createPinia() {
   });
   return pinia;
 }
-const noop$2 = () => {
+const noop$3 = () => {
 };
-function addSubscription(subscriptions, callback, detached, onCleanup = noop$2) {
+function addSubscription(subscriptions, callback, detached, onCleanup = noop$3) {
   subscriptions.push(callback);
   const removeSubscription = () => {
     const idx = subscriptions.indexOf(callback);
@@ -8030,7 +8030,7 @@ function createSetupStore($id, setup, options = {}, pinia, hot, isOptionsStore) 
     });
   } : (
     /* istanbul ignore next */
-    noop$2
+    noop$3
   );
   function $dispose() {
     scope.stop();
@@ -8278,7 +8278,7 @@ function convertToUnit(str) {
     return `${num}${unit}`;
   }
 }
-function isObject(obj) {
+function isObject$1(obj) {
   return obj !== null && typeof obj === "object" && !Array.isArray(obj);
 }
 function isPlainObject(obj) {
@@ -8598,7 +8598,7 @@ function focusChild(el, location2, options) {
 function isEmpty(val) {
   return val === null || val === void 0 || typeof val === "string" && val.trim() === "";
 }
-function noop$1() {
+function noop$2() {
 }
 function matchesSelector(el, selector) {
   const supportsSelector = IN_BROWSER && typeof CSS !== "undefined" && typeof CSS.supports !== "undefined" && CSS.supports(`selector(${selector})`);
@@ -9775,7 +9775,7 @@ const useIcon = (props) => {
   if (!icons) throw new Error("Missing Vuetify Icons provide!");
   const iconData = computed(() => {
     var _a2;
-    const iconAlias = toValue(props);
+    const iconAlias = toValue$1(props);
     if (!iconAlias) return {
       component: VComponentIcon
     };
@@ -12898,7 +12898,7 @@ function useTextColor(color) {
     colorClasses: textColorClasses,
     colorStyles: textColorStyles
   } = useColor(() => ({
-    text: toValue(color)
+    text: toValue$1(color)
   }));
   return {
     textColorClasses,
@@ -12910,7 +12910,7 @@ function useBackgroundColor(color) {
     colorClasses: backgroundColorClasses,
     colorStyles: backgroundColorStyles
   } = useColor(() => ({
-    background: toValue(color)
+    background: toValue$1(color)
   }));
   return {
     backgroundColorClasses,
@@ -12924,7 +12924,7 @@ function normalizeColors(colors2) {
   };
 }
 function computeColor(colors2) {
-  const _colors = normalizeColors(toValue(colors2));
+  const _colors = normalizeColors(toValue$1(colors2));
   const classes = [];
   const styles = {};
   if (_colors.background) {
@@ -13003,9 +13003,9 @@ const MaybeTransition = (props, _ref) => {
   const {
     component = group ? TransitionGroup : Transition,
     ...customProps
-  } = isObject(transition) ? transition : {};
+  } = isObject$1(transition) ? transition : {};
   let transitionProps;
-  if (isObject(transition)) {
+  if (isObject$1(transition)) {
     transitionProps = mergeProps(customProps, onlyDefinedProps({
       disabled,
       group
@@ -13939,7 +13939,7 @@ function useVariant(props) {
   const variantClasses = /* @__PURE__ */ toRef(() => {
     const {
       variant
-    } = toValue(props);
+    } = toValue$1(props);
     return `${name}--variant-${variant}`;
   });
   const {
@@ -13949,7 +13949,7 @@ function useVariant(props) {
     const {
       variant,
       color
-    } = toValue(props);
+    } = toValue$1(props);
     return {
       [["elevated", "flat"].includes(variant) ? "background" : "text"]: color
     };
@@ -14569,7 +14569,7 @@ const makeChunksProps = propsFactory({
 function useChunks(props, containerWidth) {
   const hasChunks = /* @__PURE__ */ toRef(() => !!props.chunkCount || !!props.chunkWidth);
   const chunkWidth = computed(() => {
-    const containerSize = toValue(containerWidth);
+    const containerSize = toValue$1(containerWidth);
     if (!containerSize) {
       return 0;
     }
@@ -14594,7 +14594,7 @@ function useChunks(props, containerWidth) {
     };
   });
   function snapValueToChunk(val) {
-    const containerSize = toValue(containerWidth);
+    const containerSize = toValue$1(containerWidth);
     if (!containerSize) {
       return val;
     }
@@ -15192,7 +15192,7 @@ function updateRipple(el, binding, wasEnabled) {
   el._ripple.enabled = enabled;
   el._ripple.centered = modifiers.center;
   el._ripple.circle = modifiers.circle;
-  const bindingValue = isObject(value) ? value : {};
+  const bindingValue = isObject$1(value) ? value : {};
   if (bindingValue.class) {
     el._ripple.class = bindingValue.class;
   }
@@ -18322,7 +18322,7 @@ const useNested = (props, _ref) => {
       parents.value = new Map(parents.value);
     });
   }, 100);
-  watch(() => [items.value, toValue(returnObject)], () => {
+  watch(() => [items.value, toValue$1(returnObject)], () => {
     if (props.itemsRegistration === "props") {
       updateInternalMaps();
     }
@@ -18333,7 +18333,7 @@ const useNested = (props, _ref) => {
     const _parents = /* @__PURE__ */ new Map();
     const _children = /* @__PURE__ */ new Map();
     const _disabled = /* @__PURE__ */ new Set();
-    const getValue = toValue(returnObject) ? (item) => /* @__PURE__ */ toRaw(item.raw) : (item) => item.value;
+    const getValue = toValue$1(returnObject) ? (item) => /* @__PURE__ */ toRaw(item.raw) : (item) => item.value;
     const stack2 = [...items.value];
     let i = 0;
     while (i < stack2.length) {
@@ -18362,7 +18362,7 @@ const useNested = (props, _ref) => {
     root: {
       opened,
       activatable: /* @__PURE__ */ toRef(() => props.activatable),
-      scrollToActive: /* @__PURE__ */ toRef(() => toValue(scrollToActive)),
+      scrollToActive: /* @__PURE__ */ toRef(() => toValue$1(scrollToActive)),
       selectable: /* @__PURE__ */ toRef(() => props.selectable),
       activated,
       selected,
@@ -18506,7 +18506,7 @@ const useNestedItem = (id, isDisabled, isGroup) => {
   const parent = inject$1(VNestedSymbol, emptyNested);
   const uidSymbol = Symbol("nested item");
   const computedId = computed(() => {
-    const idValue = /* @__PURE__ */ toRaw(toValue(id));
+    const idValue = /* @__PURE__ */ toRaw(toValue$1(id));
     return idValue !== void 0 ? idValue : uidSymbol;
   });
   const item = {
@@ -18528,7 +18528,7 @@ const useNestedItem = (id, isDisabled, isGroup) => {
   onBeforeMount(() => {
     if (parent.isGroupActivator || parent.root.itemsRegistration.value === "props") return;
     nextTick(() => {
-      parent.root.register(computedId.value, parent.id.value, toValue(isDisabled), isGroup);
+      parent.root.register(computedId.value, parent.id.value, toValue$1(isDisabled), isGroup);
     });
   });
   onBeforeUnmount(() => {
@@ -18539,10 +18539,10 @@ const useNestedItem = (id, isDisabled, isGroup) => {
     if (parent.isGroupActivator || parent.root.itemsRegistration.value === "props") return;
     parent.root.unregister(oldVal);
     nextTick(() => {
-      parent.root.register(val, parent.id.value, toValue(isDisabled), isGroup);
+      parent.root.register(val, parent.id.value, toValue$1(isDisabled), isGroup);
     });
   });
-  watch(() => toValue(isDisabled), (val) => {
+  watch(() => toValue$1(isDisabled), (val) => {
     parent.root.updateDisabled(computedId.value, val);
   });
   isGroup && provide(VNestedSymbol, item);
@@ -20621,7 +20621,7 @@ function useFocusTrap(props, _ref2) {
     document.removeEventListener("keydown", captureOnKeydown);
     await nextTick();
     if (isActive.value && !focusTrapSuppressed && before !== after && contentEl.value && // We're the menu without open submenus or overlays
-    toValue(localTop) && // It isn't the document or the container body
+    toValue$1(localTop) && // It isn't the document or the container body
     ![document, contentEl.value].includes(after) && // It isn't inside the container body
     !contentEl.value.contains(after)) {
       const focusable = focusableChildren(contentEl.value);
@@ -20736,11 +20736,11 @@ function useStack(isActive, zIndex, disableGlobalStack) {
     activeChildren: /* @__PURE__ */ new Set()
   });
   provide(StackSymbol, stack2);
-  const _zIndex = /* @__PURE__ */ shallowRef(Number(toValue(zIndex)));
+  const _zIndex = /* @__PURE__ */ shallowRef(Number(toValue$1(zIndex)));
   useToggleScope(isActive, () => {
     var _a2;
     const lastZIndex = (_a2 = globalStack.at(-1)) == null ? void 0 : _a2[1];
-    _zIndex.value = lastZIndex ? lastZIndex + 10 : Number(toValue(zIndex));
+    _zIndex.value = lastZIndex ? lastZIndex + 10 : Number(toValue$1(zIndex));
     if (createStackEntry) {
       globalStack.push([vm.uid, _zIndex.value]);
     }
@@ -21012,7 +21012,7 @@ const VOverlay = genericComponent()({
       isActive,
       updateLocation
     });
-    function onClickOutside(e) {
+    function onClickOutside2(e) {
       emit2("click:outside", e);
       if (!props.persistent) isActive.value = false;
       else animateClick();
@@ -21143,7 +21143,7 @@ const VOverlay = genericComponent()({
             }, contentEvents.value, props.contentProps), [(_a3 = slots.default) == null ? void 0 : _a3.call(slots, {
               isActive
             })]), [[vShow, isActive.value], [ClickOutside, {
-              handler: onClickOutside,
+              handler: onClickOutside2,
               closeConditional,
               include: () => [activatorEl.value]
             }]])];
@@ -21229,7 +21229,7 @@ const VMenu = genericComponent()({
     }, {
       immediate: true
     });
-    function onClickOutside(e) {
+    function onClickOutside2(e) {
       parent == null ? void 0 : parent.closeParents(e);
     }
     function onKeydown2(e) {
@@ -21295,7 +21295,7 @@ const VMenu = genericComponent()({
         "absolute": true,
         "activatorProps": activatorProps.value,
         "location": props.location ?? (props.submenu ? "end" : "bottom"),
-        "onClick:outside": onClickOutside,
+        "onClick:outside": onClickOutside2,
         "onKeydown": onKeydown2
       }, scopeId), {
         activator: slots.activator,
@@ -22491,7 +22491,7 @@ function useFocusGroups(_ref) {
       e.preventDefault();
       e.stopImmediatePropagation();
       const nextGroup = groups[nextIndex];
-      if (nextGroup.type === "list" && toValue(nextGroup.displayItemsCount) > 0) {
+      if (nextGroup.type === "list" && toValue$1(nextGroup.displayItemsCount) > 0) {
         (_a2 = nextGroup.contentRef.value) == null ? void 0 : _a2.focus(0);
       } else {
         const fromBefore = direction === "forward";
@@ -22509,7 +22509,7 @@ function useFocusGroups(_ref) {
     const step = direction === "forward" ? 1 : -1;
     for (let i = currentIndex + step; i >= 0 && i < groups.length; i += step) {
       const group = groups[i];
-      if (children[i].length > 0 || group.type === "list" && toValue(group.displayItemsCount) > 0) {
+      if (children[i].length > 0 || group.type === "list" && toValue$1(group.displayItemsCount) > 0) {
         return i;
       }
     }
@@ -22685,7 +22685,7 @@ const makeMenuActivatorProps = propsFactory({
 function useMenuActivator(props, isOpen) {
   const uid2 = useId();
   const menuId = computed(() => `menu-${uid2}`);
-  const ariaExpanded = /* @__PURE__ */ toRef(() => toValue(isOpen));
+  const ariaExpanded = /* @__PURE__ */ toRef(() => toValue$1(isOpen));
   const ariaControls = /* @__PURE__ */ toRef(() => menuId.value);
   return {
     menuId,
@@ -23822,7 +23822,7 @@ const VAutocomplete = genericComponent()({
             "color": (_b = vTextFieldRef.value) == null ? void 0 : _b.fieldIconColor,
             "icon": props.menuIcon,
             "onMousedown": onMousedownMenuIcon,
-            "onClick": noop$1,
+            "onClick": noop$2,
             "aria-hidden": true,
             "tabindex": "-1"
           }, null) : void 0, props.appendInnerIcon && createVNode(InputIcon, {
@@ -25677,7 +25677,7 @@ const VCalendarDaily = defineComponent({
         "activeColor": props.color,
         "variant": "outlined",
         "baseVariant": "text",
-        "onUpdate:active": noop$1
+        "onUpdate:active": noop$2
       }, events), {
         default: () => [base.dayFormatter.value(day, false)]
       });
@@ -26074,7 +26074,7 @@ const VCalendarWeekly = defineComponent({
         "activeColor": props.color,
         "variant": "outlined",
         "baseVariant": "text",
-        "onUpdate:active": noop$1
+        "onUpdate:active": noop$2
       }, events), {
         default: () => [hasMonth ? monthFormatter.value(day, props.shortMonths) + " " + base.dayFormatter.value(day, false) : base.dayFormatter.value(day, false)]
       });
@@ -30768,7 +30768,7 @@ const VCombobox = genericComponent()({
             "color": (_b = vTextFieldRef.value) == null ? void 0 : _b.fieldIconColor,
             "icon": props.menuIcon,
             "onMousedown": onMousedownMenuIcon,
-            "onClick": noop$1,
+            "onClick": noop$2,
             "aria-hidden": true,
             "tabindex": "-1"
           }, null) : void 0, props.appendInnerIcon && createVNode(InputIcon, {
@@ -31060,11 +31060,11 @@ function flattenItems(items, opened, hasSummary) {
 function useGroupedItems(items, groupBy, opened, hasSummary) {
   const groups = computed(() => {
     if (!groupBy.value.length) return [];
-    return groupItems(toValue(items), groupBy.value.map((item) => item.key));
+    return groupItems(toValue$1(items), groupBy.value.map((item) => item.key));
   });
   const flatItems = computed(() => {
-    if (!groupBy.value.length) return toValue(items);
-    return flattenItems(groups.value, opened.value, toValue(hasSummary));
+    if (!groupBy.value.length) return toValue$1(items);
+    return flattenItems(groups.value, opened.value, toValue$1(hasSummary));
   });
   return {
     groups,
@@ -31188,8 +31188,8 @@ function usePaginatedItems(options) {
     itemsPerPage
   } = options;
   const paginatedItems = computed(() => {
-    if (itemsPerPage.value <= 0) return toValue(items);
-    return toValue(items).slice(startIndex.value, stopIndex.value);
+    if (itemsPerPage.value <= 0) return toValue$1(items);
+    return toValue$1(items).slice(startIndex.value, stopIndex.value);
   });
   watch(paginatedItems, (val) => {
     vm.emit("update:currentItems", val);
@@ -31206,7 +31206,7 @@ function usePaginatedGroups(options) {
     paginate,
     group
   } = options;
-  const pageBy = toValue(options.pageBy);
+  const pageBy = toValue$1(options.pageBy);
   if (pageBy === "item") {
     const {
       paginatedItems,
@@ -31377,7 +31377,7 @@ function provideSelection(props, _ref9) {
     return [...v.values()];
   });
   const allSelectable = computed(() => allItems.value.filter((item) => item.selectable));
-  const currentPageSelectable = computed(() => toValue(currentPage).filter((item) => item.selectable));
+  const currentPageSelectable = computed(() => toValue$1(currentPage).filter((item) => item.selectable));
   const selectStrategy = computed(() => {
     if (typeof props.selectStrategy === "object") return props.selectStrategy;
     switch (props.selectStrategy) {
@@ -31407,7 +31407,7 @@ function provideSelection(props, _ref9) {
   }
   function toggleSelect(item, index, event) {
     const items = [];
-    const pageItems = toValue(currentPage);
+    const pageItems = toValue$1(currentPage);
     index = index ?? pageItems.findIndex((i) => i.value === item.value);
     if (props.selectStrategy !== "single" && (event == null ? void 0 : event.shiftKey) && lastSelectedIndex.value !== null) {
       const [start, end] = [lastSelectedIndex.value, index].sort((a, b) => a - b);
@@ -31487,7 +31487,7 @@ function createSort(props) {
   };
 }
 function resolveMultiSort(multiSort, event) {
-  if (!isObject(multiSort)) {
+  if (!isObject$1(multiSort)) {
     return {
       active: !!multiSort
     };
@@ -33575,7 +33575,7 @@ const VDataTable = genericComponent()({
       pageBy,
       sortedItems,
       paginate: (items2) => {
-        const itemsLength = computed(() => toValue(items2).length);
+        const itemsLength = computed(() => toValue$1(items2).length);
         const {
           startIndex,
           stopIndex,
@@ -41313,7 +41313,7 @@ const VTabsWindowItem = genericComponent()({
 function parseItems(items) {
   if (!items) return [];
   return items.map((item) => {
-    if (!isObject(item)) return {
+    if (!isObject$1(item)) return {
       text: item,
       value: item
     };
@@ -43932,7 +43932,7 @@ function mountComponent(component, props) {
     var _a2, _b, _c;
     const _props = typeof props === "function" ? props(binding) : props;
     const text = ((_a2 = binding.value) == null ? void 0 : _a2.text) ?? binding.value ?? (_props == null ? void 0 : _props.text);
-    const value = isObject(binding.value) ? binding.value : {};
+    const value = isObject$1(binding.value) ? binding.value : {};
     const children = () => text ?? el.textContent;
     const provides = (vnode.ctx === binding.instance.$ ? (_b = findComponentParent(vnode, binding.instance.$)) == null ? void 0 : _b.provides : (_c = vnode.ctx) == null ? void 0 : _c.provides) ?? binding.instance.$.provides;
     const node = h(component, mergeProps(_props, value), children);
@@ -43980,7 +43980,7 @@ function findComponentParent(vnode, root) {
 }
 const Tooltip = useDirectiveComponent(VTooltip, (binding) => {
   var _a2;
-  const disabled = isObject(binding.value) ? !binding.value.text : ["", false, null].includes(binding.value);
+  const disabled = isObject$1(binding.value) ? !binding.value.text : ["", false, null].includes(binding.value);
   return {
     activator: disabled ? null : "parent",
     location: (_a2 = binding.arg) == null ? void 0 : _a2.replace("-", " "),
@@ -44019,7 +44019,7 @@ function applyToParams(fn, params) {
   }
   return newParams;
 }
-const noop = () => {
+const noop$1 = () => {
 };
 const isArray = Array.isArray;
 function mergeOptions(defaults, partialOptions) {
@@ -44881,7 +44881,7 @@ function createRouterMatcher(routes, globalOptions) {
     }
     return originalMatcher ? () => {
       removeRoute(originalMatcher);
-    } : noop;
+    } : noop$1;
   }
   function removeRoute(matcherRef) {
     if (isRouteName(matcherRef)) {
@@ -45050,7 +45050,7 @@ function useLink(props) {
   const isExactActive = computed(() => activeRecordIndex.value > -1 && activeRecordIndex.value === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.value.params));
   function navigate(e = {}) {
     if (guardEvent(e)) {
-      const p2 = router2[unref(props.replace) ? "replace" : "push"](unref(props.to)).catch(noop);
+      const p2 = router2[unref(props.replace) ? "replace" : "push"](unref(props.to)).catch(noop$1);
       if (props.viewTransition && typeof document !== "undefined" && "startViewTransition" in document) document.startViewTransition(() => p2);
       return p2;
     }
@@ -45412,7 +45412,7 @@ function createRouter(options) {
         pushWithRedirect(assign(shouldRedirect, {
           replace: true,
           force: true
-        }), toLocation).catch(noop);
+        }), toLocation).catch(noop$1);
         return;
       }
       pendingLocation = toLocation;
@@ -45423,7 +45423,7 @@ function createRouter(options) {
         if (isNavigationFailure(error, ErrorTypes.NAVIGATION_GUARD_REDIRECT)) {
           pushWithRedirect(assign(locationAsObject(error.to), { force: true }), toLocation).then((failure) => {
             if (isNavigationFailure(failure, ErrorTypes.NAVIGATION_ABORTED | ErrorTypes.NAVIGATION_DUPLICATED) && !info.delta && info.type === NavigationType.pop) routerHistory.go(-1, false);
-          }).catch(noop);
+          }).catch(noop$1);
           return Promise.reject();
         }
         if (info.delta) routerHistory.go(-info.delta, false);
@@ -45435,7 +45435,7 @@ function createRouter(options) {
           else if (info.type === NavigationType.pop && isNavigationFailure(failure, ErrorTypes.NAVIGATION_ABORTED | ErrorTypes.NAVIGATION_DUPLICATED)) routerHistory.go(-1, false);
         }
         triggerAfterEach(toLocation, from, failure);
-      }).catch(noop);
+      }).catch(noop$1);
     });
   }
   let readyHandlers = useCallbacks();
@@ -45544,9 +45544,11 @@ function useRoute(_name) {
 }
 const useAppStore = /* @__PURE__ */ defineStore("app", () => {
   const sidebarCollapsed = /* @__PURE__ */ ref(false);
+  const rightSidebarCollapsed = /* @__PURE__ */ ref(false);
   const sidebarWidth = /* @__PURE__ */ ref(280);
   const theme = /* @__PURE__ */ ref("dark");
   const searchQuery = /* @__PURE__ */ ref("");
+  const currentProject = /* @__PURE__ */ ref(null);
   const snackbar = /* @__PURE__ */ ref({
     show: false,
     message: "",
@@ -45556,6 +45558,9 @@ const useAppStore = /* @__PURE__ */ defineStore("app", () => {
   const isDark = computed(() => theme.value === "dark");
   function toggleSidebar() {
     sidebarCollapsed.value = !sidebarCollapsed.value;
+  }
+  function toggleRightSidebar() {
+    rightSidebarCollapsed.value = !rightSidebarCollapsed.value;
   }
   function setSidebarWidth(w) {
     sidebarWidth.value = Math.min(500, Math.max(200, w));
@@ -45569,18 +45574,25 @@ const useAppStore = /* @__PURE__ */ defineStore("app", () => {
   function hideSnackbar() {
     snackbar.value.show = false;
   }
+  function setCurrentProject(project) {
+    currentProject.value = project;
+  }
   return {
     sidebarCollapsed,
+    rightSidebarCollapsed,
     sidebarWidth,
     theme,
     searchQuery,
+    currentProject,
     snackbar,
     isDark,
     toggleSidebar,
+    toggleRightSidebar,
     setSidebarWidth,
     toggleTheme,
     showMessage,
-    hideSnackbar
+    hideSnackbar,
+    setCurrentProject
   };
 });
 function resolvePlaceholders(endpoint, params) {
@@ -45718,7 +45730,7 @@ function mapCommandToEndpoint(command, _params) {
 async function handleStreamingCommand(command, params) {
   return new Promise((resolve2, reject) => {
     const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${wsProtocol}//${window.location.host}/dashboard/ws`;
+    const wsUrl = `${wsProtocol}//${window.location.host}/dashboard/chat_ws`;
     const ws = new WebSocket(wsUrl);
     ws.onopen = () => {
       const request2 = {
@@ -45940,8 +45952,8 @@ const api = {
     await delay(200);
     try {
       const res = await apiCall("get_root_sub_folders");
-      if (res && res.data && Array.isArray(res.data.folders)) {
-        return res.data.folders;
+      if (res && res.data && Array.isArray(res.data.items)) {
+        return res.data.items;
       }
       return [];
     } catch {
@@ -46249,509 +46261,26 @@ const useSessionStore = /* @__PURE__ */ defineStore("session", () => {
     deleteSession
   };
 });
-const API_BASE_URL = "/dashboard/api";
-async function parseResponse(response) {
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    return response.json();
-  }
-  return response.blob();
-}
-async function request(url, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${url}`, options);
-  const data = await parseResponse(response);
-  if (!response.ok) {
-    const message = typeof data === "object" && data !== null && "message" in data && typeof data.message === "string" ? data.message : `Request failed with status ${response.status}`;
-    const error = new Error(message);
-    error.status = response.status;
-    error.data = data;
-    throw error;
-  }
-  return data;
-}
-function buildQuery(params) {
-  const searchParams = new URLSearchParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== void 0 && value !== null && value !== "") {
-      searchParams.set(key, value);
-    }
-  });
-  const queryString = searchParams.toString();
-  return queryString ? `?${queryString}` : "";
-}
-async function listFiles(path = "") {
-  return request(`/files${buildQuery({ path })}`, {
-    method: "GET"
-  });
-}
-async function createDirectory(path = "", name) {
-  return request("/files/mkdir", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      path,
-      name
-    })
-  });
-}
-async function uploadFiles(path = "", files = []) {
-  const formData = new FormData();
-  for (const file of files) {
-    formData.append("file", file);
-  }
-  return request(`/files/upload${buildQuery({ path })}`, {
-    method: "POST",
-    body: formData
-  });
-}
-async function deleteFile(path) {
-  return request("/files/delete", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      path
-    })
-  });
-}
-async function renameFile(path, newName) {
-  return request("/files/rename", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      path,
-      new_name: newName
-    })
-  });
-}
-async function downloadFile(path) {
-  const response = await fetch(`${API_BASE_URL}/files/download${buildQuery({ path })}`, {
-    method: "GET"
-  });
-  if (!response.ok) {
-    const contentType = response.headers.get("content-type") || "";
-    let errorData = null;
-    if (contentType.includes("application/json")) {
-      errorData = await response.json();
-    }
-    const message = typeof errorData === "object" && errorData !== null && "message" in errorData && typeof errorData.message === "string" ? errorData.message : `Download failed with status ${response.status}`;
-    const error = new Error(message);
-    error.status = response.status;
-    error.data = errorData;
-    throw error;
-  }
-  const blob = await response.blob();
-  const contentDisposition = response.headers.get("content-disposition") || "";
-  let fileName = "download.bin";
-  const match = contentDisposition.match(/filename="(.+?)"/);
-  if (match && match[1]) {
-    fileName = match[1];
-  }
-  return {
-    blob,
-    fileName
-  };
-}
-function saveBlob(blob, fileName) {
-  const objectUrl = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = objectUrl;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(objectUrl);
-}
-const fileApi = {
-  listFiles,
-  createDirectory,
-  uploadFiles,
-  deleteFile,
-  renameFile,
-  downloadFile,
-  saveBlob
-};
-const useFileStore = /* @__PURE__ */ defineStore("files", () => {
-  const treeRoots = /* @__PURE__ */ ref([]);
-  const treeLoading = /* @__PURE__ */ ref(false);
-  const currentPath = /* @__PURE__ */ ref("");
-  const items = /* @__PURE__ */ ref([]);
-  const loading = /* @__PURE__ */ ref(false);
-  const selectedFile = /* @__PURE__ */ ref(null);
-  function sortItems2(list) {
-    return [...list].sort((a, b) => {
-      if (a.is_dir !== b.is_dir) return a.is_dir ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
-  }
-  function buildTreeNode(item) {
-    return {
-      name: item.name,
-      path: item.path,
-      is_dir: item.is_dir,
-      children: [],
-      expanded: false,
-      loading: false,
-      loaded: false
-    };
-  }
-  function fetchTree() {
-    treeRoots.value = [{
-      name: "root",
-      path: "",
-      is_dir: true,
-      children: [],
-      expanded: false,
-      loading: false,
-      loaded: false
-    }];
-  }
-  async function toggleTreeNode(node) {
-    var _a2;
-    if (!node.is_dir) {
-      return;
-    }
-    if (node.expanded) {
-      node.expanded = false;
-      return;
-    }
-    node.expanded = true;
-    if (!node.loaded) {
-      node.loading = true;
-      try {
-        const res = await fileApi.listFiles(node.path);
-        const fetched = ((_a2 = res.data) == null ? void 0 : _a2.items) || [];
-        node.children = sortItems2(fetched).map(buildTreeNode);
-        node.loaded = true;
-      } catch (e) {
-        console.error("Failed to fetch tree children:", e);
-      } finally {
-        node.loading = false;
-      }
-    }
-  }
-  function collapseAllNodes(nodes) {
-    for (const n of nodes) {
-      n.expanded = false;
-      if (n.children.length) collapseAllNodes(n.children);
-    }
-  }
-  function onTreeItemClick(node) {
-    if (node.is_dir) {
-      toggleTreeNode(node);
-    }
-  }
-  function setCurrentPath(path) {
-    currentPath.value = path;
-  }
-  function selectFile(path) {
-    selectedFile.value = path;
-  }
-  function clearSelectedFile() {
-    selectedFile.value = null;
-  }
-  function expandAll() {
-    function expand(nodes) {
-      for (const n of nodes) {
-        if (!n.is_dir) continue;
-        n.expanded = true;
-        if (!n.loaded) {
-          n.loading = true;
-          fileApi.listFiles(n.path).then((res) => {
-            var _a2;
-            n.children = sortItems2(((_a2 = res.data) == null ? void 0 : _a2.items) || []).map(buildTreeNode);
-            n.loaded = true;
-            n.loading = false;
-            expand(n.children);
-          }).catch(() => {
-            n.loading = false;
-          });
-        } else {
-          expand(n.children);
-        }
-      }
-    }
-    expand(treeRoots.value);
-  }
-  function collapseAll() {
-    collapseAllNodes(treeRoots.value);
-  }
-  async function fetchCurrentItems() {
-    var _a2;
-    loading.value = true;
-    try {
-      const res = await fileApi.listFiles(currentPath.value);
-      items.value = sortItems2(((_a2 = res.data) == null ? void 0 : _a2.items) || []);
-    } catch (e) {
-      console.error("Failed to fetch files:", e);
-      items.value = [];
-    } finally {
-      loading.value = false;
-    }
-  }
-  async function createDirectory2(name) {
-    await fileApi.createDirectory(currentPath.value, name);
-    await fetchCurrentItems();
-    invalidateTreeForPath(currentPath.value);
-  }
-  async function uploadFiles2(files) {
-    if (!files.length) return;
-    await fileApi.uploadFiles(currentPath.value, files);
-    await fetchCurrentItems();
-    invalidateTreeForPath(currentPath.value);
-  }
-  async function deleteItem(itemPath) {
-    await fileApi.deleteFile(itemPath);
-    await fetchCurrentItems();
-    invalidateTreeForPath(currentPath.value);
-    const parentPath = itemPath.substring(0, itemPath.lastIndexOf("/"));
-    if (parentPath !== currentPath.value) {
-      invalidateTreeForPath(parentPath);
-    }
-  }
-  async function renameItem(oldPath, newName) {
-    await fileApi.renameFile(oldPath, newName);
-    await fetchCurrentItems();
-    invalidateTreeForPath(currentPath.value);
-  }
-  async function downloadItem(itemPath) {
-    const result = await fileApi.downloadFile(itemPath);
-    fileApi.saveBlob(result.blob, result.fileName);
-  }
-  function invalidateTreeForPath(path) {
-    function invalidateNodes(nodes) {
-      for (const n of nodes) {
-        if (n.path === path) {
-          n.loaded = false;
-          n.children = [];
-          if (n.expanded) {
-            n.loading = true;
-            fileApi.listFiles(path).then((res) => {
-              var _a2;
-              n.children = sortItems2(((_a2 = res.data) == null ? void 0 : _a2.items) || []).map(buildTreeNode);
-              n.loaded = true;
-              n.loading = false;
-            }).catch(() => {
-              n.loading = false;
-            });
-          }
-          return true;
-        }
-        if (n.children.length && invalidateNodes(n.children)) return true;
-      }
-      return false;
-    }
-    invalidateNodes(treeRoots.value);
-  }
-  async function saveFileContent(filePath, content) {
-    const blob = new Blob([content], { type: "text/plain" });
-    const fileName = filePath.split("/").pop() || "file.txt";
-    const parentDir = filePath.substring(0, filePath.lastIndexOf("/"));
-    const file = new File([blob], fileName, { type: "text/plain" });
-    await fileApi.uploadFiles(parentDir, [file]);
-    if (currentPath.value === parentDir) {
-      await fetchCurrentItems();
-    }
-    invalidateTreeForPath(parentDir);
-    if (parentDir !== currentPath.value && currentPath.value && !currentPath.value.startsWith(parentDir)) {
-      invalidateTreeForPath(currentPath.value);
-    }
-  }
-  return {
-    treeRoots,
-    treeLoading,
-    currentPath,
-    items,
-    loading,
-    selectedFile,
-    fetchTree,
-    toggleTreeNode,
-    collapseAllNodes,
-    onTreeItemClick,
-    setCurrentPath,
-    selectFile,
-    clearSelectedFile,
-    expandAll,
-    collapseAll,
-    fetchCurrentItems,
-    createDirectory: createDirectory2,
-    uploadFiles: uploadFiles2,
-    deleteItem,
-    renameItem,
-    downloadItem,
-    saveFileContent,
-    refresh: fetchCurrentItems,
-    refreshTree: fetchTree
-  };
-});
-const _hoisted_1$1 = { class: "tree-node" };
-const _sfc_main$2 = /* @__PURE__ */ defineComponent$1({
-  __name: "FileTreeItem",
-  props: {
-    node: {},
-    depth: {},
-    currentPath: {},
-    selectedFilePath: {}
-  },
-  emits: ["navigate", "selectFile"],
-  setup(__props, { emit: __emit }) {
-    const props = __props;
-    const emit2 = __emit;
-    const fileStore = useFileStore();
-    const active = computed(() => props.currentPath === props.node.path);
-    const fileActive = computed(() => !props.node.is_dir && props.selectedFilePath === props.node.path);
-    const fileTypeIcons = {
-      ".ts": "mdi-language-typescript",
-      ".tsx": "mdi-react",
-      ".js": "mdi-language-javascript",
-      ".jsx": "mdi-react",
-      ".vue": "mdi-vuejs",
-      ".css": "mdi-language-css3",
-      ".scss": "mdi-sass",
-      ".html": "mdi-language-html5",
-      ".json": "mdi-code-json",
-      ".md": "mdi-language-markdown",
-      ".py": "mdi-language-python",
-      ".rs": "mdi-language-rust",
-      ".go": "mdi-language-go",
-      ".java": "mdi-language-java",
-      ".yml": "mdi-cog",
-      ".yaml": "mdi-cog",
-      ".toml": "mdi-cog",
-      ".lock": "mdi-lock",
-      ".gitignore": "mdi-git",
-      ".png": "mdi-file-image",
-      ".jpg": "mdi-file-image",
-      ".jpeg": "mdi-file-image",
-      ".gif": "mdi-file-image",
-      ".svg": "mdi-file-image",
-      ".pdf": "mdi-file-pdf-box",
-      ".zip": "mdi-folder-zip",
-      ".tar": "mdi-folder-zip",
-      ".gz": "mdi-folder-zip"
-    };
-    function fileIcon(name) {
-      const ext = name.lastIndexOf(".") >= 0 ? name.slice(name.lastIndexOf(".")).toLowerCase() : "";
-      return fileTypeIcons[ext] || "mdi-file-outline";
-    }
-    function onClick() {
-      if (props.node.is_dir) {
-        fileStore.onTreeItemClick(props.node);
-        emit2("navigate", props.node.path);
-      } else {
-        fileStore.selectFile(props.node.path);
-        emit2("selectFile", props.node.path);
-      }
-    }
-    return (_ctx, _cache) => {
-      const _component_FileTreeItem = resolveComponent("FileTreeItem", true);
-      return openBlock(), createElementBlock("div", _hoisted_1$1, [
-        createVNode(VListItem, {
-          active: active.value || fileActive.value,
-          density: "compact",
-          rounded: "lg",
-          class: "mb-0 tree-item",
-          style: normalizeStyle({ paddingLeft: __props.depth * 16 + 4 + "px" }),
-          onClick
-        }, createSlots({
-          prepend: withCtx(() => [
-            __props.node.loading ? (openBlock(), createBlock(VProgressCircular, {
-              key: 0,
-              indeterminate: "",
-              size: "14",
-              width: "2",
-              color: "primary"
-            })) : (openBlock(), createBlock(VIcon, {
-              key: 1,
-              size: "16",
-              color: __props.node.is_dir ? "warning" : "medium-emphasis"
-            }, {
-              default: withCtx(() => [
-                createTextVNode(toDisplayString(__props.node.is_dir ? __props.node.expanded ? "mdi-folder-open" : "mdi-folder" : fileIcon(__props.node.name)), 1)
-              ]),
-              _: 1
-            }, 8, ["color"]))
-          ]),
-          default: withCtx(() => [
-            createVNode(VListItemTitle, { class: "text-body-2 text-truncate" }, {
-              default: withCtx(() => [
-                createTextVNode(toDisplayString(__props.node.name), 1)
-              ]),
-              _: 1
-            })
-          ]),
-          _: 2
-        }, [
-          __props.node.is_dir ? {
-            name: "append",
-            fn: withCtx(() => [
-              createVNode(VIcon, {
-                size: "14",
-                color: "medium-emphasis"
-              }, {
-                default: withCtx(() => [
-                  createTextVNode(toDisplayString(__props.node.expanded ? "mdi-chevron-down" : "mdi-chevron-right"), 1)
-                ]),
-                _: 1
-              })
-            ]),
-            key: "0"
-          } : void 0
-        ]), 1032, ["active", "style"]),
-        __props.node.is_dir ? (openBlock(), createBlock(VExpandTransition, { key: 0 }, {
-          default: withCtx(() => [
-            withDirectives(createBaseVNode("div", null, [
-              (openBlock(true), createElementBlock(Fragment, null, renderList(__props.node.children, (child) => {
-                return openBlock(), createBlock(_component_FileTreeItem, {
-                  key: child.path,
-                  node: child,
-                  depth: __props.depth + 1,
-                  "current-path": __props.currentPath,
-                  "selected-file-path": __props.selectedFilePath,
-                  onNavigate: _cache[0] || (_cache[0] = (p2) => _ctx.$emit("navigate", p2)),
-                  onSelectFile: _cache[1] || (_cache[1] = (p2) => _ctx.$emit("selectFile", p2))
-                }, null, 8, ["node", "depth", "current-path", "selected-file-path"]);
-              }), 128)),
-              __props.node.loaded && __props.node.children.length === 0 ? (openBlock(), createElementBlock("div", {
-                key: 0,
-                class: "text-caption text-medium-emphasis px-4 py-1",
-                style: normalizeStyle({ paddingLeft: (__props.depth + 1) * 16 + 28 + "px" })
-              }, " Empty ", 4)) : createCommentVNode("", true)
-            ], 512), [
-              [vShow, __props.node.expanded]
-            ])
-          ]),
-          _: 1
-        })) : createCommentVNode("", true)
-      ]);
-    };
-  }
-});
-const _hoisted_1 = { class: "sidebar-header pa-4 d-flex align-center" };
-const _hoisted_2 = {
+const _hoisted_1$2 = { class: "sidebar-header pa-4 d-flex align-center" };
+const _hoisted_2$1 = {
   key: 0,
   class: "text-h6 font-weight-bold text-primary"
 };
-const _hoisted_3 = {
+const _hoisted_3$1 = {
   key: 0,
   class: "text-center py-1"
 };
-const _hoisted_4 = {
+const _hoisted_4$1 = {
   key: 1,
   class: "px-3 pb-2"
 };
-const _hoisted_5 = {
+const _hoisted_5$1 = {
   key: 2,
-  class: "panel-area"
+  class: "sessions-area"
 };
-const _hoisted_6 = { class: "panel-header d-flex align-center px-3 pt-2 pb-1" };
-const _hoisted_7 = { class: "text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1" };
-const _hoisted_8 = { class: "session-list-wrapper" };
+const _hoisted_6$1 = { class: "sessions-header d-flex align-center px-3 pt-2 pb-1" };
+const _hoisted_7$1 = { class: "text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1" };
+const _hoisted_8$1 = { class: "session-list-wrapper" };
 const _hoisted_9 = {
   key: 0,
   class: "text-center pa-4"
@@ -46760,35 +46289,22 @@ const _hoisted_10 = {
   key: 0,
   class: "text-center pa-6"
 };
-const _hoisted_11 = { class: "panel-header d-flex align-center px-3 pt-1 pb-1" };
-const _hoisted_12 = { class: "text-caption font-weight-bold text-medium-emphasis d-flex align-center ga-1" };
-const _hoisted_13 = { class: "file-tree-wrapper" };
-const _hoisted_14 = {
-  key: 0,
-  class: "text-center pa-4"
-};
-const _hoisted_15 = {
-  key: 0,
-  class: "text-center pa-6"
-};
-const _hoisted_16 = {
+const _hoisted_11 = {
   key: 0,
   class: "nav-rail-group pa-2 d-flex flex-column align-center"
 };
-const _hoisted_17 = { class: "nav-rail-section" };
-const _hoisted_18 = { class: "nav-rail-section" };
-const _hoisted_19 = { class: "nav-rail-section" };
-const _hoisted_20 = { class: "d-flex justify-center align-center ga-1 py-1 pb-2" };
-const _hoisted_21 = { class: "bottom-toggles pa-2 pt-0" };
-const _hoisted_22 = { class: "text-body-2 text-medium-emphasis mt-2" };
-const _hoisted_23 = { class: "text-body-2 text-medium-emphasis mt-2" };
-const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
+const _hoisted_12 = { class: "nav-rail-section" };
+const _hoisted_13 = { class: "nav-rail-section" };
+const _hoisted_14 = { class: "nav-rail-section" };
+const _hoisted_15 = { class: "d-flex justify-center align-center ga-1 py-1 pb-2" };
+const _hoisted_16 = { class: "bottom-toggles pa-2 pt-0" };
+const _hoisted_17 = { class: "text-body-2 text-medium-emphasis mt-2" };
+const _hoisted_18 = { class: "text-body-2 text-medium-emphasis mt-2" };
+const _sfc_main$3 = /* @__PURE__ */ defineComponent$1({
   __name: "AppSidebar",
   setup(__props) {
     const appStore = useAppStore();
     const sessionStore = useSessionStore();
-    const fileStore = useFileStore();
-    const route = useRoute();
     const router2 = useRouter();
     const deleteDialog = /* @__PURE__ */ ref(false);
     const deleteTarget = /* @__PURE__ */ ref(null);
@@ -46800,7 +46316,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
     const clearDialog = /* @__PURE__ */ ref(false);
     const clearTarget = /* @__PURE__ */ ref(null);
     const clearing = /* @__PURE__ */ ref(false);
-    const expandedPanel = /* @__PURE__ */ ref("sessions");
     function startResize(e) {
       const startX = e.clientX;
       const startWidth = appStore.sidebarWidth;
@@ -46894,18 +46409,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
     }
     onMounted(() => {
       sessionStore.fetchSessions();
-      fileStore.fetchTree();
     });
-    const currentFilePath = computed(() => route.query.path || "");
-    const selectedFilePath = computed(() => fileStore.selectedFile);
-    function goToFilePath(path) {
-      fileStore.clearSelectedFile();
-      router2.push({ path: "/files", query: path ? { path } : void 0 });
-    }
-    function handleSelectFile(filePath) {
-      const parentDir = filePath.substring(0, filePath.lastIndexOf("/"));
-      router2.push({ path: "/files", query: { path: parentDir } });
-    }
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
         createVNode(VNavigationDrawer, {
@@ -46917,14 +46421,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, {
           append: withCtx(() => [
             createVNode(VDivider, { class: "mx-4" }),
-            unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_16, [
-              createBaseVNode("div", _hoisted_17, [
+            unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_11, [
+              createBaseVNode("div", _hoisted_12, [
                 createVNode(VBtn, {
                   icon: "mdi-chart-bar",
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[7] || (_cache[7] = ($event) => navigateTo("/usage")),
+                  onClick: _cache[2] || (_cache[2] = ($event) => navigateTo("/usage")),
                   title: "Usage Analytics"
                 }),
                 createVNode(VBtn, {
@@ -46932,7 +46436,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[8] || (_cache[8] = ($event) => navigateTo("/mcp")),
+                  onClick: _cache[3] || (_cache[3] = ($event) => navigateTo("/mcp")),
                   title: "MCP Servers"
                 }),
                 createVNode(VBtn, {
@@ -46940,7 +46444,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[9] || (_cache[9] = ($event) => navigateTo("/sites")),
+                  onClick: _cache[4] || (_cache[4] = ($event) => navigateTo("/sites")),
                   title: "Sites"
                 }),
                 createVNode(VBtn, {
@@ -46948,18 +46452,18 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[10] || (_cache[10] = ($event) => navigateTo("/crons")),
+                  onClick: _cache[5] || (_cache[5] = ($event) => navigateTo("/crons")),
                   title: "Crons"
                 })
               ]),
               createVNode(VDivider, { class: "nav-rail-divider" }),
-              createBaseVNode("div", _hoisted_18, [
+              createBaseVNode("div", _hoisted_13, [
                 createVNode(VBtn, {
                   icon: "mdi-robot",
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[11] || (_cache[11] = ($event) => navigateTo("/agents")),
+                  onClick: _cache[6] || (_cache[6] = ($event) => navigateTo("/agents")),
                   title: "Agents"
                 }),
                 createVNode(VBtn, {
@@ -46967,7 +46471,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[12] || (_cache[12] = ($event) => navigateTo("/skills")),
+                  onClick: _cache[7] || (_cache[7] = ($event) => navigateTo("/skills")),
                   title: "Skills"
                 }),
                 createVNode(VBtn, {
@@ -46975,7 +46479,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[13] || (_cache[13] = ($event) => navigateTo("/tools")),
+                  onClick: _cache[8] || (_cache[8] = ($event) => navigateTo("/tools")),
                   title: "Tools"
                 }),
                 createVNode(VBtn, {
@@ -46983,18 +46487,18 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[14] || (_cache[14] = ($event) => navigateTo("/settings")),
+                  onClick: _cache[9] || (_cache[9] = ($event) => navigateTo("/settings")),
                   title: "Settings"
                 })
               ]),
               createVNode(VDivider, { class: "nav-rail-divider" }),
-              createBaseVNode("div", _hoisted_19, [
+              createBaseVNode("div", _hoisted_14, [
                 createVNode(VBtn, {
                   icon: "mdi-home",
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[15] || (_cache[15] = ($event) => openExternal("/index.html")),
+                  onClick: _cache[10] || (_cache[10] = ($event) => openExternal("/index.html")),
                   title: "Site Navigation"
                 }),
                 createVNode(VBtn, {
@@ -47002,19 +46506,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[16] || (_cache[16] = ($event) => openExternal("https://github.com/guyoung/boxagnts")),
+                  onClick: _cache[11] || (_cache[11] = ($event) => openExternal("https://github.com/guyoung/boxagnts")),
                   title: "GitHub"
                 })
               ])
             ])) : createCommentVNode("", true),
             !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock(Fragment, { key: 1 }, [
-              createBaseVNode("div", _hoisted_20, [
+              createBaseVNode("div", _hoisted_15, [
                 createVNode(VBtn, {
                   icon: "mdi-home",
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[17] || (_cache[17] = ($event) => openExternal("/index.html")),
+                  onClick: _cache[12] || (_cache[12] = ($event) => openExternal("/index.html")),
                   title: "Site Navigation",
                   class: "footer-link-btn"
                 }),
@@ -47023,7 +46527,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   variant: "text",
                   size: "small",
                   color: "medium-emphasis",
-                  onClick: _cache[18] || (_cache[18] = ($event) => openExternal("https://github.com/guyoung/boxagnts")),
+                  onClick: _cache[13] || (_cache[13] = ($event) => openExternal("https://github.com/guyoung/boxagnts")),
                   title: "GitHub",
                   class: "footer-link-btn"
                 }),
@@ -47053,14 +46557,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                         createVNode(VListItem, {
                           "prepend-icon": "mdi-web",
                           title: "Sites",
-                          onClick: _cache[19] || (_cache[19] = ($event) => navigateTo("/sites")),
+                          onClick: _cache[14] || (_cache[14] = ($event) => navigateTo("/sites")),
                           rounded: "lg",
                           class: "mb-0"
                         }),
                         createVNode(VListItem, {
                           "prepend-icon": "mdi-clock-outline",
                           title: "Crons",
-                          onClick: _cache[20] || (_cache[20] = ($event) => navigateTo("/crons")),
+                          onClick: _cache[15] || (_cache[15] = ($event) => navigateTo("/crons")),
                           rounded: "lg",
                           class: "mb-0"
                         }),
@@ -47068,14 +46572,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                         createVNode(VListItem, {
                           "prepend-icon": "mdi-star",
                           title: "Skills",
-                          onClick: _cache[21] || (_cache[21] = ($event) => navigateTo("/skills")),
+                          onClick: _cache[16] || (_cache[16] = ($event) => navigateTo("/skills")),
                           rounded: "lg",
                           class: "mb-0"
                         }),
                         createVNode(VListItem, {
                           "prepend-icon": "mdi-hammer-wrench",
                           title: "Tools",
-                          onClick: _cache[22] || (_cache[22] = ($event) => navigateTo("/tools")),
+                          onClick: _cache[17] || (_cache[17] = ($event) => navigateTo("/tools")),
                           rounded: "lg",
                           class: "mb-0"
                         }),
@@ -47083,7 +46587,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                         createVNode(VListItem, {
                           "prepend-icon": "mdi-cog",
                           title: "Settings",
-                          onClick: _cache[23] || (_cache[23] = ($event) => navigateTo("/settings")),
+                          onClick: _cache[18] || (_cache[18] = ($event) => navigateTo("/settings")),
                           rounded: "lg",
                           class: "mb-0"
                         })
@@ -47096,13 +46600,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
               ]),
               createVNode(VDivider, { class: "mx-4 mb-1" })
             ], 64)) : createCommentVNode("", true),
-            createBaseVNode("div", _hoisted_21, [
+            createBaseVNode("div", _hoisted_16, [
               createVNode(VBtn, {
                 icon: unref(appStore).sidebarCollapsed ? "mdi-chevron-right" : "mdi-chevron-left",
                 variant: "text",
                 size: "small",
                 block: "",
-                onClick: _cache[24] || (_cache[24] = ($event) => unref(appStore).toggleSidebar()),
+                onClick: _cache[19] || (_cache[19] = ($event) => unref(appStore).toggleSidebar()),
                 class: "toggle-btn"
               }, null, 8, ["icon"]),
               createVNode(VBtn, {
@@ -47110,26 +46614,26 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 variant: "text",
                 size: "small",
                 block: "",
-                onClick: _cache[25] || (_cache[25] = ($event) => unref(appStore).toggleTheme()),
+                onClick: _cache[20] || (_cache[20] = ($event) => unref(appStore).toggleTheme()),
                 class: "toggle-btn"
               }, null, 8, ["icon"])
             ])
           ]),
           default: withCtx(() => [
-            createBaseVNode("div", _hoisted_1, [
+            createBaseVNode("div", _hoisted_1$2, [
               createVNode(VIcon, {
                 size: "28",
                 color: "primary",
                 class: "mr-3"
               }, {
-                default: withCtx(() => [..._cache[33] || (_cache[33] = [
+                default: withCtx(() => [..._cache[28] || (_cache[28] = [
                   createTextVNode("mdi-console-line", -1)
                 ])]),
                 _: 1
               }),
-              !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_2, " Boxagnts ")) : createCommentVNode("", true)
+              !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_2$1, " Boxagnts ")) : createCommentVNode("", true)
             ]),
-            unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_3, [
+            unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_3$1, [
               createVNode(VBtn, {
                 icon: "mdi-chat-plus",
                 variant: "text",
@@ -47138,7 +46642,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 onClick: newSession
               })
             ])) : createCommentVNode("", true),
-            !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_4, [
+            !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_4$1, [
               createVNode(VBtn, {
                 color: "primary",
                 variant: "flat",
@@ -47147,262 +46651,143 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                 onClick: newSession,
                 class: "new-session-btn"
               }, {
-                default: withCtx(() => [..._cache[34] || (_cache[34] = [
+                default: withCtx(() => [..._cache[29] || (_cache[29] = [
                   createTextVNode(" New Session ", -1)
                 ])]),
                 _: 1
               })
             ])) : createCommentVNode("", true),
             createVNode(VDivider, { class: "mx-4 mb-1" }),
-            !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_5, [
-              createBaseVNode("div", {
-                class: normalizeClass(["panel-section", expandedPanel.value === "sessions" ? "panel-expanded" : "panel-collapsed"])
-              }, [
-                createBaseVNode("div", _hoisted_6, [
-                  createBaseVNode("span", _hoisted_7, [
-                    createVNode(VIcon, {
-                      size: "12",
-                      color: "medium-emphasis"
-                    }, {
-                      default: withCtx(() => [..._cache[35] || (_cache[35] = [
-                        createTextVNode("mdi-message-text", -1)
-                      ])]),
-                      _: 1
-                    }),
-                    _cache[36] || (_cache[36] = createTextVNode(" SESSIONS ", -1))
-                  ]),
-                  createVNode(VSpacer),
-                  createVNode(VBtn, {
-                    icon: "mdi-refresh",
-                    variant: "text",
-                    size: "x-small",
-                    color: "medium-emphasis",
-                    onClick: _cache[0] || (_cache[0] = ($event) => unref(sessionStore).fetchSessions()),
-                    loading: unref(sessionStore).loading
-                  }, null, 8, ["loading"]),
-                  createVNode(VBtn, {
-                    icon: expandedPanel.value === "sessions" ? "mdi-chevron-up" : "mdi-chevron-down",
-                    variant: "text",
-                    size: "x-small",
-                    color: "medium-emphasis",
-                    onClick: _cache[1] || (_cache[1] = ($event) => expandedPanel.value = expandedPanel.value === "sessions" ? null : "sessions")
-                  }, null, 8, ["icon"])
+            !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", _hoisted_5$1, [
+              createBaseVNode("div", _hoisted_6$1, [
+                createBaseVNode("span", _hoisted_7$1, [
+                  createVNode(VIcon, {
+                    size: "12",
+                    color: "medium-emphasis"
+                  }, {
+                    default: withCtx(() => [..._cache[30] || (_cache[30] = [
+                      createTextVNode("mdi-message-text", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  _cache[31] || (_cache[31] = createTextVNode(" SESSIONS ", -1))
                 ]),
-                createVNode(VExpandTransition, null, {
+                createVNode(VSpacer),
+                createVNode(VBtn, {
+                  icon: "mdi-refresh",
+                  variant: "text",
+                  size: "x-small",
+                  color: "medium-emphasis",
+                  onClick: _cache[0] || (_cache[0] = ($event) => unref(sessionStore).fetchSessions()),
+                  loading: unref(sessionStore).loading
+                }, null, 8, ["loading"])
+              ]),
+              createBaseVNode("div", _hoisted_8$1, [
+                unref(sessionStore).loading ? (openBlock(), createElementBlock("div", _hoisted_9, [
+                  createVNode(VProgressCircular, {
+                    indeterminate: "",
+                    size: "20",
+                    width: "2",
+                    color: "primary"
+                  })
+                ])) : (openBlock(), createBlock(VList, {
+                  key: 1,
+                  density: "compact",
+                  nav: "",
+                  class: "px-1"
+                }, {
                   default: withCtx(() => [
-                    withDirectives(createBaseVNode("div", _hoisted_8, [
-                      unref(sessionStore).loading ? (openBlock(), createElementBlock("div", _hoisted_9, [
-                        createVNode(VProgressCircular, {
-                          indeterminate: "",
-                          size: "20",
-                          width: "2",
-                          color: "primary"
-                        })
-                      ])) : (openBlock(), createBlock(VList, {
-                        key: 1,
-                        density: "compact",
-                        nav: "",
-                        class: "px-1"
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(sessionStore).sessions, (s) => {
+                      return openBlock(), createBlock(VListItem, {
+                        key: s.id,
+                        active: unref(sessionStore).currentSessionId === s.id,
+                        rounded: "lg",
+                        class: normalizeClass(["mb-1 session-item", { "session-item--active": unref(sessionStore).currentSessionId === s.id }]),
+                        onClick: ($event) => selectSession(s.id)
                       }, {
-                        default: withCtx(() => [
-                          (openBlock(true), createElementBlock(Fragment, null, renderList(unref(sessionStore).sessions, (s) => {
-                            return openBlock(), createBlock(VListItem, {
-                              key: s.id,
-                              active: unref(sessionStore).currentSessionId === s.id,
-                              rounded: "lg",
-                              class: normalizeClass(["mb-1 session-item", { "session-item--active": unref(sessionStore).currentSessionId === s.id }]),
-                              onClick: ($event) => selectSession(s.id)
-                            }, {
-                              prepend: withCtx(() => [
-                                createVNode(VIcon, {
-                                  size: "16",
-                                  color: "medium-emphasis"
-                                }, {
-                                  default: withCtx(() => [..._cache[37] || (_cache[37] = [
-                                    createTextVNode("mdi-message-text", -1)
-                                  ])]),
-                                  _: 1
-                                })
-                              ]),
-                              append: withCtx(() => [
-                                createVNode(VMenu, {
-                                  location: "bottom end",
-                                  "close-on-content-click": true
-                                }, {
-                                  activator: withCtx(({ props: menuProps }) => [
-                                    createVNode(VBtn, mergeProps({
-                                      icon: "mdi-dots-vertical",
-                                      variant: "text",
-                                      size: "x-small",
-                                      color: "medium-emphasis"
-                                    }, { ref_for: true }, menuProps, {
-                                      onClick: _cache[2] || (_cache[2] = withModifiers(() => {
-                                      }, ["stop"]))
-                                    }), null, 16)
-                                  ]),
-                                  default: withCtx(() => [
-                                    createVNode(VList, {
-                                      density: "compact",
-                                      "min-width": "150"
-                                    }, {
-                                      default: withCtx(() => [
-                                        createVNode(VListItem, {
-                                          "prepend-icon": "mdi-pencil",
-                                          title: "Rename",
-                                          onClick: withModifiers(($event) => openRename(s), ["stop"])
-                                        }, null, 8, ["onClick"]),
-                                        createVNode(VListItem, {
-                                          "prepend-icon": "mdi-delete-sweep",
-                                          title: "Clear Message",
-                                          onClick: withModifiers(($event) => confirmClear(s), ["stop"])
-                                        }, null, 8, ["onClick"]),
-                                        createVNode(VListItem, {
-                                          "prepend-icon": "mdi-delete",
-                                          title: "Delete",
-                                          onClick: withModifiers(($event) => confirmDelete(s), ["stop"])
-                                        }, null, 8, ["onClick"])
-                                      ]),
-                                      _: 2
-                                    }, 1024)
-                                  ]),
-                                  _: 2
-                                }, 1024)
-                              ]),
-                              default: withCtx(() => [
-                                createVNode(VListItemTitle, { class: "text-body-2" }, {
-                                  default: withCtx(() => [
-                                    createTextVNode(toDisplayString(s.title || unref(sessionStore).sessionLabel(s)), 1)
-                                  ]),
-                                  _: 2
-                                }, 1024)
-                              ]),
-                              _: 2
-                            }, 1032, ["active", "class", "onClick"]);
-                          }), 128)),
-                          unref(sessionStore).sessions.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_10, [
-                            createVNode(VIcon, {
-                              size: "40",
-                              color: "medium-emphasis",
-                              class: "mb-2"
-                            }, {
-                              default: withCtx(() => [..._cache[38] || (_cache[38] = [
-                                createTextVNode("mdi-message-text-outline", -1)
-                              ])]),
-                              _: 1
-                            }),
-                            _cache[39] || (_cache[39] = createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No sessions yet", -1))
-                          ])) : createCommentVNode("", true)
+                        prepend: withCtx(() => [
+                          createVNode(VIcon, {
+                            size: "16",
+                            color: "medium-emphasis"
+                          }, {
+                            default: withCtx(() => [..._cache[32] || (_cache[32] = [
+                              createTextVNode("mdi-message-text", -1)
+                            ])]),
+                            _: 1
+                          })
                         ]),
+                        append: withCtx(() => [
+                          createVNode(VMenu, {
+                            location: "bottom end",
+                            "close-on-content-click": true
+                          }, {
+                            activator: withCtx(({ props: menuProps }) => [
+                              createVNode(VBtn, mergeProps({
+                                icon: "mdi-dots-vertical",
+                                variant: "text",
+                                size: "x-small",
+                                color: "medium-emphasis"
+                              }, { ref_for: true }, menuProps, {
+                                onClick: _cache[1] || (_cache[1] = withModifiers(() => {
+                                }, ["stop"]))
+                              }), null, 16)
+                            ]),
+                            default: withCtx(() => [
+                              createVNode(VList, {
+                                density: "compact",
+                                "min-width": "150"
+                              }, {
+                                default: withCtx(() => [
+                                  createVNode(VListItem, {
+                                    "prepend-icon": "mdi-pencil",
+                                    title: "Rename",
+                                    onClick: withModifiers(($event) => openRename(s), ["stop"])
+                                  }, null, 8, ["onClick"]),
+                                  createVNode(VListItem, {
+                                    "prepend-icon": "mdi-delete-sweep",
+                                    title: "Clear Message",
+                                    onClick: withModifiers(($event) => confirmClear(s), ["stop"])
+                                  }, null, 8, ["onClick"]),
+                                  createVNode(VListItem, {
+                                    "prepend-icon": "mdi-delete",
+                                    title: "Delete",
+                                    onClick: withModifiers(($event) => confirmDelete(s), ["stop"])
+                                  }, null, 8, ["onClick"])
+                                ]),
+                                _: 2
+                              }, 1024)
+                            ]),
+                            _: 2
+                          }, 1024)
+                        ]),
+                        default: withCtx(() => [
+                          createVNode(VListItemTitle, { class: "text-body-2" }, {
+                            default: withCtx(() => [
+                              createTextVNode(toDisplayString(s.title || unref(sessionStore).sessionLabel(s)), 1)
+                            ]),
+                            _: 2
+                          }, 1024)
+                        ]),
+                        _: 2
+                      }, 1032, ["active", "class", "onClick"]);
+                    }), 128)),
+                    unref(sessionStore).sessions.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_10, [
+                      createVNode(VIcon, {
+                        size: "40",
+                        color: "medium-emphasis",
+                        class: "mb-2"
+                      }, {
+                        default: withCtx(() => [..._cache[33] || (_cache[33] = [
+                          createTextVNode("mdi-message-text-outline", -1)
+                        ])]),
                         _: 1
-                      }))
-                    ], 512), [
-                      [vShow, expandedPanel.value === "sessions"]
-                    ])
+                      }),
+                      _cache[34] || (_cache[34] = createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No sessions yet", -1))
+                    ])) : createCommentVNode("", true)
                   ]),
                   _: 1
-                })
-              ], 2),
-              createBaseVNode("div", {
-                class: normalizeClass(["files-panel panel-section", expandedPanel.value === "files" ? "panel-expanded" : "panel-collapsed"])
-              }, [
-                createVNode(VDivider, { class: "mx-4 mb-2" }),
-                createBaseVNode("div", _hoisted_11, [
-                  createBaseVNode("span", _hoisted_12, [
-                    createVNode(VIcon, {
-                      size: "12",
-                      color: "medium-emphasis"
-                    }, {
-                      default: withCtx(() => [..._cache[40] || (_cache[40] = [
-                        createTextVNode("mdi-folder-outline", -1)
-                      ])]),
-                      _: 1
-                    }),
-                    _cache[41] || (_cache[41] = createTextVNode(" FILES ", -1))
-                  ]),
-                  createVNode(VSpacer),
-                  createVNode(VBtn, {
-                    icon: "mdi-arrow-expand-all",
-                    variant: "text",
-                    size: "x-small",
-                    color: "medium-emphasis",
-                    onClick: _cache[3] || (_cache[3] = ($event) => unref(fileStore).expandAll()),
-                    title: "Expand All"
-                  }),
-                  createVNode(VBtn, {
-                    icon: "mdi-arrow-collapse-all",
-                    variant: "text",
-                    size: "x-small",
-                    color: "medium-emphasis",
-                    onClick: _cache[4] || (_cache[4] = ($event) => unref(fileStore).collapseAll()),
-                    title: "Collapse All"
-                  }),
-                  createVNode(VBtn, {
-                    icon: "mdi-refresh",
-                    variant: "text",
-                    size: "x-small",
-                    color: "medium-emphasis",
-                    onClick: _cache[5] || (_cache[5] = ($event) => unref(fileStore).refreshTree()),
-                    loading: unref(fileStore).treeLoading
-                  }, null, 8, ["loading"]),
-                  createVNode(VBtn, {
-                    icon: expandedPanel.value === "files" ? "mdi-chevron-up" : "mdi-chevron-down",
-                    variant: "text",
-                    size: "x-small",
-                    color: "medium-emphasis",
-                    onClick: _cache[6] || (_cache[6] = ($event) => expandedPanel.value = expandedPanel.value === "files" ? null : "files")
-                  }, null, 8, ["icon"])
-                ]),
-                createVNode(VExpandTransition, null, {
-                  default: withCtx(() => [
-                    withDirectives(createBaseVNode("div", _hoisted_13, [
-                      unref(fileStore).treeLoading ? (openBlock(), createElementBlock("div", _hoisted_14, [
-                        createVNode(VProgressCircular, {
-                          indeterminate: "",
-                          size: "20",
-                          width: "2",
-                          color: "primary"
-                        })
-                      ])) : (openBlock(), createBlock(VList, {
-                        key: 1,
-                        density: "compact",
-                        nav: "",
-                        class: "px-1"
-                      }, {
-                        default: withCtx(() => [
-                          (openBlock(true), createElementBlock(Fragment, null, renderList(unref(fileStore).treeRoots, (node) => {
-                            return openBlock(), createBlock(_sfc_main$2, {
-                              key: node.path,
-                              node,
-                              depth: 0,
-                              "current-path": currentFilePath.value,
-                              "selected-file-path": selectedFilePath.value,
-                              onNavigate: goToFilePath,
-                              onSelectFile: handleSelectFile
-                            }, null, 8, ["node", "current-path", "selected-file-path"]);
-                          }), 128)),
-                          unref(fileStore).treeRoots.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_15, [
-                            createVNode(VIcon, {
-                              size: "40",
-                              color: "medium-emphasis",
-                              class: "mb-2"
-                            }, {
-                              default: withCtx(() => [..._cache[42] || (_cache[42] = [
-                                createTextVNode("mdi-folder-open-outline", -1)
-                              ])]),
-                              _: 1
-                            }),
-                            _cache[43] || (_cache[43] = createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No files", -1))
-                          ])) : createCommentVNode("", true)
-                        ]),
-                        _: 1
-                      }))
-                    ], 512), [
-                      [vShow, expandedPanel.value === "files"]
-                    ])
-                  ]),
-                  _: 1
-                })
-              ], 2)
+                }))
+              ])
             ])) : createCommentVNode("", true),
             !unref(appStore).sidebarCollapsed ? (openBlock(), createElementBlock("div", {
               key: 3,
@@ -47414,23 +46799,23 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, 8, ["rail", "width"]),
         createVNode(VDialog, {
           modelValue: deleteDialog.value,
-          "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => deleteDialog.value = $event),
+          "onUpdate:modelValue": _cache[22] || (_cache[22] = ($event) => deleteDialog.value = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[44] || (_cache[44] = [
+                  default: withCtx(() => [..._cache[35] || (_cache[35] = [
                     createTextVNode("Delete Session", -1)
                   ])]),
                   _: 1
                 }),
                 createVNode(VCardText, null, {
                   default: withCtx(() => [
-                    _cache[45] || (_cache[45] = createBaseVNode("p", null, "Are you sure you want to delete this session?", -1)),
-                    createBaseVNode("p", _hoisted_22, toDisplayString(deleteTarget.value ? deleteTarget.value.title || unref(sessionStore).sessionLabel(deleteTarget.value) : ""), 1),
-                    _cache[46] || (_cache[46] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
+                    _cache[36] || (_cache[36] = createBaseVNode("p", null, "Are you sure you want to delete this session?", -1)),
+                    createBaseVNode("p", _hoisted_17, toDisplayString(deleteTarget.value ? deleteTarget.value.title || unref(sessionStore).sessionLabel(deleteTarget.value) : ""), 1),
+                    _cache[37] || (_cache[37] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
                   ]),
                   _: 1
                 }),
@@ -47439,9 +46824,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[26] || (_cache[26] = ($event) => deleteDialog.value = false)
+                      onClick: _cache[21] || (_cache[21] = ($event) => deleteDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[47] || (_cache[47] = [
+                      default: withCtx(() => [..._cache[38] || (_cache[38] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -47451,7 +46836,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                       onClick: handleDelete,
                       loading: deleting.value
                     }, {
-                      default: withCtx(() => [..._cache[48] || (_cache[48] = [
+                      default: withCtx(() => [..._cache[39] || (_cache[39] = [
                         createTextVNode("Delete", -1)
                       ])]),
                       _: 1
@@ -47467,14 +46852,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, 8, ["modelValue"]),
         createVNode(VDialog, {
           modelValue: renameDialog.value,
-          "onUpdate:modelValue": _cache[30] || (_cache[30] = ($event) => renameDialog.value = $event),
+          "onUpdate:modelValue": _cache[25] || (_cache[25] = ($event) => renameDialog.value = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[49] || (_cache[49] = [
+                  default: withCtx(() => [..._cache[40] || (_cache[40] = [
                     createTextVNode("Rename Session", -1)
                   ])]),
                   _: 1
@@ -47483,7 +46868,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                   default: withCtx(() => [
                     createVNode(VTextField, {
                       modelValue: renameTitle.value,
-                      "onUpdate:modelValue": _cache[28] || (_cache[28] = ($event) => renameTitle.value = $event),
+                      "onUpdate:modelValue": _cache[23] || (_cache[23] = ($event) => renameTitle.value = $event),
                       label: "Session Title",
                       variant: "outlined",
                       autofocus: "",
@@ -47497,9 +46882,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[29] || (_cache[29] = ($event) => renameDialog.value = false)
+                      onClick: _cache[24] || (_cache[24] = ($event) => renameDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[50] || (_cache[50] = [
+                      default: withCtx(() => [..._cache[41] || (_cache[41] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -47509,7 +46894,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                       onClick: handleRename,
                       loading: renaming.value
                     }, {
-                      default: withCtx(() => [..._cache[51] || (_cache[51] = [
+                      default: withCtx(() => [..._cache[42] || (_cache[42] = [
                         createTextVNode("Save", -1)
                       ])]),
                       _: 1
@@ -47525,23 +46910,23 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
         }, 8, ["modelValue"]),
         createVNode(VDialog, {
           modelValue: clearDialog.value,
-          "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => clearDialog.value = $event),
+          "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => clearDialog.value = $event),
           "max-width": "400"
         }, {
           default: withCtx(() => [
             createVNode(VCard, null, {
               default: withCtx(() => [
                 createVNode(VCardTitle, null, {
-                  default: withCtx(() => [..._cache[52] || (_cache[52] = [
+                  default: withCtx(() => [..._cache[43] || (_cache[43] = [
                     createTextVNode("Clear All Messages", -1)
                   ])]),
                   _: 1
                 }),
                 createVNode(VCardText, null, {
                   default: withCtx(() => [
-                    _cache[53] || (_cache[53] = createBaseVNode("p", null, "Are you sure you want to clear all messages from this session?", -1)),
-                    createBaseVNode("p", _hoisted_23, toDisplayString(clearTarget.value ? clearTarget.value.title || unref(sessionStore).sessionLabel(clearTarget.value) : ""), 1),
-                    _cache[54] || (_cache[54] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
+                    _cache[44] || (_cache[44] = createBaseVNode("p", null, "Are you sure you want to clear all messages from this session?", -1)),
+                    createBaseVNode("p", _hoisted_18, toDisplayString(clearTarget.value ? clearTarget.value.title || unref(sessionStore).sessionLabel(clearTarget.value) : ""), 1),
+                    _cache[45] || (_cache[45] = createBaseVNode("p", { class: "text-caption text-error mt-2" }, "This action cannot be undone.", -1))
                   ]),
                   _: 1
                 }),
@@ -47550,9 +46935,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                     createVNode(VSpacer),
                     createVNode(VBtn, {
                       variant: "text",
-                      onClick: _cache[31] || (_cache[31] = ($event) => clearDialog.value = false)
+                      onClick: _cache[26] || (_cache[26] = ($event) => clearDialog.value = false)
                     }, {
-                      default: withCtx(() => [..._cache[55] || (_cache[55] = [
+                      default: withCtx(() => [..._cache[46] || (_cache[46] = [
                         createTextVNode("Cancel", -1)
                       ])]),
                       _: 1
@@ -47562,7 +46947,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
                       onClick: handleClear,
                       loading: clearing.value
                     }, {
-                      default: withCtx(() => [..._cache[56] || (_cache[56] = [
+                      default: withCtx(() => [..._cache[47] || (_cache[47] = [
                         createTextVNode("Clear", -1)
                       ])]),
                       _: 1
@@ -47587,7 +46972,1991 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const AppSidebar = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2bb677aa"]]);
+const AppSidebar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-71c8acb3"]]);
+function tryOnScopeDispose(fn) {
+  if (getCurrentScope()) {
+    onScopeDispose(fn);
+    return true;
+  }
+  return false;
+}
+function toValue(r) {
+  return typeof r === "function" ? r() : unref(r);
+}
+const isClient = typeof window !== "undefined" && typeof document !== "undefined";
+typeof WorkerGlobalScope !== "undefined" && globalThis instanceof WorkerGlobalScope;
+const toString = Object.prototype.toString;
+const isObject = (val) => toString.call(val) === "[object Object]";
+const noop = () => {
+};
+const isIOS = /* @__PURE__ */ getIsIOS();
+function getIsIOS() {
+  var _a2, _b;
+  return isClient && ((_a2 = window == null ? void 0 : window.navigator) == null ? void 0 : _a2.userAgent) && (/iP(?:ad|hone|od)/.test(window.navigator.userAgent) || ((_b = window == null ? void 0 : window.navigator) == null ? void 0 : _b.maxTouchPoints) > 2 && /iPad|Macintosh/.test(window == null ? void 0 : window.navigator.userAgent));
+}
+function getLifeCycleTarget(target) {
+  return getCurrentInstance$1();
+}
+function tryOnMounted(fn, sync = true, target) {
+  const instance = getLifeCycleTarget();
+  if (instance)
+    onMounted(fn, target);
+  else if (sync)
+    fn();
+  else
+    nextTick(fn);
+}
+const defaultWindow = isClient ? window : void 0;
+function unrefElement(elRef) {
+  var _a2;
+  const plain = toValue(elRef);
+  return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
+}
+function useEventListener(...args) {
+  let target;
+  let events2;
+  let listeners;
+  let options;
+  if (typeof args[0] === "string" || Array.isArray(args[0])) {
+    [events2, listeners, options] = args;
+    target = defaultWindow;
+  } else {
+    [target, events2, listeners, options] = args;
+  }
+  if (!target)
+    return noop;
+  if (!Array.isArray(events2))
+    events2 = [events2];
+  if (!Array.isArray(listeners))
+    listeners = [listeners];
+  const cleanups = [];
+  const cleanup = () => {
+    cleanups.forEach((fn) => fn());
+    cleanups.length = 0;
+  };
+  const register = (el, event, listener, options2) => {
+    el.addEventListener(event, listener, options2);
+    return () => el.removeEventListener(event, listener, options2);
+  };
+  const stopWatch = watch(
+    () => [unrefElement(target), toValue(options)],
+    ([el, options2]) => {
+      cleanup();
+      if (!el)
+        return;
+      const optionsClone = isObject(options2) ? { ...options2 } : options2;
+      cleanups.push(
+        ...events2.flatMap((event) => {
+          return listeners.map((listener) => register(el, event, listener, optionsClone));
+        })
+      );
+    },
+    { immediate: true, flush: "post" }
+  );
+  const stop = () => {
+    stopWatch();
+    cleanup();
+  };
+  tryOnScopeDispose(stop);
+  return stop;
+}
+let _iOSWorkaround = false;
+function onClickOutside(target, handler, options = {}) {
+  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
+  if (!window2)
+    return noop;
+  if (isIOS && !_iOSWorkaround) {
+    _iOSWorkaround = true;
+    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop));
+    window2.document.documentElement.addEventListener("click", noop);
+  }
+  let shouldListen = true;
+  const shouldIgnore = (event) => {
+    return toValue(ignore).some((target2) => {
+      if (typeof target2 === "string") {
+        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event.target || event.composedPath().includes(el));
+      } else {
+        const el = unrefElement(target2);
+        return el && (event.target === el || event.composedPath().includes(el));
+      }
+    });
+  };
+  function hasMultipleRoots(target2) {
+    const vm = toValue(target2);
+    return vm && vm.$.subTree.shapeFlag === 16;
+  }
+  function checkMultipleRoots(target2, event) {
+    const vm = toValue(target2);
+    const children = vm.$.subTree && vm.$.subTree.children;
+    if (children == null || !Array.isArray(children))
+      return false;
+    return children.some((child) => child.el === event.target || event.composedPath().includes(child.el));
+  }
+  const listener = (event) => {
+    const el = unrefElement(target);
+    if (event.target == null)
+      return;
+    if (!(el instanceof Element) && hasMultipleRoots(target) && checkMultipleRoots(target, event))
+      return;
+    if (!el || el === event.target || event.composedPath().includes(el))
+      return;
+    if (event.detail === 0)
+      shouldListen = !shouldIgnore(event);
+    if (!shouldListen) {
+      shouldListen = true;
+      return;
+    }
+    handler(event);
+  };
+  let isProcessingClick = false;
+  const cleanup = [
+    useEventListener(window2, "click", (event) => {
+      if (!isProcessingClick) {
+        isProcessingClick = true;
+        setTimeout(() => {
+          isProcessingClick = false;
+        }, 0);
+        listener(event);
+      }
+    }, { passive: true, capture }),
+    useEventListener(window2, "pointerdown", (e) => {
+      const el = unrefElement(target);
+      shouldListen = !shouldIgnore(e) && !!(el && !e.composedPath().includes(el));
+    }, { passive: true }),
+    detectIframe && useEventListener(window2, "blur", (event) => {
+      setTimeout(() => {
+        var _a2;
+        const el = unrefElement(target);
+        if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement))) {
+          handler(event);
+        }
+      }, 0);
+    })
+  ].filter(Boolean);
+  const stop = () => cleanup.forEach((fn) => fn());
+  return stop;
+}
+function useMounted() {
+  const isMounted = /* @__PURE__ */ ref(false);
+  const instance = getCurrentInstance$1();
+  if (instance) {
+    onMounted(() => {
+      isMounted.value = true;
+    }, instance);
+  }
+  return isMounted;
+}
+function useSupported(callback) {
+  const isMounted = useMounted();
+  return computed(() => {
+    isMounted.value;
+    return Boolean(callback());
+  });
+}
+function useMediaQuery(query, options = {}) {
+  const { window: window2 = defaultWindow } = options;
+  const isSupported = useSupported(() => window2 && "matchMedia" in window2 && typeof window2.matchMedia === "function");
+  let mediaQuery;
+  const matches = /* @__PURE__ */ ref(false);
+  const handler = (event) => {
+    matches.value = event.matches;
+  };
+  const cleanup = () => {
+    if (!mediaQuery)
+      return;
+    if ("removeEventListener" in mediaQuery)
+      mediaQuery.removeEventListener("change", handler);
+    else
+      mediaQuery.removeListener(handler);
+  };
+  const stopWatch = watchEffect(() => {
+    if (!isSupported.value)
+      return;
+    cleanup();
+    mediaQuery = window2.matchMedia(toValue(query));
+    if ("addEventListener" in mediaQuery)
+      mediaQuery.addEventListener("change", handler);
+    else
+      mediaQuery.addListener(handler);
+    matches.value = mediaQuery.matches;
+  });
+  tryOnScopeDispose(() => {
+    stopWatch();
+    cleanup();
+    mediaQuery = void 0;
+  });
+  return matches;
+}
+function useWindowSize(options = {}) {
+  const {
+    window: window2 = defaultWindow,
+    initialWidth = Number.POSITIVE_INFINITY,
+    initialHeight = Number.POSITIVE_INFINITY,
+    listenOrientation = true,
+    includeScrollbar = true,
+    type = "inner"
+  } = options;
+  const width = /* @__PURE__ */ ref(initialWidth);
+  const height = /* @__PURE__ */ ref(initialHeight);
+  const update = () => {
+    if (window2) {
+      if (type === "outer") {
+        width.value = window2.outerWidth;
+        height.value = window2.outerHeight;
+      } else if (includeScrollbar) {
+        width.value = window2.innerWidth;
+        height.value = window2.innerHeight;
+      } else {
+        width.value = window2.document.documentElement.clientWidth;
+        height.value = window2.document.documentElement.clientHeight;
+      }
+    }
+  };
+  update();
+  tryOnMounted(update);
+  useEventListener("resize", update, { passive: true });
+  if (listenOrientation) {
+    const matches = useMediaQuery("(orientation: portrait)");
+    watch(matches, () => update());
+  }
+  return { width, height };
+}
+const API_BASE_URL = "/dashboard/api";
+async function parseResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+  return response.blob();
+}
+async function request(url, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${url}`, options);
+  const data = await parseResponse(response);
+  if (!response.ok) {
+    const message = typeof data === "object" && data !== null && "message" in data && typeof data.message === "string" ? data.message : `Request failed with status ${response.status}`;
+    const error = new Error(message);
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
+}
+function buildQuery(params) {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== void 0 && value !== null && value !== "") {
+      searchParams.set(key, value);
+    }
+  });
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : "";
+}
+async function listFiles(path = "") {
+  return request(`/files${buildQuery({ path })}`, {
+    method: "GET"
+  });
+}
+async function createDirectory(path = "", name) {
+  return request("/files/mkdir", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      path,
+      name
+    })
+  });
+}
+async function uploadFiles(path = "", files = []) {
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append("file", file);
+  }
+  return request(`/files/upload${buildQuery({ path })}`, {
+    method: "POST",
+    body: formData
+  });
+}
+async function deleteFile(path) {
+  return request("/files/delete", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      path
+    })
+  });
+}
+async function renameFile(path, newName) {
+  return request("/files/rename", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      path,
+      new_name: newName
+    })
+  });
+}
+async function copyFile(path, targetPath, newName) {
+  return request("/files/copy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      path,
+      target_path: targetPath,
+      new_name: newName
+    })
+  });
+}
+async function moveFile(path, targetPath, newName) {
+  return request("/files/move", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      path,
+      target_path: targetPath,
+      new_name: newName
+    })
+  });
+}
+async function downloadFile(path) {
+  const response = await fetch(`${API_BASE_URL}/files/download${buildQuery({ path })}`, {
+    method: "GET"
+  });
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type") || "";
+    let errorData = null;
+    if (contentType.includes("application/json")) {
+      errorData = await response.json();
+    }
+    const message = typeof errorData === "object" && errorData !== null && "message" in errorData && typeof errorData.message === "string" ? errorData.message : `Download failed with status ${response.status}`;
+    const error = new Error(message);
+    error.status = response.status;
+    error.data = errorData;
+    throw error;
+  }
+  const blob = await response.blob();
+  const contentDisposition = response.headers.get("content-disposition") || "";
+  let fileName = "download.bin";
+  const match = contentDisposition.match(/filename="(.+?)"/);
+  if (match && match[1]) {
+    fileName = match[1];
+  }
+  return {
+    blob,
+    fileName
+  };
+}
+function saveBlob(blob, fileName) {
+  const objectUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(objectUrl);
+}
+function startFileWatcher(onChange) {
+  const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const wsUrl = `${wsProtocol}//${window.location.host}/dashboard/file_ws`;
+  let ws = null;
+  let stopped = false;
+  let reconnectTimer = null;
+  function connect() {
+    if (stopped) return;
+    ws = new WebSocket(wsUrl);
+    ws.onopen = () => {
+      console.log("[fileWatcher] connected");
+    };
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        onChange(data);
+      } catch (err) {
+        console.error("[fileWatcher] failed to parse message:", err);
+      }
+    };
+    ws.onclose = () => {
+      console.log("[fileWatcher] closed");
+      if (!stopped) {
+        reconnectTimer = setTimeout(connect, 3e3);
+      }
+    };
+    ws.onerror = (err) => {
+      console.error("[fileWatcher] error:", err);
+      ws == null ? void 0 : ws.close();
+    };
+  }
+  connect();
+  return {
+    stop: () => {
+      stopped = true;
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      ws == null ? void 0 : ws.close();
+      ws = null;
+    }
+  };
+}
+const fileApi = {
+  listFiles,
+  createDirectory,
+  uploadFiles,
+  deleteFile,
+  renameFile,
+  copyFile,
+  moveFile,
+  downloadFile,
+  saveBlob
+};
+const useFileStore = /* @__PURE__ */ defineStore("files", () => {
+  const treeRoots = /* @__PURE__ */ ref([]);
+  const treeLoading = /* @__PURE__ */ ref(false);
+  const treeAllExpanded = /* @__PURE__ */ ref(false);
+  const currentPath = /* @__PURE__ */ ref("");
+  const items = /* @__PURE__ */ ref([]);
+  const loading = /* @__PURE__ */ ref(false);
+  const selectedFile = /* @__PURE__ */ ref(null);
+  const openTabs = /* @__PURE__ */ ref([]);
+  const activeTabPath = /* @__PURE__ */ ref(null);
+  const clipboard = /* @__PURE__ */ ref(null);
+  const fileWatcher = /* @__PURE__ */ ref(null);
+  const activeTab = computed(() => {
+    if (!activeTabPath.value) return null;
+    return openTabs.value.find((t) => t.path === activeTabPath.value) || null;
+  });
+  function sortItems2(list) {
+    return [...list].sort((a, b) => {
+      if (a.is_dir !== b.is_dir) return a.is_dir ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+  function buildTreeNode(item) {
+    return {
+      name: item.name,
+      path: item.path,
+      is_dir: item.is_dir,
+      children: [],
+      expanded: false,
+      loading: false,
+      loaded: false
+    };
+  }
+  function collectExpandedPaths(nodes, set) {
+    for (const n of nodes) {
+      if (n.expanded) {
+        set.add(n.path);
+      }
+      if (n.children.length) {
+        collectExpandedPaths(n.children, set);
+      }
+    }
+  }
+  async function fetchTreeRoot() {
+    var _a2;
+    treeLoading.value = true;
+    try {
+      const expandedPaths = /* @__PURE__ */ new Set();
+      if (!treeAllExpanded.value) {
+        collectExpandedPaths(treeRoots.value, expandedPaths);
+      }
+      const res = await fileApi.listFiles("");
+      const fetched = ((_a2 = res.data) == null ? void 0 : _a2.items) || [];
+      const newRoots = sortItems2(fetched).map(buildTreeNode);
+      const restorePromises = [];
+      if (treeAllExpanded.value) {
+        expandAll();
+      } else if (expandedPaths.size > 0) {
+        let restoreExpanded = function(nodes) {
+          for (const n of nodes) {
+            if (expandedPaths.has(n.path)) {
+              n.expanded = true;
+              n.loading = true;
+              restorePromises.push(
+                fileApi.listFiles(n.path).then((childRes) => {
+                  var _a3;
+                  n.children = sortItems2(((_a3 = childRes.data) == null ? void 0 : _a3.items) || []).map(buildTreeNode);
+                  n.loaded = true;
+                  n.loading = false;
+                }).catch(() => {
+                  n.loading = false;
+                })
+              );
+            }
+          }
+        };
+        restoreExpanded(newRoots);
+      }
+      treeRoots.value = newRoots;
+      if (restorePromises.length > 0) {
+        await Promise.all(restorePromises);
+      }
+    } catch (e) {
+      console.error("Failed to fetch tree root:", e);
+      treeRoots.value = [];
+    } finally {
+      treeLoading.value = false;
+    }
+  }
+  function fetchTree() {
+    fetchTreeRoot();
+  }
+  async function toggleTreeNode(node) {
+    var _a2;
+    if (!node.is_dir) {
+      return;
+    }
+    if (node.expanded) {
+      node.expanded = false;
+      return;
+    }
+    node.expanded = true;
+    if (!node.loaded) {
+      node.loading = true;
+      try {
+        const res = await fileApi.listFiles(node.path);
+        const fetched = ((_a2 = res.data) == null ? void 0 : _a2.items) || [];
+        node.children = sortItems2(fetched).map(buildTreeNode);
+        node.loaded = true;
+      } catch (e) {
+        console.error("Failed to fetch tree children:", e);
+      } finally {
+        node.loading = false;
+      }
+    }
+  }
+  function collapseAllNodes(nodes) {
+    for (const n of nodes) {
+      n.expanded = false;
+      if (n.children.length) collapseAllNodes(n.children);
+    }
+  }
+  function onTreeItemClick(node) {
+    if (node.is_dir) {
+      toggleTreeNode(node);
+    }
+  }
+  function setCurrentPath(path) {
+    currentPath.value = path;
+  }
+  function selectFile(path) {
+    selectedFile.value = path;
+  }
+  function clearSelectedFile() {
+    selectedFile.value = null;
+  }
+  function expandAll() {
+    treeAllExpanded.value = true;
+    function expand(nodes) {
+      for (const n of nodes) {
+        if (!n.is_dir) continue;
+        n.expanded = true;
+        if (!n.loaded) {
+          n.loading = true;
+          fileApi.listFiles(n.path).then((res) => {
+            var _a2;
+            n.children = sortItems2(((_a2 = res.data) == null ? void 0 : _a2.items) || []).map(buildTreeNode);
+            n.loaded = true;
+            n.loading = false;
+            expand(n.children);
+          }).catch(() => {
+            n.loading = false;
+          });
+        } else {
+          expand(n.children);
+        }
+      }
+    }
+    expand(treeRoots.value);
+  }
+  function collapseAll() {
+    treeAllExpanded.value = false;
+    collapseAllNodes(treeRoots.value);
+  }
+  function toggleExpandAll() {
+    if (treeAllExpanded.value) {
+      collapseAll();
+    } else {
+      expandAll();
+    }
+  }
+  async function fetchCurrentItems() {
+    var _a2;
+    loading.value = true;
+    try {
+      const res = await fileApi.listFiles(currentPath.value);
+      items.value = sortItems2(((_a2 = res.data) == null ? void 0 : _a2.items) || []);
+    } catch (e) {
+      console.error("Failed to fetch files:", e);
+      items.value = [];
+    } finally {
+      loading.value = false;
+    }
+  }
+  async function checkNameConflict(parentPath, name) {
+    var _a2;
+    const res = await fileApi.listFiles(parentPath || "");
+    const items2 = ((_a2 = res.data) == null ? void 0 : _a2.items) || [];
+    return items2.some((item) => item.name === name);
+  }
+  async function createDirectory2(parentPath, name) {
+    if (await checkNameConflict(parentPath, name)) {
+      throw new Error(`"${name}" already exists`);
+    }
+    await fileApi.createDirectory(parentPath, name);
+    invalidateTreeForPath(parentPath);
+  }
+  async function createFile(parentPath, name) {
+    if (await checkNameConflict(parentPath, name)) {
+      throw new Error(`"${name}" already exists`);
+    }
+    const filePath = parentPath ? parentPath + "/" + name : name;
+    const blob = new Blob([""], { type: "text/plain" });
+    const file = new File([blob], name, { type: "text/plain" });
+    await fileApi.uploadFiles(parentPath, [file]);
+    invalidateTreeForPath(parentPath);
+    return filePath;
+  }
+  async function uploadFiles2(parentPath, files) {
+    if (!files.length) return;
+    await fileApi.uploadFiles(parentPath, files);
+    invalidateTreeForPath(parentPath);
+  }
+  async function deleteItem(itemPath) {
+    await fileApi.deleteFile(itemPath);
+    const parentPath = itemPath.substring(0, itemPath.lastIndexOf("/"));
+    if (currentPath.value === itemPath || currentPath.value.startsWith(itemPath + "/")) {
+      currentPath.value = parentPath;
+    }
+    invalidateTreeForPath(parentPath);
+    if (parentPath !== currentPath.value) {
+      invalidateTreeForPath(currentPath.value);
+    }
+    closeOpenFile(itemPath);
+  }
+  async function renameItem(oldPath, newName) {
+    await fileApi.renameFile(oldPath, newName);
+    const parentPath = oldPath.substring(0, oldPath.lastIndexOf("/"));
+    invalidateTreeForPath(parentPath);
+    invalidateTreeForPath(currentPath.value);
+  }
+  async function downloadItem(itemPath) {
+    const result = await fileApi.downloadFile(itemPath);
+    fileApi.saveBlob(result.blob, result.fileName);
+  }
+  async function invalidateTreeForPath(path) {
+    if (path === "" || path === "/") {
+      await fetchTreeRoot();
+      return;
+    }
+    let loadingPromise = Promise.resolve();
+    function invalidateNodes(nodes) {
+      for (const n of nodes) {
+        if (n.path === path) {
+          n.loaded = false;
+          n.children = [];
+          if (n.expanded) {
+            n.loading = true;
+            loadingPromise = fileApi.listFiles(path).then((res) => {
+              var _a2;
+              n.children = sortItems2(((_a2 = res.data) == null ? void 0 : _a2.items) || []).map(buildTreeNode);
+              n.loaded = true;
+              n.loading = false;
+            }).catch(() => {
+              n.loading = false;
+            });
+          }
+          return true;
+        }
+        if (n.children.length && invalidateNodes(n.children)) return true;
+      }
+      return false;
+    }
+    invalidateNodes(treeRoots.value);
+    await loadingPromise;
+  }
+  async function saveFileContent(filePath, content) {
+    const blob = new Blob([content], { type: "text/plain" });
+    const fileName = filePath.split("/").pop() || "file.txt";
+    const parentDir = filePath.substring(0, filePath.lastIndexOf("/"));
+    const file = new File([blob], fileName, { type: "text/plain" });
+    await fileApi.uploadFiles(parentDir, [file]);
+    invalidateTreeForPath(parentDir);
+    const tab = openTabs.value.find((t) => t.path === filePath);
+    if (tab) {
+      tab.dirty = false;
+    }
+  }
+  function setClipboard(item) {
+    clipboard.value = item;
+  }
+  function clearClipboard() {
+    clipboard.value = null;
+  }
+  async function pasteFile(targetDir, newName) {
+    if (!clipboard.value) return;
+    const { path: srcPath, mode } = clipboard.value;
+    const baseName = newName || srcPath.split("/").pop() || srcPath;
+    if (mode === "cut") {
+      await fileApi.moveFile(srcPath, targetDir, baseName);
+      const srcParentPath = srcPath.substring(0, srcPath.lastIndexOf("/"));
+      if (currentPath.value === srcPath || currentPath.value.startsWith(srcPath + "/")) {
+        currentPath.value = srcParentPath;
+      }
+      await invalidateTreeForPath(srcParentPath);
+      closeOpenFile(srcPath);
+    } else {
+      await fileApi.copyFile(srcPath, targetDir, baseName);
+    }
+    await invalidateTreeForPath(targetDir);
+    clearClipboard();
+  }
+  function openFile(filePath) {
+    if (!filePath) return;
+    const existing = openTabs.value.find((t) => t.path === filePath);
+    if (existing) {
+      activeTabPath.value = filePath;
+      return;
+    }
+    openTabs.value.push({
+      path: filePath,
+      name: filePath.split("/").pop() || filePath,
+      dirty: false
+    });
+    activeTabPath.value = filePath;
+  }
+  function closeOpenFile(filePath) {
+    const idx = openTabs.value.findIndex((t) => t.path === filePath);
+    if (idx === -1) return;
+    openTabs.value.splice(idx, 1);
+    if (activeTabPath.value === filePath) {
+      if (openTabs.value.length > 0) {
+        activeTabPath.value = openTabs.value[Math.min(idx, openTabs.value.length - 1)].path;
+      } else {
+        activeTabPath.value = null;
+      }
+    }
+  }
+  function setActiveOpenFile(filePath) {
+    activeTabPath.value = filePath;
+  }
+  function setTabDirty(filePath, isDirty2) {
+    const tab = openTabs.value.find((t) => t.path === filePath);
+    if (tab) {
+      tab.dirty = isDirty2;
+    }
+  }
+  function isImageFile(filePath) {
+    var _a2;
+    const ext = ((_a2 = filePath.split(".").pop()) == null ? void 0 : _a2.toLowerCase()) || "";
+    return ["png", "jpg", "jpeg", "gif", "svg", "webp", "bmp", "ico"].includes(ext);
+  }
+  function getParentPath(filePath) {
+    const idx = filePath.lastIndexOf("/");
+    return idx >= 0 ? filePath.substring(0, idx) : "";
+  }
+  function handleFileChange(event) {
+    const isRename = event.kind === "Modify(Name(Both))";
+    if (isRename) {
+      if (event.old_path) {
+        invalidateTreeForPath(getParentPath(event.old_path));
+      }
+      invalidateTreeForPath(getParentPath(event.path));
+    } else {
+      invalidateTreeForPath(getParentPath(event.path));
+    }
+    if (currentPath.value) {
+      invalidateTreeForPath(currentPath.value);
+    }
+  }
+  function setupFileWatcher() {
+    if (fileWatcher.value) return;
+    fileWatcher.value = startFileWatcher(handleFileChange);
+  }
+  function teardownFileWatcher() {
+    var _a2;
+    (_a2 = fileWatcher.value) == null ? void 0 : _a2.stop();
+    fileWatcher.value = null;
+  }
+  return {
+    treeRoots,
+    treeLoading,
+    treeAllExpanded,
+    currentPath,
+    items,
+    loading,
+    selectedFile,
+    openTabs,
+    activeTabPath,
+    activeTab,
+    clipboard,
+    fetchTree,
+    fetchTreeRoot,
+    toggleTreeNode,
+    collapseAllNodes,
+    onTreeItemClick,
+    setCurrentPath,
+    selectFile,
+    clearSelectedFile,
+    expandAll,
+    collapseAll,
+    toggleExpandAll,
+    fetchCurrentItems,
+    createDirectory: createDirectory2,
+    createFile,
+    uploadFiles: uploadFiles2,
+    checkNameConflict,
+    deleteItem,
+    renameItem,
+    downloadItem,
+    saveFileContent,
+    setClipboard,
+    clearClipboard,
+    pasteFile,
+    openFile,
+    closeOpenFile,
+    setActiveOpenFile,
+    setTabDirty,
+    isImageFile,
+    setupFileWatcher,
+    teardownFileWatcher,
+    refresh: fetchCurrentItems,
+    refreshTree: fetchTreeRoot
+  };
+});
+const _hoisted_1$1 = { class: "tree-node" };
+const _sfc_main$2 = /* @__PURE__ */ defineComponent$1({
+  __name: "FileTreeItem",
+  props: {
+    node: {},
+    depth: {},
+    currentPath: {},
+    selectedFilePath: {}
+  },
+  emits: ["navigate", "selectFile", "rename", "delete"],
+  setup(__props, { emit: __emit }) {
+    const props = __props;
+    const emit2 = __emit;
+    const fileStore = useFileStore();
+    const appStore = useAppStore();
+    const active = computed(() => props.currentPath === props.node.path);
+    const fileActive = computed(() => !props.node.is_dir && props.selectedFilePath === props.node.path);
+    const isCut = computed(
+      () => {
+        var _a2, _b;
+        return ((_a2 = fileStore.clipboard) == null ? void 0 : _a2.mode) === "cut" && ((_b = fileStore.clipboard) == null ? void 0 : _b.path) === props.node.path;
+      }
+    );
+    const showPasteRenameDialog = /* @__PURE__ */ ref(false);
+    const pasteRenameName = /* @__PURE__ */ ref("");
+    const pasteRenameLoading = /* @__PURE__ */ ref(false);
+    const fileTypeIcons = {
+      ".ts": "mdi-language-typescript",
+      ".tsx": "mdi-react",
+      ".js": "mdi-language-javascript",
+      ".jsx": "mdi-react",
+      ".vue": "mdi-vuejs",
+      ".css": "mdi-language-css3",
+      ".scss": "mdi-sass",
+      ".html": "mdi-language-html5",
+      ".json": "mdi-code-json",
+      ".md": "mdi-language-markdown",
+      ".py": "mdi-language-python",
+      ".rs": "mdi-language-rust",
+      ".go": "mdi-language-go",
+      ".java": "mdi-language-java",
+      ".yml": "mdi-cog",
+      ".yaml": "mdi-cog",
+      ".toml": "mdi-cog",
+      ".lock": "mdi-lock",
+      ".gitignore": "mdi-git",
+      ".png": "mdi-file-image",
+      ".jpg": "mdi-file-image",
+      ".jpeg": "mdi-file-image",
+      ".gif": "mdi-file-image",
+      ".svg": "mdi-file-image",
+      ".pdf": "mdi-file-pdf-box",
+      ".zip": "mdi-folder-zip",
+      ".tar": "mdi-folder-zip",
+      ".gz": "mdi-folder-zip"
+    };
+    function fileIcon(name) {
+      const ext = name.lastIndexOf(".") >= 0 ? name.slice(name.lastIndexOf(".")).toLowerCase() : "";
+      return fileTypeIcons[ext] || "mdi-file-outline";
+    }
+    function onClick() {
+      if (props.node.is_dir) {
+        fileStore.onTreeItemClick(props.node);
+        emit2("navigate", props.node.path);
+      } else {
+        fileStore.selectFile(props.node.path);
+        emit2("selectFile", props.node.path);
+      }
+    }
+    function handleCopy() {
+      fileStore.setClipboard({
+        path: props.node.path,
+        name: props.node.name,
+        is_dir: props.node.is_dir,
+        mode: "copy"
+      });
+      appStore.showMessage("Copied to clipboard", "success");
+    }
+    function handleCut() {
+      fileStore.setClipboard({
+        path: props.node.path,
+        name: props.node.name,
+        is_dir: props.node.is_dir,
+        mode: "cut"
+      });
+      appStore.showMessage("Cut to clipboard", "success");
+    }
+    async function handlePaste() {
+      var _a2;
+      if (!fileStore.clipboard) return;
+      try {
+        await fileStore.pasteFile(props.node.path);
+        appStore.showMessage("Pasted successfully", "success");
+      } catch (e) {
+        appStore.showMessage(e.message || "Failed to paste", "error");
+        pasteRenameName.value = ((_a2 = fileStore.clipboard) == null ? void 0 : _a2.name) || "file";
+        showPasteRenameDialog.value = true;
+      }
+    }
+    async function handlePasteRename() {
+      const newName = pasteRenameName.value.trim();
+      if (!newName) return;
+      pasteRenameLoading.value = true;
+      try {
+        await fileStore.pasteFile(props.node.path, newName);
+        appStore.showMessage("Pasted successfully", "success");
+        showPasteRenameDialog.value = false;
+      } catch (e) {
+        appStore.showMessage(e.message || "Failed to paste", "error");
+      } finally {
+        pasteRenameLoading.value = false;
+      }
+    }
+    function handleDownload() {
+      fileStore.downloadItem(props.node.path).catch(() => {
+        appStore.showMessage("Failed to download", "error");
+      });
+    }
+    return (_ctx, _cache) => {
+      const _component_FileTreeItem = resolveComponent("FileTreeItem", true);
+      return openBlock(), createElementBlock(Fragment, null, [
+        createBaseVNode("div", _hoisted_1$1, [
+          createVNode(VMenu, {
+            location: "start",
+            "close-on-content-click": true,
+            offset: "4"
+          }, {
+            activator: withCtx(({ props: menuProps }) => [
+              createVNode(VListItem, mergeProps({
+                active: active.value || fileActive.value,
+                density: "compact",
+                rounded: "lg",
+                class: ["mb-0 tree-item", { "tree-item--cut": isCut.value }],
+                style: { paddingLeft: __props.depth * 16 + 4 + "px" }
+              }, menuProps, {
+                onClick,
+                onContextmenu: _cache[0] || (_cache[0] = withModifiers(() => {
+                }, ["prevent"]))
+              }), createSlots({
+                prepend: withCtx(() => [
+                  __props.node.loading ? (openBlock(), createBlock(VProgressCircular, {
+                    key: 0,
+                    indeterminate: "",
+                    size: "14",
+                    width: "2",
+                    color: "primary"
+                  })) : (openBlock(), createBlock(VIcon, {
+                    key: 1,
+                    size: "16",
+                    color: __props.node.is_dir ? "warning" : "medium-emphasis"
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode(toDisplayString(__props.node.is_dir ? __props.node.expanded ? "mdi-folder-open" : "mdi-folder" : fileIcon(__props.node.name)), 1)
+                    ]),
+                    _: 1
+                  }, 8, ["color"]))
+                ]),
+                default: withCtx(() => [
+                  createVNode(VListItemTitle, { class: "text-body-2 text-truncate" }, {
+                    default: withCtx(() => [
+                      createTextVNode(toDisplayString(__props.node.name), 1)
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 2
+              }, [
+                __props.node.is_dir ? {
+                  name: "append",
+                  fn: withCtx(() => [
+                    createVNode(VIcon, {
+                      size: "14",
+                      color: "medium-emphasis"
+                    }, {
+                      default: withCtx(() => [
+                        createTextVNode(toDisplayString(__props.node.expanded ? "mdi-chevron-down" : "mdi-chevron-right"), 1)
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  key: "0"
+                } : void 0
+              ]), 1040, ["active", "class", "style"])
+            ]),
+            default: withCtx(() => [
+              createVNode(VList, {
+                density: "compact",
+                "min-width": "160",
+                rounded: "lg",
+                class: "context-menu"
+              }, {
+                default: withCtx(() => [
+                  createVNode(VListItem, {
+                    "prepend-icon": "mdi-content-copy",
+                    title: "Copy",
+                    density: "compact",
+                    onClick: handleCopy
+                  }),
+                  createVNode(VListItem, {
+                    "prepend-icon": "mdi-content-cut",
+                    title: "Cut",
+                    density: "compact",
+                    onClick: handleCut
+                  }),
+                  unref(fileStore).clipboard && __props.node.is_dir ? (openBlock(), createBlock(VListItem, {
+                    key: 0,
+                    "prepend-icon": "mdi-content-paste",
+                    title: "Paste",
+                    density: "compact",
+                    subtitle: "Paste '" + unref(fileStore).clipboard.name + "' here",
+                    onClick: handlePaste
+                  }, null, 8, ["subtitle"])) : createCommentVNode("", true),
+                  createVNode(VDivider, { class: "my-1" }),
+                  !__props.node.is_dir ? (openBlock(), createBlock(VListItem, {
+                    key: 1,
+                    "prepend-icon": "mdi-download",
+                    title: "Download",
+                    density: "compact",
+                    onClick: handleDownload
+                  })) : createCommentVNode("", true),
+                  createVNode(VListItem, {
+                    "prepend-icon": "mdi-pencil",
+                    title: "Rename",
+                    density: "compact",
+                    onClick: _cache[1] || (_cache[1] = ($event) => _ctx.$emit("rename", __props.node.path, __props.node.name))
+                  }),
+                  createVNode(VDivider, { class: "my-1" }),
+                  createVNode(VListItem, {
+                    "prepend-icon": "mdi-delete",
+                    title: "Delete",
+                    density: "compact",
+                    class: "text-error",
+                    onClick: _cache[2] || (_cache[2] = ($event) => _ctx.$emit("delete", __props.node.path, __props.node.name, __props.node.is_dir))
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }),
+          __props.node.is_dir ? (openBlock(), createBlock(VExpandTransition, { key: 0 }, {
+            default: withCtx(() => [
+              withDirectives(createBaseVNode("div", null, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList(__props.node.children, (child) => {
+                  return openBlock(), createBlock(_component_FileTreeItem, {
+                    key: child.path,
+                    node: child,
+                    depth: __props.depth + 1,
+                    "current-path": __props.currentPath,
+                    "selected-file-path": __props.selectedFilePath,
+                    onNavigate: _cache[3] || (_cache[3] = (p2) => _ctx.$emit("navigate", p2)),
+                    onSelectFile: _cache[4] || (_cache[4] = (p2) => _ctx.$emit("selectFile", p2)),
+                    onRename: _cache[5] || (_cache[5] = (p2, n) => _ctx.$emit("rename", p2, n)),
+                    onDelete: _cache[6] || (_cache[6] = (p2, n, d) => _ctx.$emit("delete", p2, n, d))
+                  }, null, 8, ["node", "depth", "current-path", "selected-file-path"]);
+                }), 128)),
+                __props.node.loaded && __props.node.children.length === 0 ? (openBlock(), createElementBlock("div", {
+                  key: 0,
+                  class: "text-caption text-medium-emphasis px-4 py-1",
+                  style: normalizeStyle({ paddingLeft: (__props.depth + 1) * 16 + 28 + "px" })
+                }, " Empty ", 4)) : createCommentVNode("", true)
+              ], 512), [
+                [vShow, __props.node.expanded]
+              ])
+            ]),
+            _: 1
+          })) : createCommentVNode("", true)
+        ]),
+        createVNode(VDialog, {
+          modelValue: showPasteRenameDialog.value,
+          "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => showPasteRenameDialog.value = $event),
+          "max-width": "400",
+          persistent: "",
+          onKeydown: withKeys(handlePasteRename, ["enter"])
+        }, {
+          default: withCtx(() => [
+            createVNode(VCard, { rounded: "lg" }, {
+              default: withCtx(() => [
+                createVNode(VCardTitle, { class: "text-body-1" }, {
+                  default: withCtx(() => [..._cache[10] || (_cache[10] = [
+                    createTextVNode("Name Conflict", -1)
+                  ])]),
+                  _: 1
+                }),
+                createVNode(VCardText, null, {
+                  default: withCtx(() => [
+                    _cache[11] || (_cache[11] = createBaseVNode("p", { class: "text-caption text-medium-emphasis mb-2" }, " A file or folder with the same name already exists in the target location. ", -1)),
+                    createVNode(VTextField, {
+                      modelValue: pasteRenameName.value,
+                      "onUpdate:modelValue": _cache[7] || (_cache[7] = ($event) => pasteRenameName.value = $event),
+                      label: "New Name",
+                      variant: "outlined",
+                      density: "compact",
+                      autofocus: ""
+                    }, null, 8, ["modelValue"])
+                  ]),
+                  _: 1
+                }),
+                createVNode(VCardActions, { class: "px-4 pb-4" }, {
+                  default: withCtx(() => [
+                    createVNode(VSpacer),
+                    createVNode(VBtn, {
+                      variant: "text",
+                      size: "small",
+                      onClick: _cache[8] || (_cache[8] = ($event) => showPasteRenameDialog.value = false)
+                    }, {
+                      default: withCtx(() => [..._cache[12] || (_cache[12] = [
+                        createTextVNode("Cancel", -1)
+                      ])]),
+                      _: 1
+                    }),
+                    createVNode(VBtn, {
+                      color: "primary",
+                      variant: "tonal",
+                      size: "small",
+                      onClick: handlePasteRename,
+                      loading: pasteRenameLoading.value
+                    }, {
+                      default: withCtx(() => [..._cache[13] || (_cache[13] = [
+                        createTextVNode("Paste", -1)
+                      ])]),
+                      _: 1
+                    }, 8, ["loading"])
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        }, 8, ["modelValue"])
+      ], 64);
+    };
+  }
+});
+const FileTreeItem = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-754f8ece"]]);
+const _hoisted_1 = { class: "project-bar px-3 py-1 d-flex align-center" };
+const _hoisted_2 = { class: "text-body-2 text-truncate project-name" };
+const _hoisted_3 = { class: "toolbar px-3 py-1 d-flex align-center ga-1" };
+const _hoisted_4 = {
+  key: 0,
+  class: "clipboard-bar px-3 py-1 d-flex align-center"
+};
+const _hoisted_5 = { class: "text-caption text-truncate clipboard-text" };
+const _hoisted_6 = {
+  key: 0,
+  class: "text-center pa-4"
+};
+const _hoisted_7 = {
+  key: 0,
+  class: "text-center pa-6"
+};
+const _hoisted_8 = { class: "mb-2" };
+const MIN_THREE_COL_WIDTH = 920;
+const _sfc_main$1 = /* @__PURE__ */ defineComponent$1({
+  __name: "RightSidebar",
+  setup(__props) {
+    const fileStore = useFileStore();
+    const appStore = useAppStore();
+    const route = useRoute();
+    const router2 = useRouter();
+    const { width: windowWidth } = useWindowSize();
+    const isFloating = computed(() => windowWidth.value < MIN_THREE_COL_WIDTH);
+    const drawerProps = computed(() => {
+      if (isFloating.value) {
+        return {
+          temporary: true,
+          modelValue: !appStore.rightSidebarCollapsed,
+          "onUpdate:modelValue": (val) => {
+            if (val !== !appStore.rightSidebarCollapsed) {
+              appStore.toggleRightSidebar();
+            }
+          }
+        };
+      }
+      return {
+        permanent: true,
+        rail: appStore.rightSidebarCollapsed
+      };
+    });
+    const fileInputRef = /* @__PURE__ */ ref(null);
+    const fileTreeWrapperRef = /* @__PURE__ */ ref(null);
+    const sidebarContentRef = /* @__PURE__ */ ref(null);
+    const rootMenuRef = /* @__PURE__ */ ref(null);
+    const showNewFileDialog = /* @__PURE__ */ ref(false);
+    const newFileName = /* @__PURE__ */ ref("");
+    const newFileLoading = /* @__PURE__ */ ref(false);
+    const newFileError = /* @__PURE__ */ ref("");
+    const showMkdirDialog = /* @__PURE__ */ ref(false);
+    const mkdirName = /* @__PURE__ */ ref("");
+    const mkdirLoading = /* @__PURE__ */ ref(false);
+    const mkdirError = /* @__PURE__ */ ref("");
+    const renameDialog = /* @__PURE__ */ ref(false);
+    const renamePath = /* @__PURE__ */ ref("");
+    const renameName = /* @__PURE__ */ ref("");
+    const renameLoading = /* @__PURE__ */ ref(false);
+    const deleteDialog = /* @__PURE__ */ ref(false);
+    const deletePath = /* @__PURE__ */ ref("");
+    const deleteTargetName = /* @__PURE__ */ ref("");
+    const deleteLoading = /* @__PURE__ */ ref(false);
+    const showPasteRenameDialog = /* @__PURE__ */ ref(false);
+    const pasteRenameName = /* @__PURE__ */ ref("");
+    const pasteRenameTargetDir = /* @__PURE__ */ ref("");
+    const pasteRenameLoading = /* @__PURE__ */ ref(false);
+    const rootMenu = /* @__PURE__ */ ref(false);
+    const rootMenuX = /* @__PURE__ */ ref(0);
+    const rootMenuY = /* @__PURE__ */ ref(0);
+    const dialogContextPath = /* @__PURE__ */ ref(null);
+    onClickOutside(rootMenuRef, () => {
+      rootMenu.value = false;
+    });
+    const selectedFilePath = computed(() => fileStore.selectedFile);
+    const currentPath = computed(() => route.query.path || "");
+    function handleNavigate(folderPath) {
+      fileStore.setCurrentPath(folderPath);
+      router2.push({ query: { path: folderPath } });
+    }
+    function onTreeContextMenu(e) {
+      const target = e.target;
+      if (target.closest(".tree-node")) return;
+      const container = sidebarContentRef.value;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      rootMenuX.value = e.clientX - rect.left;
+      rootMenuY.value = e.clientY - rect.top;
+      dialogContextPath.value = "";
+      rootMenu.value = true;
+    }
+    async function handleRootPaste(targetDir = "") {
+      var _a2;
+      if (!fileStore.clipboard) return;
+      try {
+        await fileStore.pasteFile(targetDir);
+        appStore.showMessage("Pasted successfully", "success");
+      } catch (e) {
+        appStore.showMessage(e.message || "Failed to paste", "error");
+        pasteRenameName.value = ((_a2 = fileStore.clipboard) == null ? void 0 : _a2.name) || "file";
+        pasteRenameTargetDir.value = targetDir;
+        showPasteRenameDialog.value = true;
+      }
+    }
+    async function handlePasteRename() {
+      const newName = pasteRenameName.value.trim();
+      if (!newName) return;
+      pasteRenameLoading.value = true;
+      try {
+        await fileStore.pasteFile(pasteRenameTargetDir.value, newName);
+        appStore.showMessage("Pasted successfully", "success");
+        showPasteRenameDialog.value = false;
+      } catch (e) {
+        appStore.showMessage(e.message || "Failed to paste", "error");
+      } finally {
+        pasteRenameLoading.value = false;
+      }
+    }
+    async function onRootMenuPaste() {
+      rootMenu.value = false;
+      await handleRootPaste();
+    }
+    function handleSelectFile(filePath) {
+      fileStore.openFile(filePath);
+      const parentPath = filePath.substring(0, filePath.lastIndexOf("/"));
+      fileStore.setCurrentPath(parentPath);
+      router2.push({ path: "/", query: parentPath ? { path: parentPath } : {} });
+    }
+    async function handleNewFile() {
+      const name = newFileName.value.trim();
+      if (!name) return;
+      newFileLoading.value = true;
+      try {
+        const parentPath = dialogContextPath.value !== null ? dialogContextPath.value : currentPath.value;
+        const filePath = await fileStore.createFile(parentPath, name);
+        appStore.showMessage("File created", "success");
+        showNewFileDialog.value = false;
+        newFileName.value = "";
+        dialogContextPath.value = null;
+        fileStore.openFile(filePath);
+      } catch (e) {
+        const errMsg = e.message || "Failed to create file";
+        newFileError.value = errMsg;
+        appStore.showMessage(errMsg, "error");
+      } finally {
+        newFileLoading.value = false;
+      }
+    }
+    async function handleMkdir() {
+      const name = mkdirName.value.trim();
+      if (!name) return;
+      mkdirLoading.value = true;
+      try {
+        const parentPath = dialogContextPath.value !== null ? dialogContextPath.value : currentPath.value;
+        await fileStore.createDirectory(parentPath, name);
+        appStore.showMessage("Folder created", "success");
+        showMkdirDialog.value = false;
+        mkdirName.value = "";
+        const newFolderPath = parentPath ? parentPath + "/" + name : name;
+        dialogContextPath.value = null;
+        handleNavigate(newFolderPath);
+      } catch (e) {
+        const errMsg = e.message || "Failed to create folder";
+        mkdirError.value = errMsg;
+        appStore.showMessage(errMsg, "error");
+      } finally {
+        mkdirLoading.value = false;
+      }
+    }
+    function openRename(path, name) {
+      renamePath.value = path;
+      renameName.value = name;
+      renameDialog.value = true;
+    }
+    async function handleRename() {
+      if (!renamePath.value || !renameName.value.trim()) return;
+      renameLoading.value = true;
+      try {
+        await fileStore.renameItem(renamePath.value, renameName.value.trim());
+        appStore.showMessage("Renamed successfully", "success");
+        renameDialog.value = false;
+        renamePath.value = "";
+      } catch {
+        appStore.showMessage("Failed to rename", "error");
+      } finally {
+        renameLoading.value = false;
+      }
+    }
+    function confirmDelete(path, name, _isDir) {
+      deletePath.value = path;
+      deleteTargetName.value = name;
+      deleteDialog.value = true;
+    }
+    async function handleDelete() {
+      if (!deletePath.value) return;
+      deleteLoading.value = true;
+      try {
+        const deletedPath = deletePath.value;
+        const currentRoutePath = currentPath.value;
+        await fileStore.deleteItem(deletedPath);
+        if (currentRoutePath === deletedPath || currentRoutePath.startsWith(deletedPath + "/")) {
+          const parentPath = deletedPath.substring(0, deletedPath.lastIndexOf("/"));
+          router2.push({ query: { path: parentPath } });
+        }
+        appStore.showMessage("Deleted successfully", "success");
+        deleteDialog.value = false;
+        deletePath.value = "";
+      } catch {
+        appStore.showMessage("Failed to delete", "error");
+      } finally {
+        deleteLoading.value = false;
+      }
+    }
+    function onFilesSelected(e) {
+      const input = e.target;
+      const files = input.files;
+      if (!files || !files.length) return;
+      fileStore.uploadFiles("", Array.from(files)).then(() => {
+        appStore.showMessage("Files uploaded", "success");
+      }).catch(() => {
+        appStore.showMessage("Failed to upload files", "error");
+      }).finally(() => {
+        input.value = "";
+      });
+    }
+    onMounted(() => {
+      fileStore.fetchTreeRoot();
+      fileStore.setupFileWatcher();
+    });
+    onUnmounted(() => {
+      fileStore.teardownFileWatcher();
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(VNavigationDrawer, mergeProps(drawerProps.value, {
+        location: "right",
+        color: "surface",
+        width: 280,
+        "rail-width": 48,
+        class: "right-sidebar"
+      }), {
+        default: withCtx(() => [
+          createBaseVNode("div", _hoisted_1, [
+            unref(appStore).currentProject && !unref(appStore).rightSidebarCollapsed ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
+              createVNode(VIcon, {
+                size: "16",
+                color: "primary",
+                class: "mr-2 flex-shrink-0"
+              }, {
+                default: withCtx(() => [..._cache[24] || (_cache[24] = [
+                  createTextVNode("mdi-folder", -1)
+                ])]),
+                _: 1
+              }),
+              createBaseVNode("span", _hoisted_2, toDisplayString(unref(appStore).currentProject.id), 1),
+              createVNode(VSpacer)
+            ], 64)) : unref(appStore).rightSidebarCollapsed ? (openBlock(), createElementBlock(Fragment, { key: 1 }, [
+              unref(appStore).currentProject ? (openBlock(), createBlock(VIcon, {
+                key: 0,
+                size: "18",
+                color: "primary",
+                class: "mx-auto"
+              }, {
+                default: withCtx(() => [..._cache[25] || (_cache[25] = [
+                  createTextVNode("mdi-folder", -1)
+                ])]),
+                _: 1
+              })) : createCommentVNode("", true)
+            ], 64)) : createCommentVNode("", true),
+            createVNode(VBtn, {
+              icon: unref(appStore).rightSidebarCollapsed ? "mdi-chevron-left" : "mdi-chevron-right",
+              variant: "text",
+              size: "small",
+              density: "compact",
+              color: "medium-emphasis",
+              class: "collapse-btn",
+              onClick: _cache[0] || (_cache[0] = ($event) => unref(appStore).toggleRightSidebar()),
+              title: unref(appStore).rightSidebarCollapsed ? "Expand" : "Collapse"
+            }, null, 8, ["icon", "title"])
+          ]),
+          !unref(appStore).rightSidebarCollapsed ? (openBlock(), createElementBlock("div", {
+            key: 0,
+            ref_key: "sidebarContentRef",
+            ref: sidebarContentRef,
+            class: "sidebar-content"
+          }, [
+            createBaseVNode("div", _hoisted_3, [
+              _cache[26] || (_cache[26] = createBaseVNode("span", { class: "text-caption text-medium-emphasis font-weight-bold" }, "FILES", -1)),
+              createVNode(VSpacer),
+              createVNode(VBtn, {
+                icon: "mdi-file-plus",
+                variant: "text",
+                size: "x-small",
+                color: "medium-emphasis",
+                class: "toolbar-btn",
+                title: "New File",
+                onClick: _cache[1] || (_cache[1] = ($event) => showNewFileDialog.value = true)
+              }),
+              createVNode(VBtn, {
+                icon: "mdi-folder-plus",
+                variant: "text",
+                size: "x-small",
+                color: "medium-emphasis",
+                class: "toolbar-btn",
+                title: "New Folder",
+                onClick: _cache[2] || (_cache[2] = ($event) => showMkdirDialog.value = true)
+              }),
+              createVNode(VBtn, {
+                icon: "mdi-refresh",
+                variant: "text",
+                size: "x-small",
+                color: "medium-emphasis",
+                class: "toolbar-btn",
+                title: "Refresh",
+                onClick: _cache[3] || (_cache[3] = ($event) => unref(fileStore).refreshTree()),
+                loading: unref(fileStore).treeLoading
+              }, null, 8, ["loading"]),
+              createVNode(VBtn, {
+                icon: unref(fileStore).treeAllExpanded ? "mdi-arrow-collapse-all" : "mdi-arrow-expand-all",
+                variant: "text",
+                size: "x-small",
+                color: "medium-emphasis",
+                class: "toolbar-btn",
+                title: unref(fileStore).treeAllExpanded ? "Collapse All" : "Expand All",
+                onClick: _cache[4] || (_cache[4] = ($event) => unref(fileStore).toggleExpandAll())
+              }, null, 8, ["icon", "title"])
+            ]),
+            unref(fileStore).clipboard ? (openBlock(), createElementBlock("div", _hoisted_4, [
+              createVNode(VIcon, {
+                size: "14",
+                class: "mr-1 clipboard-icon"
+              }, {
+                default: withCtx(() => [
+                  createTextVNode(toDisplayString(unref(fileStore).clipboard.mode === "cut" ? "mdi-content-cut" : "mdi-content-copy"), 1)
+                ]),
+                _: 1
+              }),
+              createBaseVNode("span", _hoisted_5, toDisplayString(unref(fileStore).clipboard.name), 1),
+              createVNode(VSpacer),
+              createVNode(VBtn, {
+                icon: "mdi-close",
+                variant: "text",
+                size: "x-small",
+                color: "medium-emphasis",
+                density: "compact",
+                onClick: _cache[5] || (_cache[5] = ($event) => unref(fileStore).clearClipboard())
+              })
+            ])) : createCommentVNode("", true),
+            createBaseVNode("div", {
+              ref_key: "fileTreeWrapperRef",
+              ref: fileTreeWrapperRef,
+              class: "file-tree-wrapper",
+              onContextmenu: withModifiers(onTreeContextMenu, ["prevent"])
+            }, [
+              unref(fileStore).treeLoading ? (openBlock(), createElementBlock("div", _hoisted_6, [
+                createVNode(VProgressCircular, {
+                  indeterminate: "",
+                  size: "20",
+                  width: "2",
+                  color: "primary"
+                })
+              ])) : (openBlock(), createBlock(VList, {
+                key: 1,
+                density: "compact",
+                nav: "",
+                class: "px-1"
+              }, {
+                default: withCtx(() => [
+                  (openBlock(true), createElementBlock(Fragment, null, renderList(unref(fileStore).treeRoots, (node) => {
+                    return openBlock(), createBlock(FileTreeItem, {
+                      key: node.path,
+                      node,
+                      depth: 0,
+                      "current-path": currentPath.value,
+                      "selected-file-path": selectedFilePath.value,
+                      onNavigate: handleNavigate,
+                      onSelectFile: handleSelectFile,
+                      onRename: openRename,
+                      onDelete: confirmDelete
+                    }, null, 8, ["node", "current-path", "selected-file-path"]);
+                  }), 128)),
+                  unref(fileStore).treeRoots.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                    createVNode(VIcon, {
+                      size: "40",
+                      color: "medium-emphasis",
+                      class: "mb-2"
+                    }, {
+                      default: withCtx(() => [..._cache[27] || (_cache[27] = [
+                        createTextVNode("mdi-folder-open-outline", -1)
+                      ])]),
+                      _: 1
+                    }),
+                    _cache[28] || (_cache[28] = createBaseVNode("p", { class: "text-caption text-medium-emphasis" }, "No files", -1))
+                  ])) : createCommentVNode("", true)
+                ]),
+                _: 1
+              }))
+            ], 544),
+            rootMenu.value ? (openBlock(), createElementBlock("div", {
+              key: 1,
+              ref_key: "rootMenuRef",
+              ref: rootMenuRef,
+              class: "root-context-menu-wrapper",
+              style: normalizeStyle({ left: rootMenuX.value + "px", top: rootMenuY.value + "px" })
+            }, [
+              createVNode(VList, {
+                density: "compact",
+                "min-width": "150",
+                rounded: "lg",
+                class: "root-context-menu"
+              }, {
+                default: withCtx(() => [
+                  createVNode(VListItem, {
+                    "prepend-icon": "mdi-file-plus",
+                    title: "New File",
+                    density: "compact",
+                    onClick: _cache[6] || (_cache[6] = ($event) => {
+                      rootMenu.value = false;
+                      showNewFileDialog.value = true;
+                    })
+                  }),
+                  createVNode(VListItem, {
+                    "prepend-icon": "mdi-folder-plus",
+                    title: "New Folder",
+                    density: "compact",
+                    onClick: _cache[7] || (_cache[7] = ($event) => {
+                      rootMenu.value = false;
+                      showMkdirDialog.value = true;
+                    })
+                  }),
+                  unref(fileStore).clipboard ? (openBlock(), createBlock(VDivider, {
+                    key: 0,
+                    class: "my-1"
+                  })) : createCommentVNode("", true),
+                  unref(fileStore).clipboard ? (openBlock(), createBlock(VListItem, {
+                    key: 1,
+                    "prepend-icon": "mdi-content-paste",
+                    title: "Paste",
+                    density: "compact",
+                    subtitle: "Paste '" + unref(fileStore).clipboard.name + "' here",
+                    onClick: onRootMenuPaste
+                  }, null, 8, ["subtitle"])) : createCommentVNode("", true)
+                ]),
+                _: 1
+              })
+            ], 4)) : createCommentVNode("", true),
+            createBaseVNode("input", {
+              ref_key: "fileInputRef",
+              ref: fileInputRef,
+              type: "file",
+              multiple: "",
+              style: { "display": "none" },
+              onChange: onFilesSelected
+            }, null, 544)
+          ], 512)) : createCommentVNode("", true),
+          createVNode(VDialog, {
+            modelValue: showNewFileDialog.value,
+            "onUpdate:modelValue": _cache[11] || (_cache[11] = ($event) => showNewFileDialog.value = $event),
+            "max-width": "400"
+          }, {
+            default: withCtx(() => [
+              createVNode(VCard, { rounded: "lg" }, {
+                default: withCtx(() => [
+                  createVNode(VCardTitle, { class: "text-body-1" }, {
+                    default: withCtx(() => [..._cache[29] || (_cache[29] = [
+                      createTextVNode("New File", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  createVNode(VCardText, null, {
+                    default: withCtx(() => [
+                      createVNode(VTextField, {
+                        modelValue: newFileName.value,
+                        "onUpdate:modelValue": [
+                          _cache[8] || (_cache[8] = ($event) => newFileName.value = $event),
+                          _cache[9] || (_cache[9] = ($event) => newFileError.value = "")
+                        ],
+                        label: "File Name",
+                        variant: "outlined",
+                        density: "compact",
+                        autofocus: "",
+                        "error-messages": newFileError.value ? [newFileError.value] : [],
+                        onKeydown: withKeys(handleNewFile, ["enter"])
+                      }, null, 8, ["modelValue", "error-messages"])
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(VCardActions, { class: "px-4 pb-4" }, {
+                    default: withCtx(() => [
+                      createVNode(VSpacer),
+                      createVNode(VBtn, {
+                        variant: "text",
+                        size: "small",
+                        onClick: _cache[10] || (_cache[10] = ($event) => {
+                          showNewFileDialog.value = false;
+                          newFileError.value = "";
+                        })
+                      }, {
+                        default: withCtx(() => [..._cache[30] || (_cache[30] = [
+                          createTextVNode("Cancel", -1)
+                        ])]),
+                        _: 1
+                      }),
+                      createVNode(VBtn, {
+                        color: "primary",
+                        variant: "tonal",
+                        size: "small",
+                        onClick: handleNewFile,
+                        loading: newFileLoading.value
+                      }, {
+                        default: withCtx(() => [..._cache[31] || (_cache[31] = [
+                          createTextVNode("Create", -1)
+                        ])]),
+                        _: 1
+                      }, 8, ["loading"])
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }, 8, ["modelValue"]),
+          createVNode(VDialog, {
+            modelValue: showMkdirDialog.value,
+            "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => showMkdirDialog.value = $event),
+            "max-width": "400"
+          }, {
+            default: withCtx(() => [
+              createVNode(VCard, { rounded: "lg" }, {
+                default: withCtx(() => [
+                  createVNode(VCardTitle, { class: "text-body-1" }, {
+                    default: withCtx(() => [..._cache[32] || (_cache[32] = [
+                      createTextVNode("New Folder", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  createVNode(VCardText, null, {
+                    default: withCtx(() => [
+                      createVNode(VTextField, {
+                        modelValue: mkdirName.value,
+                        "onUpdate:modelValue": [
+                          _cache[12] || (_cache[12] = ($event) => mkdirName.value = $event),
+                          _cache[13] || (_cache[13] = ($event) => mkdirError.value = "")
+                        ],
+                        label: "Folder Name",
+                        variant: "outlined",
+                        density: "compact",
+                        autofocus: "",
+                        "error-messages": mkdirError.value ? [mkdirError.value] : [],
+                        onKeydown: withKeys(handleMkdir, ["enter"])
+                      }, null, 8, ["modelValue", "error-messages"])
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(VCardActions, { class: "px-4 pb-4" }, {
+                    default: withCtx(() => [
+                      createVNode(VSpacer),
+                      createVNode(VBtn, {
+                        variant: "text",
+                        size: "small",
+                        onClick: _cache[14] || (_cache[14] = ($event) => {
+                          showMkdirDialog.value = false;
+                          mkdirError.value = "";
+                        })
+                      }, {
+                        default: withCtx(() => [..._cache[33] || (_cache[33] = [
+                          createTextVNode("Cancel", -1)
+                        ])]),
+                        _: 1
+                      }),
+                      createVNode(VBtn, {
+                        color: "primary",
+                        variant: "tonal",
+                        size: "small",
+                        onClick: handleMkdir,
+                        loading: mkdirLoading.value
+                      }, {
+                        default: withCtx(() => [..._cache[34] || (_cache[34] = [
+                          createTextVNode("Create", -1)
+                        ])]),
+                        _: 1
+                      }, 8, ["loading"])
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }, 8, ["modelValue"]),
+          createVNode(VDialog, {
+            modelValue: renameDialog.value,
+            "onUpdate:modelValue": _cache[18] || (_cache[18] = ($event) => renameDialog.value = $event),
+            "max-width": "400"
+          }, {
+            default: withCtx(() => [
+              createVNode(VCard, { rounded: "lg" }, {
+                default: withCtx(() => [
+                  createVNode(VCardTitle, { class: "text-body-1" }, {
+                    default: withCtx(() => [..._cache[35] || (_cache[35] = [
+                      createTextVNode("Rename", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  createVNode(VCardText, null, {
+                    default: withCtx(() => [
+                      createVNode(VTextField, {
+                        modelValue: renameName.value,
+                        "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => renameName.value = $event),
+                        label: "New Name",
+                        variant: "outlined",
+                        density: "compact",
+                        autofocus: "",
+                        onKeydown: withKeys(handleRename, ["enter"])
+                      }, null, 8, ["modelValue"])
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(VCardActions, { class: "px-4 pb-4" }, {
+                    default: withCtx(() => [
+                      createVNode(VSpacer),
+                      createVNode(VBtn, {
+                        variant: "text",
+                        size: "small",
+                        onClick: _cache[17] || (_cache[17] = ($event) => renameDialog.value = false)
+                      }, {
+                        default: withCtx(() => [..._cache[36] || (_cache[36] = [
+                          createTextVNode("Cancel", -1)
+                        ])]),
+                        _: 1
+                      }),
+                      createVNode(VBtn, {
+                        color: "primary",
+                        variant: "tonal",
+                        size: "small",
+                        onClick: handleRename,
+                        loading: renameLoading.value
+                      }, {
+                        default: withCtx(() => [..._cache[37] || (_cache[37] = [
+                          createTextVNode("Save", -1)
+                        ])]),
+                        _: 1
+                      }, 8, ["loading"])
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }, 8, ["modelValue"]),
+          createVNode(VDialog, {
+            modelValue: deleteDialog.value,
+            "onUpdate:modelValue": _cache[20] || (_cache[20] = ($event) => deleteDialog.value = $event),
+            "max-width": "400"
+          }, {
+            default: withCtx(() => [
+              createVNode(VCard, { rounded: "lg" }, {
+                default: withCtx(() => [
+                  createVNode(VCardTitle, { class: "text-body-1" }, {
+                    default: withCtx(() => [..._cache[38] || (_cache[38] = [
+                      createTextVNode("Delete", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  createVNode(VCardText, null, {
+                    default: withCtx(() => [
+                      createBaseVNode("p", _hoisted_8, [
+                        _cache[39] || (_cache[39] = createTextVNode(" Are you sure you want to delete ", -1)),
+                        createBaseVNode("strong", null, toDisplayString(deleteTargetName.value), 1),
+                        _cache[40] || (_cache[40] = createTextVNode("? ", -1))
+                      ]),
+                      _cache[41] || (_cache[41] = createBaseVNode("p", { class: "text-caption text-error" }, "This action cannot be undone.", -1))
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(VCardActions, { class: "px-4 pb-4" }, {
+                    default: withCtx(() => [
+                      createVNode(VSpacer),
+                      createVNode(VBtn, {
+                        variant: "text",
+                        size: "small",
+                        onClick: _cache[19] || (_cache[19] = ($event) => deleteDialog.value = false)
+                      }, {
+                        default: withCtx(() => [..._cache[42] || (_cache[42] = [
+                          createTextVNode("Cancel", -1)
+                        ])]),
+                        _: 1
+                      }),
+                      createVNode(VBtn, {
+                        color: "error",
+                        variant: "tonal",
+                        size: "small",
+                        onClick: handleDelete,
+                        loading: deleteLoading.value
+                      }, {
+                        default: withCtx(() => [..._cache[43] || (_cache[43] = [
+                          createTextVNode("Delete", -1)
+                        ])]),
+                        _: 1
+                      }, 8, ["loading"])
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }, 8, ["modelValue"]),
+          createVNode(VDialog, {
+            modelValue: showPasteRenameDialog.value,
+            "onUpdate:modelValue": _cache[23] || (_cache[23] = ($event) => showPasteRenameDialog.value = $event),
+            "max-width": "400",
+            persistent: "",
+            onKeydown: withKeys(handlePasteRename, ["enter"])
+          }, {
+            default: withCtx(() => [
+              createVNode(VCard, { rounded: "lg" }, {
+                default: withCtx(() => [
+                  createVNode(VCardTitle, { class: "text-body-1" }, {
+                    default: withCtx(() => [..._cache[44] || (_cache[44] = [
+                      createTextVNode("Name Conflict", -1)
+                    ])]),
+                    _: 1
+                  }),
+                  createVNode(VCardText, null, {
+                    default: withCtx(() => [
+                      _cache[45] || (_cache[45] = createBaseVNode("p", { class: "text-caption text-medium-emphasis mb-2" }, " A file or folder with the same name already exists in the target location. ", -1)),
+                      createVNode(VTextField, {
+                        modelValue: pasteRenameName.value,
+                        "onUpdate:modelValue": _cache[21] || (_cache[21] = ($event) => pasteRenameName.value = $event),
+                        label: "New Name",
+                        variant: "outlined",
+                        density: "compact",
+                        autofocus: ""
+                      }, null, 8, ["modelValue"])
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(VCardActions, { class: "px-4 pb-4" }, {
+                    default: withCtx(() => [
+                      createVNode(VSpacer),
+                      createVNode(VBtn, {
+                        variant: "text",
+                        size: "small",
+                        onClick: _cache[22] || (_cache[22] = ($event) => showPasteRenameDialog.value = false)
+                      }, {
+                        default: withCtx(() => [..._cache[46] || (_cache[46] = [
+                          createTextVNode("Cancel", -1)
+                        ])]),
+                        _: 1
+                      }),
+                      createVNode(VBtn, {
+                        color: "primary",
+                        variant: "tonal",
+                        size: "small",
+                        onClick: handlePasteRename,
+                        loading: pasteRenameLoading.value
+                      }, {
+                        default: withCtx(() => [..._cache[47] || (_cache[47] = [
+                          createTextVNode("Paste", -1)
+                        ])]),
+                        _: 1
+                      }, 8, ["loading"])
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }, 8, ["modelValue"])
+        ]),
+        _: 1
+      }, 16);
+    };
+  }
+});
+const RightSidebar = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-4513287f"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent$1({
   __name: "App",
   setup(__props) {
@@ -47621,7 +48990,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent$1({
               })
             ]),
             _: 1
-          })
+          }),
+          createVNode(RightSidebar)
         ]),
         _: 1
       });
@@ -47707,68 +49077,63 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      name: "chat",
-      component: () => __vitePreload(() => import("./ChatPage-BmgDhI1m.js"), true ? __vite__mapDeps([0,1]) : void 0)
+      name: "home",
+      component: () => __vitePreload(() => import("./HomePage-C9PrVOaD.js"), true ? __vite__mapDeps([0,1]) : void 0)
     },
     {
       path: "/usage",
       name: "usage",
-      component: () => __vitePreload(() => import("./UsagePage-BCmBRaym.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./UsagePage-DDshJlru.js"), true ? [] : void 0)
     },
     {
       path: "/mcp",
       name: "mcp",
-      component: () => __vitePreload(() => import("./McpPage-D_FzbXlS.js"), true ? __vite__mapDeps([2,3]) : void 0)
-    },
-    {
-      path: "/files",
-      name: "files",
-      component: () => __vitePreload(() => import("./FilePage-Cc_sGEnW.js"), true ? __vite__mapDeps([4,5]) : void 0)
+      component: () => __vitePreload(() => import("./McpPage-COyZ_UzK.js"), true ? __vite__mapDeps([2,3]) : void 0)
     },
     {
       path: "/sites",
       name: "sites",
-      component: () => __vitePreload(() => import("./SitesPage-DKmsBsLw.js"), true ? __vite__mapDeps([6,7,8]) : void 0)
+      component: () => __vitePreload(() => import("./SitesPage--WvwYfwK.js"), true ? __vite__mapDeps([4,5,6]) : void 0)
     },
     {
       path: "/crons",
       name: "crons",
-      component: () => __vitePreload(() => import("./CronsPage-CkQKWDo_.js"), true ? __vite__mapDeps([9,7,10]) : void 0)
+      component: () => __vitePreload(() => import("./CronsPage-BZF9HC6a.js"), true ? __vite__mapDeps([7,5,8]) : void 0)
     },
     {
       path: "/agents",
       name: "agents",
-      component: () => __vitePreload(() => import("./AgentsPage-CPQjC4Ee.js"), true ? __vite__mapDeps([11,7,12]) : void 0)
+      component: () => __vitePreload(() => import("./AgentsPage-ChNwkyPT.js"), true ? __vite__mapDeps([9,5,10]) : void 0)
     },
     {
       path: "/skills",
       name: "skills",
-      component: () => __vitePreload(() => import("./SkillsPage-CVJ8Bzn-.js"), true ? __vite__mapDeps([13,7,14]) : void 0)
+      component: () => __vitePreload(() => import("./SkillsPage-DsAAXlJW.js"), true ? __vite__mapDeps([11,5,12]) : void 0)
     },
     {
       path: "/tools",
       name: "tools",
-      component: () => __vitePreload(() => import("./ToolsPage-DfOTlw2M.js"), true ? __vite__mapDeps([15,7,16]) : void 0)
+      component: () => __vitePreload(() => import("./ToolsPage-CpCmzJFc.js"), true ? __vite__mapDeps([13,5,14]) : void 0)
     },
     {
       path: "/settings",
-      component: () => __vitePreload(() => import("./SettingsPage-Buaeq-M0.js"), true ? [] : void 0),
+      component: () => __vitePreload(() => import("./SettingsPage-lBDYr2pB.js"), true ? [] : void 0),
       redirect: "/settings/model",
       children: [
         {
           path: "agents-md",
           name: "settings-agents-md",
-          component: () => __vitePreload(() => import("./SettingsAgentsMdPage-GykKLAYY.js"), true ? [] : void 0)
+          component: () => __vitePreload(() => import("./SettingsAgentsMdPage-C_Ap1eCy.js"), true ? [] : void 0)
         },
         {
           path: "model",
           name: "settings-model",
-          component: () => __vitePreload(() => import("./SettingsModelPage-CeJwAtjg.js"), true ? __vite__mapDeps([17,18]) : void 0)
+          component: () => __vitePreload(() => import("./SettingsModelPage-ByzplPj1.js"), true ? __vite__mapDeps([15,16]) : void 0)
         },
         {
           path: "security",
           name: "settings-security",
-          component: () => __vitePreload(() => import("./SettingsSecurityPage-OaJSGUib.js"), true ? __vite__mapDeps([19,18]) : void 0)
+          component: () => __vitePreload(() => import("./SettingsSecurityPage-CFC44puj.js"), true ? __vite__mapDeps([17,16]) : void 0)
         }
       ]
     }
@@ -47842,80 +49207,77 @@ app.use(router);
 app.use(vuetify);
 app.mount("#app");
 export {
-  normalizeClass as $,
-  VSelect as A,
-  VSkeletonLoader as B,
-  VSpacer as C,
-  VSwitch as D,
-  VTab as E,
+  openBlock as $,
+  VSwitch as A,
+  VTab as B,
+  VTabs as C,
+  VTextField as D,
+  VTextarea as E,
   Fragment as F,
-  VTabs as G,
-  VTextField as H,
-  VTextarea as I,
-  VToolbar as J,
-  api as K,
-  computed as L,
-  createBaseVNode as M,
-  createBlock as N,
-  createCommentVNode as O,
-  createElementBlock as P,
-  createTextVNode as Q,
-  createVNode as R,
-  defineComponent$1 as S,
-  defineStore as T,
-  fileApi as U,
+  VToolbar as G,
+  api as H,
+  computed as I,
+  createBaseVNode as J,
+  createBlock as K,
+  createCommentVNode as L,
+  createElementBlock as M,
+  createTextVNode as N,
+  createVNode as O,
+  defineComponent$1 as P,
+  defineStore as Q,
+  fileApi as R,
+  h as S,
+  inject$1 as T,
+  mergeProps as U,
   VAlert as V,
-  h as W,
-  inject$1 as X,
-  mergeProps as Y,
-  nextTick as Z,
+  nextTick as W,
+  normalizeClass as X,
+  onBeforeUnmount as Y,
+  onMounted as Z,
   _export_sfc as _,
   VAutocomplete as a,
-  onBeforeUnmount as a0,
-  onMounted as a1,
-  openBlock as a2,
-  reactive as a3,
-  ref as a4,
-  renderList as a5,
-  resolveComponent as a6,
-  shallowRef as a7,
-  toDisplayString as a8,
-  toRaw as a9,
-  unref as aa,
-  useAppStore as ab,
-  useFileStore as ac,
-  useRoute as ad,
-  useRouter as ae,
-  useSessionStore as af,
-  vShow as ag,
-  watch as ah,
-  withCtx as ai,
-  withDirectives as aj,
-  withKeys as ak,
-  withModifiers as al,
+  reactive as a0,
+  ref as a1,
+  renderList as a2,
+  resolveComponent as a3,
+  shallowRef as a4,
+  toDisplayString as a5,
+  toRaw as a6,
+  unref as a7,
+  useAppStore as a8,
+  useFileStore as a9,
+  useRoute as aa,
+  useRouter as ab,
+  useSessionStore as ac,
+  vShow as ad,
+  watch as ae,
+  withCtx as af,
+  withDirectives as ag,
+  withKeys as ah,
+  withModifiers as ai,
   VAvatar as b,
-  VBreadcrumbs as c,
-  VBreadcrumbsItem as d,
-  VBtn as e,
-  VCard as f,
-  VCardActions as g,
-  VCardItem as h,
-  VCardSubtitle as i,
-  VCardText as j,
-  VCardTitle as k,
-  VCheckbox as l,
-  VChip as m,
-  VCol as n,
-  VDialog as o,
-  VDivider as p,
-  VExpandTransition as q,
-  VIcon as r,
-  VList as s,
-  VListItem as t,
-  VListItemSubtitle as u,
-  VListItemTitle as v,
-  VMenu as w,
-  VProgressCircular as x,
-  VProgressLinear as y,
-  VRow as z
+  VBtn as c,
+  VCard as d,
+  VCardActions as e,
+  VCardItem as f,
+  VCardSubtitle as g,
+  VCardText as h,
+  VCardTitle as i,
+  VChip as j,
+  VCol as k,
+  VDialog as l,
+  VDivider as m,
+  VExpandTransition as n,
+  VIcon as o,
+  VList as p,
+  VListItem as q,
+  VListItemSubtitle as r,
+  VListItemTitle as s,
+  VMenu as t,
+  VProgressCircular as u,
+  VProgressLinear as v,
+  VRow as w,
+  VSelect as x,
+  VSkeletonLoader as y,
+  VSpacer as z
 };

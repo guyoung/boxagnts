@@ -32,3 +32,4 @@ futures-util = { workspace = true }
 once_cell = { workspace = true }
 
 tokio-cron-scheduler = { version = "0.15" }
+notify = { version = "8.2" }

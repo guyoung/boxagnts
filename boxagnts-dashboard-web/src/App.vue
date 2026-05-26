@@ -8,6 +8,7 @@
         </router-view>
       </v-container>
     </v-main>
+    <RightSidebar />
   </v-app>
 </template>
 
@@ -15,6 +16,7 @@
 import { watch } from 'vue'
 import { useTheme } from 'vuetify'
 import AppSidebar from '@/components/AppSidebar.vue'
+import RightSidebar from '@/components/RightSidebar.vue'
 import { useAppStore } from '@/stores/app'
 import '@mdi/font/css/materialdesignicons.css'
 
@@ -28,8 +30,37 @@ watch(() => appStore.theme, (val) => {
 </script>
 
 <style>
-html {
-  overflow-y: auto;
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-on-surface), 0.15) transparent;
+}
+
+.v-application {
+  height: 100vh;
+}
+
+.v-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.v-container--fluid {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.v-container--fluid > * {
+  flex: 1;
+  min-height: 0;
 }
 
 .fade-enter-active,
@@ -48,7 +79,7 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(var(--v-theme-on-surface), 0.05);
+  background: transparent;
   border-radius: 4px;
 }
 
