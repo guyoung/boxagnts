@@ -79,10 +79,17 @@ pub async fn schedule_job(state: AppState, job_cfg: JobConfig) -> Result<(), Cro
         let prompt = prompt.clone();
 
         Box::pin(async move {
+
+            let now = chrono::Local::now();
+
             println!(
-                "[job exec] id={}, name={}, prompt={}",
-                job_id, job_name, prompt
+                "{} [job exec] id={}, name={}",
+                now.format("%Y-%m-%d %H:%M:%S"), job_id, job_name
             );
+            // println!(
+            //    "[job exec] id={}, name={}, prompt={}",
+            //    job_id, job_name, prompt
+            //);
 
             let handle = super::job::execute(prompt, model).await;
 
@@ -103,7 +110,7 @@ pub async fn schedule_job(state: AppState, job_cfg: JobConfig) -> Result<(), Cro
 
                     match result {
                         Ok(result) => {
-                            println!("[job exec] result={:?}", result);
+                            //println!("[job exec] result={:?}", result);
 
                             let result_type = result["type"].as_str().unwrap_or_default();
 
