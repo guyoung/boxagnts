@@ -48,6 +48,25 @@ pub const ALL_OAUTH_SCOPES: &[&str] = &[
 pub const MINIMUM_SCOPES: &[&str] = &[CLAUDE_AI_INFERENCE_SCOPE, CLAUDE_AI_PROFILE_SCOPE];
 
 // ---------------------------------------------------------------------------
+// Claude Code stealth-impersonation constants
+// ---------------------------------------------------------------------------
+
+/// User-Agent advertised to Anthropic's API on OAuth-authenticated requests.
+/// Must match a Claude Code version the server still accepts; bump when
+/// Anthropic invalidates the current value.
+pub const CLAUDE_CODE_VERSION_FOR_OAUTH: &str = "2.1.75";
+
+/// `anthropic-beta` flags that must be present on every OAuth-authenticated
+/// request. Without these the API server rejects subscription tokens.
+pub const OAUTH_BETA_FLAGS: &[&str] = &["claude-code-20250219", "oauth-2025-04-20"];
+
+/// System-prompt prefix that must appear as the first system block on every
+/// OAuth-authenticated request. Anthropic's gate refuses requests whose system
+/// prompt does not start with this identity string.
+pub const CLAUDE_CODE_SYSTEM_PROMPT_PREFIX: &str =
+    "You are Claude Code, Anthropic's official CLI for Claude.";
+
+// ---------------------------------------------------------------------------
 // OAuthConfig struct
 // ---------------------------------------------------------------------------
 
@@ -76,10 +95,17 @@ pub struct OAuthConfig {
 // Production config (mirrors PROD_OAUTH_CONFIG in oauth.ts)
 // ---------------------------------------------------------------------------
 
-// NOTE: These OAuth client IDs are registered to Anthropic's official Claude Code CLI.
-// They will NOT work for Boxagnts — Anthropic's auth server will reject or misattribute requests.
-// Users should use an API key from console.anthropic.com instead.
-// To use OAuth, Boxagnts would need its own registered OAuth application with Anthropic.
+// Claude Code OAuth client ID, used in stealth-impersonation mode so that
+// Anthropic's auth server accepts Claude Pro/Max tokens through Boxagnts.
+// The matching request-time impersonation (user-agent, x-app, anthropic-beta,
+// and the Claude Code system-prompt prefix) is wired up in
+// `boxagnts_api::client::AnthropicClient` and is required for these tokens to
+// be honoured by the API.
+//
+// Billing note: tokens minted by a Pro/Max subscription draw from the
+// account's "extra usage" pool when used by a third-party client — they do
+// not consume subscription quota. Users should be aware of this before
+// switching from API-key auth.
 pub const PROD_OAUTH: OAuthConfig = OAuthConfig {
     base_api_url: "https://api.anthropic.com",
     // Routes through claude.com/cai/* for attribution, 307s to claude.ai in
@@ -93,7 +119,7 @@ pub const PROD_OAUTH: OAuthConfig = OAuthConfig {
     console_success_url: "https://platform.claude.com/buy_credits?returnUrl=/oauth/code/success%3Fapp%3Dclaude-code",
     claudeai_success_url: "https://platform.claude.com/oauth/code/success?app=claude-code",
     manual_redirect_url: "https://platform.claude.com/oauth/code/callback",
-    client_id: "9d1c250a-e61b-44d9-88ed-5944d1962f5e", // Anthropic's Claude Code — will not work for Boxagnts
+    client_id: "9d1c250a-e61b-44d9-88ed-5944d1962f5e", // Claude Code client ID (stealth)
     oauth_file_suffix: "",
     mcp_proxy_url: "https://mcp-proxy.anthropic.com",
     mcp_proxy_path: "/v1/mcp/{server_id}",

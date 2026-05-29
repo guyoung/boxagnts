@@ -302,9 +302,9 @@ async fn send_to_instance(state: ChatWSAppState, instance_id: String, message: S
             println!("[TRACE] Failed to send message: {}", e);
         }
     } else {
-        println!(
-            "[TRACE] Session {} not found in WebSocket instances",
-            instance_id
-        );
+        // println!(
+        //     "[TRACE] Session {} not found in WebSocket instances",
+        //     instance_id
+        // );
     }
 }

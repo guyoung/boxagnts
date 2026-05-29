@@ -7,6 +7,7 @@ pub mod codex_oauth;
 pub mod oauth_config;
 pub mod output_styles;
 pub mod agents_md;
+pub mod oauth;
 
 pub mod path {
     use std::path::{Path, PathBuf};

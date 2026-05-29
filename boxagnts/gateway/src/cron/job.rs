@@ -67,7 +67,7 @@ pub async fn execute(prompt: String, model: Option<String>) -> anyhow::Result<Qu
     }
 
     config.verbose = false;
-    config.output_format = boxagnts_workspace::config::OutputFormat::StreamJson;
+    config.output_format = boxagnts_workspace::config::OutputFormat::Json;
     config.disable_claude_mds = false;
     config.permission_mode = PermissionMode::BypassPermissions;
     config.additional_dirs = vec![];
@@ -229,6 +229,7 @@ async fn execute_inner(
     let outcome = query_handle.await.unwrap_or(QueryOutcome::Error(
         boxagnts_core::error::ClaudeError::Other("Job query task panicked".to_string()),
     ));
+
 
     let val = match outcome {
         QueryOutcome::EndTurn { usage, .. } => {

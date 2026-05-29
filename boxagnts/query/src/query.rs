@@ -334,7 +334,7 @@ pub async fn run_query_loop(
                             let mut r = boxagnts_api::ModelRegistry::new();
 
                             r.load_cache();
-                           
+
                             r
                         };
                         &temp_reg
@@ -703,6 +703,7 @@ pub async fn run_query_loop(
                             uuid: None,
                             cost: None,
                         });
+                        turn -= 1;
                         continue; // loop for next turn
                     }
 
@@ -1169,6 +1170,7 @@ pub async fn run_query_loop(
                 // Append tool results as a user message
                 messages.push(Message::user_blocks(result_blocks));
 
+                turn -= 1;
                 // Continue the loop to send results back to the model
                 continue;
             }

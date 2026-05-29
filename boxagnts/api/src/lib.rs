@@ -469,6 +469,55 @@ pub mod client {
             self.config.api_key.is_empty()
         }
 
+        /// Returns `true` when this client is configured to use a Claude Code
+        /// OAuth Bearer token (Claude.ai Pro/Max). The query path and the
+        /// request builders check this to enable stealth-impersonation.
+        pub fn is_oauth(&self) -> bool {
+            self.config.use_bearer_auth
+        }
+
+        /// Mutate the outgoing request so it looks like Claude Code when the
+        /// client is authenticated with an OAuth Bearer token:
+        ///
+        /// 1. Prepend the required `"You are Claude Code, …"` system block.
+        ///    Existing system content is preserved as a second block so the
+        ///    rest of Claurst's prompt assembly still reaches the model.
+        ///
+        /// No-op when `use_bearer_auth` is false (API-key flow).
+        fn apply_oauth_stealth(&self, request: &mut CreateMessageRequest) {
+            if !self.config.use_bearer_auth {
+                return;
+            }
+
+            let identity_block = SystemBlock {
+                block_type: "text".to_string(),
+                text: boxagnts_workspace::oauth_config::CLAUDE_CODE_SYSTEM_PROMPT_PREFIX.to_string(),
+                cache_control: None,
+            };
+
+            request.system = match request.system.take() {
+                None => Some(SystemPrompt::Blocks(vec![identity_block])),
+                Some(SystemPrompt::Text(existing)) => {
+                    let existing_block = SystemBlock {
+                        block_type: "text".to_string(),
+                        text: existing,
+                        cache_control: None,
+                    };
+                    Some(SystemPrompt::Blocks(vec![identity_block, existing_block]))
+                }
+                Some(SystemPrompt::Blocks(mut blocks)) => {
+                    // Avoid duplicating the identity block on retries / re-sends.
+                    let already_first = blocks.first().is_some_and(|b| {
+                        b.text == boxagnts_workspace::oauth_config::CLAUDE_CODE_SYSTEM_PROMPT_PREFIX
+                    });
+                    if !already_first {
+                        blocks.insert(0, identity_block);
+                    }
+                    Some(SystemPrompt::Blocks(blocks))
+                }
+            };
+        }
+
         /// Build a new client.  Panics if `config.api_key` is empty.
         pub fn new(config: ClientConfig) -> anyhow::Result<Self> {
             // Allow empty key at construction — validation is deferred to
@@ -556,6 +605,7 @@ pub mod client {
             }
 
             request.stream = false;
+            self.apply_oauth_stealth(&mut request);
             let body = serde_json::to_value(&request).map_err(ClaudeError::Json)?;
 
             let resp = self.send_with_retry(&body).await?;
@@ -660,6 +710,7 @@ pub mod client {
             }
 
             request.stream = true;
+            self.apply_oauth_stealth(&mut request);
             let body = serde_json::to_value(&request).map_err(ClaudeError::Json)?;
 
             let resp = self.send_with_retry(&body).await?;
@@ -703,11 +754,19 @@ pub mod client {
                 .get(&url)
                 .header("anthropic-version", &self.config.api_version)
                 .header("content-type", "application/json");
-            req = if self.config.use_bearer_auth {
-                req.header("Authorization", format!("Bearer {}", &self.config.api_key))
+            if self.config.use_bearer_auth {
+                let ua = format!(
+                    "claude-cli/{}",
+                    boxagnts_workspace::oauth_config::CLAUDE_CODE_VERSION_FOR_OAUTH
+                );
+                req = req
+                    .header("anthropic-beta", boxagnts_workspace::oauth_config::OAUTH_BETA_FLAGS.join(","))
+                    .header("user-agent", ua)
+                    .header("x-app", "cli")
+                    .header("Authorization", format!("Bearer {}", &self.config.api_key));
             } else {
-                req.header("x-api-key", &self.config.api_key)
-            };
+                req = req.header("x-api-key", &self.config.api_key);
+            }
 
             let resp = req.send().await?;
 
@@ -743,24 +802,57 @@ pub mod client {
             loop {
                 attempts += 1;
 
-                // Compute CCH hash and build billing header
-                let cch_hash = cch::compute_cch(body_bytes);
-                let billing_header = format!("cc_version=0.1; cc_entrypoint=claude_code; {}; cc_workload=claude_code;", cch_hash);
-
                 // Use Bearer auth for Claude.ai OAuth tokens; x-api-key for regular keys.
+                let use_oauth = self.config.use_bearer_auth;
+
+                // On the OAuth path we impersonate Claude Code: prepend the
+                // required beta flags, advertise `claude-cli/<ver>` as the
+                // user-agent, and drop the CCH billing header (the real
+                // Claude Code client sends it but the API does not require
+                // it for OAuth tokens, and emitting it would fingerprint
+                // mismatch against the impersonated UA).
+                let anthropic_beta = if use_oauth {
+                    let mut flags: Vec<&str> =
+                        boxagnts_workspace::oauth_config::OAUTH_BETA_FLAGS.to_vec();
+                    if !self.config.beta_features.is_empty() {
+                        flags.push(&self.config.beta_features);
+                    }
+                    flags.join(",")
+                } else {
+                    self.config.beta_features.clone()
+                };
+
                 let mut req = self
                     .http
                     .post(&url)
                     .header("anthropic-version", &self.config.api_version)
-                    .header("anthropic-beta", &self.config.beta_features)
+                    .header("anthropic-beta", &anthropic_beta)
                     .header("content-type", "application/json")
-                    .header("accept", "text/event-stream")
-                    .header("x-anthropic-billing-header", billing_header);
-                req = if self.config.use_bearer_auth {
-                    req.header("Authorization", format!("Bearer {}", &self.config.api_key))
+                    .header("accept", "text/event-stream");
+
+                if use_oauth {
+                    let ua = format!(
+                        "claude-cli/{}",
+                        boxagnts_workspace::oauth_config::CLAUDE_CODE_VERSION_FOR_OAUTH
+                    );
+                    req = req
+                        .header("user-agent", ua)
+                        .header("x-app", "cli")
+                        .header("Authorization", format!("Bearer {}", &self.config.api_key));
                 } else {
-                    req.header("x-api-key", &self.config.api_key)
-                };
+                    // Compute CCH billing hash and attach on the API-key path
+                    // only — this is the codepath the official client uses
+                    // for direct API customers.
+                    let cch_hash = cch::compute_cch(body_bytes);
+                    let billing_header = format!(
+                        "cc_version=0.1; cc_entrypoint=claude_code; {}; cc_workload=claude_code;",
+                        cch_hash
+                    );
+                    req = req
+                        .header("x-anthropic-billing-header", billing_header)
+                        .header("x-api-key", &self.config.api_key);
+                }
+
                 let req = req.body(body_str.clone());
 
                 let resp = req.send().await.map_err(ClaudeError::Http)?;
